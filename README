@@ -3,7 +3,7 @@ README -- trio
 Trio is a package with portable string functions. Including printf() clones
 and others.
 
- Copyright (C) 1998-2000 by Bjorn Reese and Daniel Stenberg.
+ Copyright (C) 1998-2001 by Bjorn Reese and Daniel Stenberg.
 
  Permission to use, copy, modify, and distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -35,4 +35,4 @@ Enjoy!
 
 Trio web page
 
-        http://www.contactor.se/~dast/trio/
+        http://daniel.haxx.se/trio/
