@@ -771,7 +771,7 @@ trio_string_terminate(trio_string_t *self)
 /*************************************************************************
  * trio_string_append
  */
-TRIO_PUBLIC int
+TRIO_PUBLIC char *
 trio_string_append(trio_string_t *self,
 		   trio_string_t *other)
 {
@@ -788,16 +788,16 @@ trio_string_append(trio_string_t *self,
     }
   trio_copy(&self->buffer[self->length], other->buffer);
   self->length += other->length;
-  return TRUE;
+  return self->buffer;
   
  error:
-  return FALSE;
+  return NULL;
 }
 
 /*************************************************************************
  * trio_string_append
  */
-TRIO_PUBLIC int
+TRIO_PUBLIC char *
 trio_xstring_append(trio_string_t *self,
 		    const char *other)
 {
@@ -816,10 +816,10 @@ trio_xstring_append(trio_string_t *self,
     }
   trio_copy(&self->buffer[self->length], other);
   self->length += length;
-  return TRUE;
+  return self->buffer;
   
  error:
-  return FALSE;
+  return NULL;
 }
 
 /*************************************************************************
@@ -871,7 +871,7 @@ trio_xstring_contains(trio_string_t *self,
 /*************************************************************************
  * trio_string_copy
  */
-TRIO_PUBLIC int
+TRIO_PUBLIC char *
 trio_string_copy(trio_string_t *self,
 		 trio_string_t *other)
 {
@@ -885,7 +885,7 @@ trio_string_copy(trio_string_t *self,
 /*************************************************************************
  * trio_xstring_copy
  */
-TRIO_PUBLIC int
+TRIO_PUBLIC char *
 trio_xstring_copy(trio_string_t *self,
 		  const char *other)
 {

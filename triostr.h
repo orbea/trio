@@ -139,9 +139,9 @@ void trio_string_set(trio_string_t *self, char *buffer);
 char *trio_string_extract(trio_string_t *self);
 void trio_string_terminate(trio_string_t *self);
 
-int trio_string_append(trio_string_t *self, trio_string_t *other);
+char *trio_string_append(trio_string_t *self, trio_string_t *other);
 int trio_string_contains(trio_string_t *self, trio_string_t *other);
-int trio_string_copy(trio_string_t *self, trio_string_t *other);
+char *trio_string_copy(trio_string_t *self, trio_string_t *other);
 trio_string_t *trio_string_duplicate(trio_string_t *other);
 int trio_string_equal(trio_string_t *self, trio_string_t *other);
 int trio_string_equal_max(trio_string_t *self, size_t max, trio_string_t *second);
@@ -158,9 +158,9 @@ char *trio_string_substring(trio_string_t *self, trio_string_t *other);
 int trio_string_upper(trio_string_t *self);
 
 void trio_xstring_append_char(trio_string_t *self, char character);
-int trio_xstring_append(trio_string_t *self, const char *other);
+char *trio_xstring_append(trio_string_t *self, const char *other);
 int trio_xstring_contains(trio_string_t *self, const char *other);
-int trio_xstring_copy(trio_string_t *self, const char *other);
+char *trio_xstring_copy(trio_string_t *self, const char *other);
 trio_string_t *trio_xstring_duplicate(const char *other);
 int trio_xstring_equal(trio_string_t *self, const char *other);
 int trio_xstring_equal_max(trio_string_t *self, size_t max, const char *other);
