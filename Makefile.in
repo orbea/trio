@@ -1,3 +1,4 @@
+SHELL = @SHELL@
 CC	= @CC@
 CFLAGS	= @CFLAGS@ -DDEBUG
 OBJS	= triostr.o trio.o trionan.o
@@ -30,7 +31,7 @@ install:	$(TARGETLIB)
 	$(MKDIR) $(libdir)
 	$(MKDIR) $(includedir)
 	$(INSTALL_DATA) $(TARGETLIB) $(libdir)/$(TARGETLIB)
-	for i in $(TARGET_INCS);do \
+	for i in $(TARGETINCS);do \
 	(set -x;$(INSTALL_DATA) $$i $(includedir)); \
 	done
 

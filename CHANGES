@@ -4,10 +4,20 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2003/04/26
+Version 1.11 - 2003/11/23
 -------------------------
+* Bob Friesenhahn
+  Fixed installation of header files
+
+* Joe Orton
+  Added SHELL to Makefile.in to avoid problems with CShells.
+
+* Shaun Tancheff
+  Fixed regresion tests for MSVC.
+
 * Craig Berry
   Fixed the VMS C99 workaround.
+
 
 Version 1.10 - 2003/03/06
 -------------------------
