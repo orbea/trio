@@ -446,7 +446,7 @@ TRIO_ARGS1((number),
    * C99 defines isinf() as a macro.
    */
   return isinf(number)
-    ? ((number > 0.0) ? 1 ; -1)
+    ? ((number > 0.0) ? 1 : -1)
     : 0;
   
 #elif defined(TRIO_COMPILER_MSVC)

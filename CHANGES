@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.9 - 2002/08/30
+Version 1.9 - 2002/09/10
 ------------------------
+* Albert Chin-A-Young
+  Fixed incorrect conditional expression in trio_isinf.
+
 * Fixed the warnings about uninitialized va_list in the printfv and scanfv
   family without the use of compiler specific pragmas (suggested by Ian
   Pilcher).
