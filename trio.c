@@ -47,8 +47,8 @@
 #include "triodef.h"
 #include "trio.h"
 #include "triop.h"
+#include "triostr.h"
 #include "trionan.h"
-#include "strio.h"
 
 /*
  * Encode the error code and the position. This is decoded
@@ -802,23 +802,23 @@ TrioSetLocale(void)
       if ((internalLocaleValues->decimal_point) &&
 	  (internalLocaleValues->decimal_point[0] != NIL))
 	{
-	  StrCopyMax(internalDecimalPoint,
-		     sizeof(internalDecimalPoint),
-		     internalLocaleValues->decimal_point);
+	  trio_copy_max(internalDecimalPoint,
+			sizeof(internalDecimalPoint),
+			internalLocaleValues->decimal_point);
 	}
       if ((internalLocaleValues->thousands_sep) &&
 	  (internalLocaleValues->thousands_sep[0] != NIL))
 	{
-	  StrCopyMax(internalThousandSeparator,
-		     sizeof(internalThousandSeparator),
-		     internalLocaleValues->thousands_sep);
+	  trio_copy_max(internalThousandSeparator,
+			sizeof(internalThousandSeparator),
+			internalLocaleValues->thousands_sep);
 	}
       if ((internalLocaleValues->grouping) &&
 	  (internalLocaleValues->grouping[0] != NIL))
 	{
-	  StrCopyMax(internalGrouping,
-		     sizeof(internalGrouping),
-		     internalLocaleValues->grouping);
+	  trio_copy_max(internalGrouping,
+			sizeof(internalGrouping),
+			internalLocaleValues->grouping);
 	}
     }
 }
@@ -837,7 +837,7 @@ TrioGetPosition(TRIO_CONST char *format,
   int number = 0;
   int index = *indexPointer;
 
-  number = (int)StrToLong(&format[index], &tmpformat, BASE_DECIMAL);
+  number = (int)trio_to_long(&format[index], &tmpformat, BASE_DECIMAL);
   index = (int)(tmpformat - format);
   if ((number != 0) && (QUALIFIER_POSITION == format[index++]))
     {
@@ -868,7 +868,7 @@ TrioFindNamespace(TRIO_CONST char *name, trio_userdef_t **prev)
   for (def = internalUserDef; def; def = def->next)
     {
       /* Case-sensitive string comparison */
-      if (StrEqualCase(def->name, name))
+      if (trio_equal_case(def->name, name))
 	break;
       
       if (prev)
@@ -1052,7 +1052,9 @@ TrioParse(int type,
 			}
 		      else
 			{
-			  precision = StrToLong(&format[index], &tmpformat, BASE_DECIMAL);
+			  precision = trio_to_long(&format[index],
+						   &tmpformat,
+						   BASE_DECIMAL);
 			  index = (int)(tmpformat - format);
 			}
 		    }
@@ -1091,7 +1093,9 @@ TrioParse(int type,
 			}
 		      else
 			{
-			  base = StrToLong(&format[index], &tmpformat, BASE_DECIMAL);
+			  base = trio_to_long(&format[index],
+					      &tmpformat,
+					      BASE_DECIMAL);
 			  if (base > MAX_BASE)
 			    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
 			  index = (int)(tmpformat - format);
@@ -1152,7 +1156,9 @@ TrioParse(int type,
 		  /* &format[index - 1] is used to "rewind" the read
 		   * character from format
 		   */
-		  width = StrToLong(&format[index - 1], &tmpformat, BASE_DECIMAL);
+		  width = trio_to_long(&format[index - 1],
+				       &tmpformat,
+				       BASE_DECIMAL);
 		  index = (int)(tmpformat - format);
 		  break;
 
@@ -1531,9 +1537,9 @@ TrioParse(int type,
 			max = (unsigned int)(&format[index] - tmpformat);
 			if (max > MAX_USER_DATA)
 			  max = MAX_USER_DATA;
-			StrCopyMax(parameters[pos].user_data,
-				   max,
-				   tmpformat);
+			trio_copy_max(parameters[pos].user_data,
+				      max,
+				      tmpformat);
 			break; /* while */
 		      }
 		    if (ch == SPECIFIER_USER_DEFINED_SEPARATOR)
@@ -1543,9 +1549,9 @@ TrioParse(int type,
 			max = (int)(&format[index] - tmpformat);
 			if (max > MAX_USER_NAME)
 			  max = MAX_USER_NAME;
-			StrCopyMax(parameters[pos].user_name,
-				   max,
-				   tmpformat);
+			trio_copy_max(parameters[pos].user_name,
+				      max,
+				      tmpformat);
 			tmpformat = (char *)&format[index];
 		      }
 		  }
@@ -1829,13 +1835,16 @@ TrioParse(int type,
 	      else
 		{
 		  if (argarray == NULL)
-		    parameters[i].data.longdoubleNumber = (long double)va_arg(arglist, double);
+		    parameters[i].data.longdoubleNumber =
+		      (long double)va_arg(arglist, double);
 		  else
 		    {
 		      if (parameters[i].flags & FLAGS_SHORT)
-			parameters[i].data.longdoubleNumber = (long double)(*((float *)argarray[num]));
+			parameters[i].data.longdoubleNumber =
+			  (long double)(*((float *)argarray[num]));
 		      else
-			parameters[i].data.longdoubleNumber = (long double)(long double)(*((double *)argarray[num]));
+			parameters[i].data.longdoubleNumber =
+			  (long double)(long double)(*((double *)argarray[num]));
 		    }
 		}
 	    }
@@ -1892,7 +1901,7 @@ TrioWriteNumber(trio_class_t *self,
 
   assert(VALID(self));
   assert(VALID(self->OutStream));
-  assert((base >= MIN_BASE && base <= MAX_BASE) || (base == NO_BASE));
+  assert(((base >= MIN_BASE) && (base <= MAX_BASE)) || (base == NO_BASE));
 
   digits = (flags & FLAGS_UPPER) ? internalDigitsUpper : internalDigitsLower;
 
@@ -1930,7 +1939,7 @@ TrioWriteNumber(trio_class_t *self,
 	   * to the most significant digit, so we have to copy the
 	   * thousand separator backwards
 	   */
-	  length = StrLength(internalThousandSeparator);
+	  length = trio_length(internalThousandSeparator);
 	  if (((int)(pointer - buffer) - length) > 0)
 	    {
 	      p = &internalThousandSeparator[length - 1];
@@ -2133,7 +2142,7 @@ TrioWriteString(trio_class_t *self,
     }
   else
     {
-      length = StrLength(string);
+      length = trio_length(string);
     }
   if ((NO_PRECISION != precision) &&
       (precision < length))
@@ -2206,7 +2215,7 @@ TrioWriteWideStringCharacter(trio_class_t *self,
 #endif /* TRIO_WIDECHAR */
 
 /*************************************************************************
- * TrioWriteString
+ * TrioWriteWideString
  *
  * Description:
  *  Output a wide character string as a multi-byte string
@@ -2465,7 +2474,7 @@ TrioWriteDouble(trio_class_t *self,
   /* Insert decimal point */
   if ((flags & FLAGS_ALTERNATIVE) || ((fractionDigits > 0) && !onlyzero))
     {
-      i = StrLength(internalDecimalPoint);
+      i = trio_length(internalDecimalPoint);
       while (i> 0)
 	{
 	  *(--numberPointer) = internalDecimalPoint[--i];
@@ -2491,7 +2500,7 @@ TrioWriteDouble(trio_class_t *self,
 	   * to the most significant digit, so we have to copy the
 	   * thousand separator backwards
 	   */
-	  length = StrLength(internalThousandSeparator);
+	  length = trio_length(internalThousandSeparator);
 	  integerDigits += length;
 	  if (((int)(numberPointer - numberBuffer) - length) > 0)
 	    {
@@ -2536,7 +2545,7 @@ TrioWriteDouble(trio_class_t *self,
    *  sign + integer part + thousands separators + decimal point
    *  + fraction + exponent
    */
-  expectedWidth = StrLength(numberPointer);
+  expectedWidth = trio_length(numberPointer);
   if (isNegative || (flags & FLAGS_SHOWSIGN))
     expectedWidth += sizeof("-") - 1;
   if (exponentDigits > 0)
@@ -2621,6 +2630,9 @@ TrioWriteDouble(trio_class_t *self,
 
 /*************************************************************************
  * TrioFormatProcess
+ *
+ * Description:
+ *  This is the main engine for formatting output
  */
 TRIO_PRIVATE int
 TrioFormatProcess(trio_class_t *data,
@@ -2842,7 +2854,7 @@ TrioFormatProcess(trio_class_t *data,
 
 #if defined(FORMAT_ERRNO)
 		case FORMAT_ERRNO:
-		  string = StrError(parameters[i].data.errorNumber);
+		  string = trio_error(parameters[i].data.errorNumber);
 		  if (string)
 		    {
 		      TrioWriteString(data,
@@ -2934,9 +2946,6 @@ TrioFormatRef(trio_reference_t *reference,
 
 /*************************************************************************
  * TrioFormat
- *
- * Description:
- *  This is the main engine for formatting output
  */
 TRIO_PRIVATE int
 TrioFormat(void *destination,
@@ -3125,7 +3134,7 @@ TrioOutStreamStringDynamic(trio_class_t *self,
       self->committed++;
     }
  error:
-  /* Processed must always be increased */
+  /* The processed variable must always be increased */
   self->processed++;
 }
 
@@ -3385,7 +3394,7 @@ trio_snprintfcat(char *buffer,
   assert(VALID(buffer));
   assert(VALID(format));
 
-  buf_len = strlen(buffer);
+  buf_len = trio_length(buffer);
   buffer = &buffer[buf_len];
 
   status = TrioFormat(&buffer, bufferSize - 1 - buf_len,
@@ -3406,7 +3415,7 @@ trio_vsnprintfcat(char *buffer,
   assert(VALID(buffer));
   assert(VALID(format));
 
-  buf_len = strlen(buffer);
+  buf_len = trio_length(buffer);
   buffer = &buffer[buf_len];
   status = TrioFormat(&buffer, bufferSize - 1 - buf_len,
 		      TrioOutStreamStringMax, format, args, NULL);
@@ -3563,11 +3572,11 @@ trio_register(trio_callback_t callback,
       /* Handle built-in namespaces */
       if (name[0] == ':')
 	{
-	  if (StrEqual(name, ":enter"))
+	  if (trio_equal(name, ":enter"))
 	    {
 	      internalEnterCriticalRegion = callback;
 	    }
-	  else if (StrEqual(name, ":leave"))
+	  else if (trio_equal(name, ":leave"))
 	    {
 	      internalLeaveCriticalRegion = callback;
 	    }
@@ -3575,7 +3584,7 @@ trio_register(trio_callback_t callback,
 	}
       
       /* Bail out if namespace is too long */
-      if (StrLength(name) >= MAX_USER_NAME)
+      if (trio_length(name) >= MAX_USER_NAME)
 	return NULL;
       
       /* Bail out if namespace already is registered */
@@ -3602,7 +3611,7 @@ trio_register(trio_callback_t callback,
       def->callback = callback;
       def->name = (name == NULL)
 	? NULL
-	: StrDuplicate(name);
+	: trio_duplicate(name);
       def->next = NULL;
 
       if (internalLeaveCriticalRegion)
@@ -3639,7 +3648,7 @@ trio_unregister(void *handle)
 	  if (internalLeaveCriticalRegion)
 	    (void)internalLeaveCriticalRegion(NULL);
 	}
-      StrFree(self->name);
+      trio_free(self->name);
     }
   TRIO_FREE(self);
 }
@@ -4205,7 +4214,7 @@ TrioGetCollation(void)
       for (j = 0; j < MAX_CHARACTER_CLASS; j++)
 	{
 	  second[0] = (char)j;
-	  if (StrEqualLocale(first, second))
+	  if (trio_equal_locale(first, second))
 	    internalCollationArray[i][k++] = (char)j;
 	}
       internalCollationArray[i][k] = NIL;
@@ -4360,88 +4369,88 @@ TrioGetCharacterClass(TRIO_CONST char *format,
 	  
 	    case QUALIFIER_COLON: /* Character class expressions */
 	  
-	      if (StrEqualMax(CLASS_ALNUM, sizeof(CLASS_ALNUM) - 1,
-			      &format[index]))
+	      if (trio_equal_max(CLASS_ALNUM, sizeof(CLASS_ALNUM) - 1,
+				 &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isalnum(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_ALNUM) - 1;
 		}
-	      else if (StrEqualMax(CLASS_ALPHA, sizeof(CLASS_ALPHA) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_ALPHA, sizeof(CLASS_ALPHA) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isalpha(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_ALPHA) - 1;
 		}
-	      else if (StrEqualMax(CLASS_CNTRL, sizeof(CLASS_CNTRL) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_CNTRL, sizeof(CLASS_CNTRL) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (iscntrl(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_CNTRL) - 1;
 		}
-	      else if (StrEqualMax(CLASS_DIGIT, sizeof(CLASS_DIGIT) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_DIGIT, sizeof(CLASS_DIGIT) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isdigit(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_DIGIT) - 1;
 		}
-	      else if (StrEqualMax(CLASS_GRAPH, sizeof(CLASS_GRAPH) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_GRAPH, sizeof(CLASS_GRAPH) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isgraph(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_GRAPH) - 1;
 		}
-	      else if (StrEqualMax(CLASS_LOWER, sizeof(CLASS_LOWER) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_LOWER, sizeof(CLASS_LOWER) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (islower(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_LOWER) - 1;
 		}
-	      else if (StrEqualMax(CLASS_PRINT, sizeof(CLASS_PRINT) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_PRINT, sizeof(CLASS_PRINT) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isprint(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_PRINT) - 1;
 		}
-	      else if (StrEqualMax(CLASS_PUNCT, sizeof(CLASS_PUNCT) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_PUNCT, sizeof(CLASS_PUNCT) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (ispunct(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_PUNCT) - 1;
 		}
-	      else if (StrEqualMax(CLASS_SPACE, sizeof(CLASS_SPACE) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_SPACE, sizeof(CLASS_SPACE) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isspace(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_SPACE) - 1;
 		}
-	      else if (StrEqualMax(CLASS_UPPER, sizeof(CLASS_UPPER) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_UPPER, sizeof(CLASS_UPPER) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isupper(i))
 		      characterclass[i]++;
 		  index += sizeof(CLASS_UPPER) - 1;
 		}
-	      else if (StrEqualMax(CLASS_XDIGIT, sizeof(CLASS_XDIGIT) - 1,
-				   &format[index]))
+	      else if (trio_equal_max(CLASS_XDIGIT, sizeof(CLASS_XDIGIT) - 1,
+				      &format[index]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isxdigit(i))
@@ -4858,8 +4867,8 @@ TrioReadDouble(trio_class_t *self,
   TrioSkipWhitespaces(self);
   
   /*
-   * Read entire double number from stream. StrToDouble requires a
-   * string as input, but InStream can be anything, so we have to
+   * Read entire double number from stream. trio_to_double requires
+   * a string as input, but InStream can be anything, so we have to
    * collect all characters.
    */
   ch = self->current;
@@ -4890,15 +4899,15 @@ TrioReadDouble(trio_class_t *self,
       doubleString[index] = NIL;
 
       /* Case insensitive string comparison */
-      if (StrEqual(&doubleString[start], INFINITE_UPPER) ||
-	  StrEqual(&doubleString[start], LONG_INFINITE_UPPER))
+      if (trio_equal(&doubleString[start], INFINITE_UPPER) ||
+	  trio_equal(&doubleString[start], LONG_INFINITE_UPPER))
 	{
 	  *target = ((start == 1 && doubleString[0] == '-'))
 	    ? trio_ninf()
 	    : trio_pinf();
 	  return TRUE;
 	}
-      if (StrEqual(doubleString, NAN_LOWER))
+      if (trio_equal(doubleString, NAN_UPPER))
 	{
 	  /* NaN must not have a preceeding + nor - */
 	  *target = trio_nan();
@@ -4981,11 +4990,11 @@ TrioReadDouble(trio_class_t *self,
     return FALSE;
   
   if (flags & FLAGS_LONGDOUBLE)
-/*     *longdoublePointer = StrToLongDouble()*/
+/*     *longdoublePointer = trio_to_long_double()*/
     return FALSE; /* FIXME: Remove when long double is implemented */
   else
     {
-      *target = StrToDouble(doubleString, NULL);
+      *target = trio_to_double(doubleString, NULL);
     }
   return TRUE;
 }
@@ -5024,7 +5033,7 @@ TrioReadPointer(trio_class_t *self,
 			  0,
 			  sizeof(internalNullString) - 1))
     {  
-      if (StrEqualCase(buffer, internalNullString))
+      if (trio_equal_case(buffer, internalNullString))
 	{
 	  if (target)
 	    *target = NULL;

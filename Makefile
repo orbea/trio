@@ -1,6 +1,6 @@
 CFLAGS	= -g -DDEBUG -Wall
 #CFLAGS	= -O2
-OBJS	= trio.o trionan.o strio.o
+OBJS	= triostr.o trio.o trionan.o
 TARGETLIB	= libtrio.a
 LDFLAGS	= -L. -ltrio -lm
 DOCS	= \
