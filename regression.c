@@ -452,6 +452,43 @@ int VerifyStrings(void)
     nerrors++;
   if (trio_match_case(buffer, "* ME *"))
     nerrors++;
+
+  trio_upper(buffer);
+  if (!trio_equal_case(buffer, "FIND ME NOW"))
+    nerrors++;
+  trio_lower(buffer);
+  if (!trio_equal_case(buffer, "find me now"))
+    nerrors++;
+  
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
+int VerifyDynamicStrings(void)
+{
+  int nerrors = 0;
+  trio_string_t *string;
+
+  string = trio_xstring_duplicate("Find me now");
+  if (string == NULL) {
+    nerrors++;
+    goto error;
+  }
+  if (!trio_xstring_equal(string, "FIND ME NOW"))
+    nerrors++;
+  if (!trio_xstring_append(string, " and again") ||
+      !trio_xstring_equal(string, "FIND ME NOW AND AGAIN"))
+    nerrors++;
+  if (!trio_xstring_contains(string, "me"))
+    nerrors++;
+  if (!trio_xstring_contains(string, "ME"))
+    nerrors++;
+  
+ error:
+  if (string)
+    trio_string_destroy(string);
   
   return nerrors;
 }
@@ -467,6 +504,9 @@ int main(void)
 
   printf("Verifying strings\n");
   nerrors += VerifyStrings();
+  
+  printf("Verifying dynamic strings\n");
+  nerrors += VerifyDynamicStrings();
   
   printf("Verifying formatting\n");
   nerrors += VerifyFormatting();

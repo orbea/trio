@@ -123,21 +123,21 @@ trio_duplicate_max(const char *source,
 		   size_t max)
 {
   char *target;
-  size_t len;
+  size_t length;
 
   assert(source);
   assert(max > 0);
 
   /* Make room for string plus a terminating zero */
-  len = trio_length(source) + 1;
-  if (len > max)
+  length = trio_length(source) + 1;
+  if (length > max)
     {
-      len = max;
+      length = max;
     }
-  target = trio_alloc(len);
+  target = trio_alloc(length);
   if (target)
     {
-      trio_copy_max(target, len, source);
+      trio_copy_max(target, length, source);
     }
   return target;
 }
@@ -317,6 +317,17 @@ trio_hash(const char *string,
 }
 
 /*************************************************************************
+ * trio_lower
+ */
+TRIO_PUBLIC int
+trio_lower(char *target)
+{
+  assert(target);
+
+  return trio_span_function(target, target, tolower);
+}
+
+/*************************************************************************
  * trio_match
  */
 TRIO_PUBLIC int
@@ -398,19 +409,19 @@ trio_match_case(char *string,
  * Untested
  */
 TRIO_PUBLIC size_t
-trio_span_function(char *source,
+trio_span_function(char *target,
+		   const char *source,
 		   int (*Function)(int))
 {
   size_t count = 0;
 
+  assert(target);
   assert(source);
   assert(Function);
   
   while (*source != NIL)
     {
-      if (Function(*source))
-	break; /* while */
-      source++;
+      *target++ = Function(*source++);
       count++;
     }
   return count;
@@ -599,17 +610,9 @@ trio_to_float(const char *source,
 TRIO_PUBLIC int
 trio_upper(char *target)
 {
-  int i = 0;
-
   assert(target);
-  
-  while (NIL != *target)
-    {
-      *target = toupper((int)*target);
-      target++;
-      i++;
-    }
-  return i;
+
+  return trio_span_function(target, target, toupper);
 }
 
 /*************************************************************************
@@ -638,20 +641,29 @@ TrioStringAlloc(void)
 
 /*************************************************************************
  * TrioStringGrow
+ *
+ * The size of the string will be increased by 'delta' characters. If
+ * 'delta' is zero, the size will be doubled.
  */
-TRIO_PRIVATE void
-TrioStringGrow(trio_string_t *self)
+TRIO_PRIVATE BOOLEAN_T
+TrioStringGrow(trio_string_t *self, size_t delta)
 {
+  BOOLEAN_T status = FALSE;
   char *new_buffer;
   size_t new_size;
+
+  new_size = (delta == 0)
+    ? self->allocated * 2
+    : self->allocated + delta;
   
-  new_size = self->allocated * 2;
   new_buffer = (char *)TRIO_REALLOC(self->buffer, new_size);
   if (new_buffer)
     {
       self->buffer = new_buffer;
       self->allocated = new_size;
+      status = TRUE;
     }
+  return status;
 }
 
 /*************************************************************************
@@ -665,16 +677,16 @@ trio_string_create(int initial_size)
   self = TrioStringAlloc();
   if (self)
     {
-      self->buffer = (char *)trio_alloc(initial_size);
-      if (self->buffer == NULL)
-	{
-	  trio_string_destroy(self);
-	  self = NULL;
-	}
-      else
+      if (TrioStringGrow(self,
+			 (size_t)((initial_size > 0) ? initial_size : 1)))
 	{
 	  self->buffer[0] = (char)0;
 	  self->allocated = initial_size;
+	}
+      else
+	{
+	  trio_string_destroy(self);
+	  self = NULL;
 	}
     }
   return self;
@@ -755,6 +767,58 @@ trio_string_terminate(trio_string_t *self)
 }
 
 /*************************************************************************
+ * trio_string_append
+ */
+TRIO_PUBLIC int
+trio_string_append(trio_string_t *self, trio_string_t *other)
+{
+  int delta;
+  
+  assert(self);
+  assert(other);
+
+  delta = self->allocated - (self->length + other->length);
+  if (delta < 0)
+    {
+      if (!TrioStringGrow(self, delta))
+	goto error;
+    }
+  trio_append(&self->buffer[self->length], other->buffer);
+  self->length += other->length;
+  return TRUE;
+  
+ error:
+  return FALSE;
+}
+
+/*************************************************************************
+ * trio_string_append
+ */
+TRIO_PUBLIC int
+trio_xstring_append(trio_string_t *self, const char *other)
+{
+  size_t length;
+  int delta;
+  
+  assert(self);
+  assert(other);
+
+  length = trio_length(other);
+  delta = self->allocated - (self->length + length);
+  if (delta < 0)
+    {
+      if (!TrioStringGrow(self, delta))
+	goto error;
+    }
+  trio_append(&self->buffer[self->length], other);
+  self->length += length;
+  return TRUE;
+  
+ error:
+  return FALSE;
+}
+
+/*************************************************************************
  * trio_string_append_char
  */
 TRIO_PUBLIC void
@@ -764,13 +828,37 @@ trio_string_append_char(trio_string_t *self, char character)
 
   if (self->length > self->allocated)
     {
-      TrioStringGrow(self);
+      if (!TrioStringGrow(self, 0))
+	goto error;
     }
-  if (self->length <= self->allocated)
-    {
-      self->buffer[self->length] = character;
-      self->length++;
-    }
+  self->buffer[self->length] = character;
+  self->length++;
+ error:
+  ;
+}
+
+/*************************************************************************
+ * trio_string_contains
+ */
+TRIO_PUBLIC int
+trio_string_contains(trio_string_t *self, trio_string_t *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_contains(self->buffer, other->buffer);
+}
+
+/*************************************************************************
+ * trio_xstring_contains
+ */
+TRIO_PUBLIC int
+trio_xstring_contains(trio_string_t *self, const char *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_contains(self->buffer, other);
 }
 
 /*************************************************************************
@@ -813,6 +901,30 @@ trio_xstring_duplicate(const char *other)
 	: 0;
     }
   return self;
+}
+
+/*************************************************************************
+ * trio_string_equal
+ */
+TRIO_PUBLIC int
+trio_string_equal(trio_string_t *self, trio_string_t *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_equal(self->buffer, other->buffer);
+}
+
+/*************************************************************************
+ * trio_xstring_equal
+ */
+TRIO_PUBLIC int
+trio_xstring_equal(trio_string_t *self, const char *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_equal(self->buffer, other);
 }
 
 /*************************************************************************
