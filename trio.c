@@ -2761,6 +2761,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  number /= powl(dblBase, (trio_long_double_t)exponent);
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
+	  if (isHex)
+	    uExponent *= 4; /* log16(2) */
 	  /* No thousand separators */
 	  flags &= ~FLAGS_QUOTE;
 	}
@@ -2793,6 +2795,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  exponent++;
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
+	  if (isHex)
+	    uExponent *= 4; /* log16(2) */
 	  workNumber = (number + 0.5 / dblFractionBase) / dblBase;
 	  integerNumber = floorl(workNumber);
 	  fractionNumber = workNumber - integerNumber;
@@ -2849,7 +2853,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     {
       exponentDigits = (uExponent == 0)
 	? 1
-	: (int)ceil(TrioLogarithm((double)(uExponent + 1), base));
+	: (int)ceil(TrioLogarithm((double)(uExponent + 1),
+				  (isHex) ? 10.0 : base));
     }
   else
     exponentDigits = 0;
@@ -3015,6 +3020,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       if (requireTwoDigitExponent)
         self->OutStream(self, '0');
 
+      if (isHex)
+	base = 10.0;
       exponentBase = (int)TrioPower(base, exponentDigits - 1);
       for (i = 0; i < exponentDigits; i++)
 	{
@@ -5930,8 +5937,7 @@ TRIO_ARGS4((self, target, flags, width),
 	      doubleString[index++] = (char)ch;
 	      self->InStream(self, &ch);
 	    }
-	  while ((isHex ? isxdigit(ch) : isdigit(ch)) &&
-		 (index - start < width))
+	  while (isdigit(ch) && (index - start < width))
 	    {
 	      doubleString[index++] = (char)ch;
 	      self->InStream(self, &ch);

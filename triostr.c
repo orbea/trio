@@ -983,12 +983,14 @@ TRIO_ARGS2((source, endp),
 		}
 	      while (isdigit((int)*source))
 		{
-		  exponent *= (int)base;
+		  exponent *= 10;
 		  exponent += (*source - '0');
 		  source++;
 		}
 	    }
 	}
+      /* For later use with exponent */
+      base = 2.0;
     }
   else /* Then try normal decimal floats */
     {
