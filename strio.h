@@ -33,7 +33,7 @@ enum {
   STRIO_HASH_TWOSIGNED = TRIO_HASH_TWOSIGNED
 };
 
-#define StrAlloc(n) trio_alloc(n)
+#define StrAlloc(n) trio_create(n)
 #define StrAppend(x,y) trio_append((x),(y))
 #define StrAppendMax(x,n,y) trio_append_max((x),(n),(y))
 #define StrContains(x,y) trio_contains((x),(y))
@@ -47,7 +47,7 @@ enum {
 #define StrEqualLocale(x,y) trio_equal_locale((x),(y))
 #define StrEqualMax(x,n,y) trio_equal_max((x),(n),(y))
 #define StrError(n) trio_error(n)
-#define StrFree(x) trio_free(x)
+#define StrFree(x) trio_destroy(x)
 #define StrFormat trio_sprintf
 #define StrFormatAlloc trio_aprintf
 #define StrFormatAppendMax trio_snprintfcat

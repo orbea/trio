@@ -36,13 +36,13 @@ enum {
  */
 
 #if defined(NDEBUG) || defined(TRIO_COMPILER_DECC)
-#define trio_alloc(n) (char *)TRIO_MALLOC(n)
+#define trio_create(n) (char *)TRIO_MALLOC(n)
+#define trio_destroy(x) TRIO_FREE(x)
 #define trio_append(x,y) strcat((x), (y))
 #define trio_contains(x,y) (0 != strstr((x), (y)))
 #define trio_copy(x,y) strcpy((x), (y))
 #define trio_index(x,y) strchr((x), (y))
 #define trio_index_last(x,y) strrchr((x), (y))
-#define trio_free(x) TRIO_FREE(x)
 #define trio_length(x) strlen((x))
 #define trio_substring(x,y) strstr((x), (y))
 #define trio_tokenize(x,y) strtok((x), (y))
@@ -58,9 +58,12 @@ enum {
   * so it will use the un-asserted functions above for the
   * debugging case too.
   */
-#define trio_alloc(n) \
+#define trio_create(n) \
      (assert((n) > 0),\
       (char *)TRIO_MALLOC(n))
+#define trio_destroy(x) \
+     (assert((x) != NULL),\
+      TRIO_FREE(x))
 #define trio_append(x,y) \
      (assert((x) != NULL),\
       assert((y) != NULL),\
@@ -79,9 +82,6 @@ enum {
 #define trio_index_last(x,c) \
      (assert((x) != NULL),\
       strrchr((x), (c)))
-#define trio_free(x) \
-     (assert((x) != NULL),\
-      TRIO_FREE(x))
 #define trio_length(x) \
      (assert((x) != NULL),\
       strlen((x)))
@@ -140,20 +140,34 @@ char *trio_string_extract(trio_string_t *self);
 void trio_string_terminate(trio_string_t *self);
 
 int trio_string_append(trio_string_t *self, trio_string_t *other);
-int trio_xstring_append(trio_string_t *self, const char *other);
-void trio_string_append_char(trio_string_t *self, char character);
 int trio_string_contains(trio_string_t *self, trio_string_t *other);
-int trio_xstring_contains(trio_string_t *self, const char *other);
+int trio_string_copy(trio_string_t *self, trio_string_t *other);
 trio_string_t *trio_string_duplicate(trio_string_t *other);
-trio_string_t *trio_xstring_duplicate(const char *other);
 int trio_string_equal(trio_string_t *self, trio_string_t *other);
-int trio_xstring_equal(trio_string_t *self, const char *other);
+int trio_string_equal_max(trio_string_t *self, size_t max, trio_string_t *second);
 int trio_string_equal_case(trio_string_t *self, trio_string_t *other);
-int trio_xstring_equal_case(trio_string_t *self, const char *other);
+int trio_string_equal_case_max(trio_string_t *self, size_t max, trio_string_t *other);
+size_t trio_string_format_date_max(trio_string_t *self, size_t max, const char *format, const struct tm *datetime);
+char *trio_string_index(trio_string_t *self, int character);
+char *trio_string_index_last(trio_string_t *self, int character);
 int trio_string_length(trio_string_t *self);
+int trio_string_lower(trio_string_t *self);
 int trio_string_match(trio_string_t *self, trio_string_t *other);
-int trio_xstring_match(trio_string_t *self, const char *other);
 int trio_string_match_case(trio_string_t *self, trio_string_t *other);
+char *trio_string_substring(trio_string_t *self, trio_string_t *other);
+int trio_string_upper(trio_string_t *self);
+
+void trio_xstring_append_char(trio_string_t *self, char character);
+int trio_xstring_append(trio_string_t *self, const char *other);
+int trio_xstring_contains(trio_string_t *self, const char *other);
+int trio_xstring_copy(trio_string_t *self, const char *other);
+trio_string_t *trio_xstring_duplicate(const char *other);
+int trio_xstring_equal(trio_string_t *self, const char *other);
+int trio_xstring_equal_max(trio_string_t *self, size_t max, const char *other);
+int trio_xstring_equal_case(trio_string_t *self, const char *other);
+int trio_xstring_equal_case_max(trio_string_t *self, size_t max, const char *other);
+int trio_xstring_match(trio_string_t *self, const char *other);
 int trio_xstring_match_case(trio_string_t *self, const char *other);
+char *trio_xstring_substring(trio_string_t *self, const char *other);
 
 #endif /* TRIO_TRIOSTR_H */

@@ -3089,8 +3089,8 @@ TrioOutStreamStringDynamic(trio_class_t *self,
 
   if (self->error == 0)
     {
-      trio_string_append_char((trio_string_t *)self->location,
-			      (char)output);
+      trio_xstring_append_char((trio_string_t *)self->location,
+			       (char)output);
       self->committed++;
     }
   /* The processed variable must always be increased */
@@ -3466,7 +3466,7 @@ trio_asprintf(char **result,
 	   * therefore no memory has been allocated, but we must to
 	   * allocate and return an empty string.
 	   */
-	  work = trio_alloc(sizeof(char));
+	  work = trio_create(sizeof(char));
 	  if (work == NULL)
 	    {
 	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
@@ -3505,7 +3505,7 @@ trio_vasprintf(char **result,
 	}
       if (trio_string_length(info) == 0)
 	{
-	  char *work = trio_alloc(sizeof(char));
+	  char *work = trio_create(sizeof(char));
 	  if (work == NULL)
 	    {
 	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
@@ -3623,7 +3623,7 @@ trio_unregister(void *handle)
 	  if (internalLeaveCriticalRegion)
 	    (void)internalLeaveCriticalRegion(NULL);
 	}
-      trio_free(self->name);
+      trio_destroy(self->name);
     }
   TRIO_FREE(self);
 }
