@@ -627,7 +627,7 @@ static BOOLEAN_T internalDigitsUnconverted = TRUE;
 static int internalDigitArray[128];
 #if TRIO_EXTENSION
 static BOOLEAN_T internalCollationUnconverted = TRUE;
-static char internalCollationArray[256][256];
+static char internalCollationArray[MAX_CHARACTER_CLASS][MAX_CHARACTER_CLASS];
 #endif
 
 static volatile trio_callback_t internalEnterCriticalRegion = NULL;
@@ -4114,11 +4114,11 @@ TrioGetCollation()
   /* This is computational expensive */
   first[1] = NIL;
   second[1] = NIL;
-  for (i = 0; i < 256; i++)
+  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
     {
       k = 0;
       first[0] = (char)i;
-      for (j = 0; j < 256; j++)
+      for (j = 0; j < MAX_CHARACTER_CLASS; j++)
 	{
 	  second[0] = (char)j;
 	  if (strcoll(first, second) == 0)
@@ -4229,8 +4229,8 @@ TrioGetCharacterClass(const char *format,
 	case QUALIFIER_EQUAL: /* Equivalence class expressions */
 	  {
 	    int after;
-	    int j;
-	    int k;
+	    unsigned int j;
+	    unsigned int k;
 	    
 	    /* Find matching sign */
 	    for (after = index + 1;
@@ -4250,7 +4250,7 @@ TrioGetCharacterClass(const char *format,
 		for (i = index + 1; i < after; i++)
 		  {
 		    /* Mark any equivalent character */
-		    k = (int)format[i];
+		    k = (unsigned int)format[i];
 		    for (j = 0; internalCollationArray[k][j] != NIL; j++)
 		      characterclass[(int)internalCollationArray[k][j]]++;
 		  }
