@@ -29,6 +29,10 @@
 #include "triodef.h"
 #include "triop.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {
   TRIO_HASH_NONE = 0,
   TRIO_HASH_PLAIN,
@@ -46,194 +50,179 @@ enum {
  * Dependencies
  */
 
-/* Always defined */
+#if defined(TRIO_EMBED_STRING)
 
-#define TRIO_FUNC_LENGTH
-#define TRIO_FUNC_TO_LONG
-
-/* Defined when not embedded */
-
-#if !defined(TRIO_EMBED_STRING)
-
-#define TRIO_FUNC_APPEND
-#define TRIO_FUNC_APPEND_MAX
-#define TRIO_FUNC_CONTAINS
-#define TRIO_FUNC_COPY
-#define TRIO_FUNC_DUPLICATE_MAX
-#define TRIO_FUNC_EQUAL_CASE_MAX
-#define TRIO_FUNC_FORMAT_DATE_MAX
-#define TRIO_FUNC_HASH
-#define TRIO_FUNC_INDEX
-#define TRIO_FUNC_INDEX_LAST
-#define TRIO_FUNC_LOWER
-#define TRIO_FUNC_MATCH
-#define TRIO_FUNC_MATCH_CASE
-#define TRIO_FUNC_SPAN_FUNCTION
-#define TRIO_FUNC_SUBSTRING
-#define TRIO_FUNC_SUBSTRING_MAX
-#define TRIO_FUNC_TO_LOWER
-#define TRIO_FUNC_TO_UNSIGNED_LONG
-#define TRIO_FUNC_TOKENIZE
-#define TRIO_FUNC_UPPER
-
-#define TRIO_FUNC_STRING_APPEND
-#define TRIO_FUNC_STRING_CONTAINS
-#define TRIO_FUNC_STRING_COPY
-#define TRIO_FUNC_STRING_CREATE
-#define TRIO_FUNC_STRING_DUPLICATE
-#define TRIO_FUNC_STRING_EQUAL
-#define TRIO_FUNC_STRING_EQUAL_CASE
-#define TRIO_FUNC_STRING_EQUAL_CASE_MAX
-#define TRIO_FUNC_STRING_EQUAL_MAX
-#define TRIO_FUNC_STRING_FORMAT_DATE_MAX
-#define TRIO_FUNC_STRING_GET
-#define TRIO_FUNC_STRING_INDEX
-#define TRIO_FUNC_STRING_INDEX_LAST
-#define TRIO_FUNC_STRING_LENGTH
-#define TRIO_FUNC_STRING_LOWER
-#define TRIO_FUNC_STRING_MATCH
-#define TRIO_FUNC_STRING_MATCH_CASE
-#define TRIO_FUNC_STRING_SUBSTRING
-#define TRIO_FUNC_STRING_UPPER
-
-#define TRIO_FUNC_XSTRING_APPEND
-#define TRIO_FUNC_XSTRING_CONTAINS
-#define TRIO_FUNC_XSTRING_COPY
-#define TRIO_FUNC_XSTRING_EQUAL
-#define TRIO_FUNC_XSTRING_EQUAL_CASE
-#define TRIO_FUNC_XSTRING_EQUAL_CASE_MAX
-#define TRIO_FUNC_XSTRING_EQUAL_MAX
-#define TRIO_FUNC_XSTRING_MATCH
-#define TRIO_FUNC_XSTRING_MATCH_CASE
-#define TRIO_FUNC_XSTRING_SET
-#define TRIO_FUNC_XSTRING_SUBSTRING
-
-#endif
-
-/* Dependent on features or other functions */
-
-#if !defined(TRIO_EMBED_STRING) \
- || TRIO_FEATURE_LOCALE
-# define TRIO_FUNC_COPY_MAX
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || TRIO_FEATURE_DYNAMICSTRING
-# define TRIO_FUNC_XSTRING_DUPLICATE
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || (TRIO_EXTENSION && TRIO_FEATURE_SCANF)
-# define TRIO_FUNC_EQUAL_LOCALE
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || TRIO_FEATURE_ERRNO
-# define TRIO_FUNC_ERROR
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || (TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF)
-# define TRIO_FUNC_TO_DOUBLE
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || (TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF)
-# define TRIO_FUNC_TO_FLOAT
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || TRIO_FEATURE_DYNAMICSTRING
-# define TRIO_FUNC_STRING_EXTRACT
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || TRIO_FEATURE_DYNAMICSTRING
-# define TRIO_FUNC_STRING_TERMINATE
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_XSTRING_SET) \
- || TRIO_FEATURE_USER_DEFINED
-# define TRIO_FUNC_DUPLICATE
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_DUPLICATE) \
- || defined(TRIO_FUNC_DUPLICATE_MAX) \
- || defined(TRIO_FUNC_STRING_DUPLICATE) \
- || defined(TRIO_FUNC_XSTRING_DUPLICATE)
-# define TRIO_FUNC_CREATE
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_STRING_CREATE) \
- || TRIO_FEATURE_DYNAMICSTRING
-# define TRIO_FUNC_STRING_DESTROY
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_STRING_DESTROY) \
- || defined(TRIO_FUNC_XSTRING_SET) \
- || TRIO_FEATURE_USER_DEFINED
-# define TRIO_FUNC_DESTROY
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_EQUAL_LOCALE) \
- || defined(TRIO_FUNC_STRING_EQUAL) \
- || defined(TRIO_FUNC_XSTRING_EQUAL) \
- || TRIO_FEATURE_USER_DEFINED \
- || (TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF)
-# define TRIO_FUNC_EQUAL
-#endif
-
-#if defined(TRIO_FUNC_EQUAL_CASE) \
- || !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_STRING_EQUAL_CASE) \
- || defined(TRIO_FUNC_XSTRING_EQUAL_CASE) \
- || TRIO_FEATURE_USER_DEFINED \
- || TRIO_FEATURE_SCANF
-# if !defined(TRIO_FUNC_EQUAL_CASE)
-#  define TRIO_FUNC_EQUAL_CASE
+/*
+ * The application that triostr is embedded in must define which functions
+ * it uses.
+ *
+ * The following resolves internal dependencies.
+ */
+  
+# if defined(TRIO_FUNC_XSTRING_SET)
+#  if !defined(TRIO_FUNC_DUPLICATE)
+#   define TRIO_FUNC_DUPLICATE
+#  endif
 # endif
-#endif
 
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_SUBSTRING_MAX) \
- || defined(TRIO_FUNC_STRING_EQUAL_MAX) \
- || defined(TRIO_FUNC_XSTRING_EQUAL_MAX) \
- || (TRIO_EXTENSION && TRIO_FEATURE_SCANF)
+# if defined(TRIO_FUNC_DUPLICATE) \
+  || defined(TRIO_FUNC_DUPLICATE_MAX) \
+  || defined(TRIO_FUNC_STRING_DUPLICATE) \
+  || defined(TRIO_FUNC_XSTRING_DUPLICATE)
+#  if !defined(TRIO_FUNC_CREATE)
+#   define TRIO_FUNC_CREATE
+#  endif
+#  if !defined(TRIO_FUNC_COPY_MAX)
+#   define TRIO_FUNC_COPY_MAX
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_STRING_CREATE)
+#  if !defined(TRIO_FUNC_STRING_DESTROY)
+#   define TRIO_FUNC_STRING_DESTROY
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_STRING_DESTROY) \
+  || defined(TRIO_FUNC_XSTRING_SET) \
+  || TRIO_FEATURE_USER_DEFINED
+#  define TRIO_FUNC_DESTROY
+# endif
+
+# if defined(TRIO_FUNC_EQUAL_LOCALE) \
+  || defined(TRIO_FUNC_STRING_EQUAL) \
+  || defined(TRIO_FUNC_XSTRING_EQUAL)
+#  if !defined(TRIO_FUNC_EQUAL)
+#   define TRIO_FUNC_EQUAL
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_EQUAL_CASE) \
+  || defined(TRIO_FUNC_STRING_EQUAL_CASE) \
+  || defined(TRIO_FUNC_XSTRING_EQUAL_CASE)
+#  if !defined(TRIO_FUNC_EQUAL_CASE)
+#   define TRIO_FUNC_EQUAL_CASE
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_SUBSTRING_MAX) \
+  || defined(TRIO_FUNC_STRING_EQUAL_MAX) \
+  || defined(TRIO_FUNC_XSTRING_EQUAL_MAX) \
+  || (TRIO_EXTENSION && TRIO_FEATURE_SCANF)
+#  define TRIO_FUNC_EQUAL_MAX
+# endif
+
+# if defined(TRIO_FUNC_TO_DOUBLE) \
+  || defined(TRIO_FUNC_TO_FLOAT)
+#  if !defined(TRIO_FUNC_TO_LONG_DOUBLE)
+#   define TRIO_FUNC_TO_LONG_DOUBLE
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_EQUAL) \
+  || defined(TRIO_FUNC_EQUAL_MAX) \
+  || defined(TRIO_FUNC_MATCH) \
+  || defined(TRIO_FUNC_TO_LONG_DOUBLE) \
+  || defined(TRIO_FUNC_UPPER)
+#  if !defined(TRIO_FUNC_TO_UPPER)
+#   define TRIO_FUNC_TO_UPPER
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_STRING_TERMINATE)
+#  if !defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
+#   define TRIO_FUNC_XSTRING_APPEND_CHAR
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
+#  if !defined(TRIO_FUNC_STRING_SIZE)
+#   define TRIO_FUNC_STRING_SIZE
+#  endif
+# endif
+
+#else
+
+/*
+ * When triostr is not embedded all all functions are defined.
+ */
+
+# define TRIO_FUNC_APPEND
+# define TRIO_FUNC_APPEND_MAX
+# define TRIO_FUNC_CONTAINS
+# define TRIO_FUNC_COPY
+# define TRIO_FUNC_COPY_MAX
+# define TRIO_FUNC_CREATE
+# define TRIO_FUNC_DESTROY
+# define TRIO_FUNC_DUPLICATE
+# define TRIO_FUNC_DUPLICATE_MAX
+# define TRIO_FUNC_EQUAL
+# define TRIO_FUNC_EQUAL_CASE
+# define TRIO_FUNC_EQUAL_CASE_MAX
+# define TRIO_FUNC_EQUAL_LOCALE
 # define TRIO_FUNC_EQUAL_MAX
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_TO_DOUBLE) \
- || defined(TRIO_FUNC_TO_FLOAT) \
- || (TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF)
+# define TRIO_FUNC_ERROR
+# define TRIO_FUNC_FORMAT_DATE_MAX
+# define TRIO_FUNC_HASH
+# define TRIO_FUNC_INDEX
+# define TRIO_FUNC_INDEX_LAST
+# define TRIO_FUNC_LENGTH
+# define TRIO_FUNC_LOWER
+# define TRIO_FUNC_MATCH
+# define TRIO_FUNC_MATCH_CASE
+# define TRIO_FUNC_SPAN_FUNCTION
+# define TRIO_FUNC_SUBSTRING
+# define TRIO_FUNC_SUBSTRING_MAX
+# define TRIO_FUNC_TO_DOUBLE
+# define TRIO_FUNC_TO_FLOAT
+# define TRIO_FUNC_TO_LONG
 # define TRIO_FUNC_TO_LONG_DOUBLE
-#endif
+# define TRIO_FUNC_TO_LOWER
+# define TRIO_FUNC_TO_UNSIGNED_LONG
+# define TRIO_FUNC_TO_UPPER
+# define TRIO_FUNC_TOKENIZE
+# define TRIO_FUNC_UPPER
 
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_EQUAL) \
- || defined(TRIO_FUNC_EQUAL_MAX) \
- || defined(TRIO_FUNC_MATCH) \
- || defined(TRIO_FUNC_TO_LONG_DOUBLE) \
- || defined(TRIO_FUNC_UPPER) \
- || TRIO_FEATURE_SCANF
-#define TRIO_FUNC_TO_UPPER
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_STRING_TERMINATE) \
- || TRIO_FEATURE_DYNAMICSTRING
-# define TRIO_FUNC_XSTRING_APPEND_CHAR
-#endif
-
-#if !defined(TRIO_EMBED_STRING) \
- || defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
+# define TRIO_FUNC_STRING_APPEND
+# define TRIO_FUNC_STRING_CONTAINS
+# define TRIO_FUNC_STRING_COPY
+# define TRIO_FUNC_STRING_CREATE
+# define TRIO_FUNC_STRING_DESTROY
+# define TRIO_FUNC_STRING_DUPLICATE
+# define TRIO_FUNC_STRING_EQUAL
+# define TRIO_FUNC_STRING_EQUAL_CASE
+# define TRIO_FUNC_STRING_EQUAL_CASE_MAX
+# define TRIO_FUNC_STRING_EQUAL_MAX
+# define TRIO_FUNC_STRING_EXTRACT
+# define TRIO_FUNC_STRING_FORMAT_DATE_MAX
+# define TRIO_FUNC_STRING_GET
+# define TRIO_FUNC_STRING_INDEX
+# define TRIO_FUNC_STRING_INDEX_LAST
+# define TRIO_FUNC_STRING_LENGTH
+# define TRIO_FUNC_STRING_LOWER
+# define TRIO_FUNC_STRING_MATCH
+# define TRIO_FUNC_STRING_MATCH_CASE
 # define TRIO_FUNC_STRING_SIZE
+# define TRIO_FUNC_STRING_SUBSTRING
+# define TRIO_FUNC_STRING_TERMINATE
+# define TRIO_FUNC_STRING_UPPER
+
+# define TRIO_FUNC_XSTRING_APPEND
+# define TRIO_FUNC_XSTRING_APPEND_CHAR
+# define TRIO_FUNC_XSTRING_CONTAINS
+# define TRIO_FUNC_XSTRING_COPY
+# define TRIO_FUNC_XSTRING_DUPLICATE
+# define TRIO_FUNC_XSTRING_EQUAL
+# define TRIO_FUNC_XSTRING_EQUAL_CASE
+# define TRIO_FUNC_XSTRING_EQUAL_CASE_MAX
+# define TRIO_FUNC_XSTRING_EQUAL_MAX
+# define TRIO_FUNC_XSTRING_MATCH
+# define TRIO_FUNC_XSTRING_MATCH_CASE
+# define TRIO_FUNC_XSTRING_SET
+# define TRIO_FUNC_XSTRING_SUBSTRING
+
 #endif
+
 
 /*************************************************************************
  * String functions
@@ -673,6 +662,10 @@ TRIO_PROTO((trio_string_t *self, char *buffer));
 TRIO_STRING_PUBLIC char *
 trio_xstring_substring
 TRIO_PROTO((trio_string_t *self, const char *other));
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* TRIO_TRIOSTR_H */

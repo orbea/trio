@@ -15,14 +15,20 @@
 
 #include "trio.h"
 #include "triop.h"
+#if defined(TRIO_EMBED_NAN)
+# define TRIO_NAN_PUBLIC static
+# define TRIO_FUNC_NINF
+# define TRIO_FUNC_PINF
+# define TRIO_FUNC_NAN
+# define TRIO_FUNC_ISINF
+# define TRIO_FUNC_ISNAN
+#endif
 #include "trionan.h"
-#if defined(TRIO_MINIMAL)
+#if defined(TRIO_EMBED_STRING)
 # define TRIO_STRING_PUBLIC static
 # define TRIO_FUNC_EQUAL_CASE
-# include "triostr.c"
-#else
-# include "triostr.h"
 #endif
+#include "triostr.h"
 #undef printf
 
 #if TRIO_FEATURE_WIDECHAR
@@ -36,6 +42,12 @@
 
 static TRIO_CONST char rcsid[] = "@(#)$Id$";
 
+#if defined(TRIO_EMBED_NAN)
+# include "trionan.c"
+#endif
+#if defined(TRIO_EMBED_STRING)
+# include "triostr.c"
+#endif
 
 /*************************************************************************
  *

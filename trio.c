@@ -47,10 +47,70 @@
 #include "triodef.h"
 #include "trio.h"
 #include "triop.h"
-#include "trionan.h"
-#if !defined(TRIO_EMBED_STRING)
-# include "triostr.h"
+
+#if defined(TRIO_EMBED_NAN)
+# define TRIO_NAN_PUBLIC static
+# if TRIO_FEATURE_FLOAT
+#  define TRIO_FUNC_NAN
+#  define TRIO_FUNC_NINF
+#  define TRIO_FUNC_PINF
+#  define TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT
+#  define TRIO_FUNC_ISINF
+# endif
 #endif
+#include "trionan.h"
+
+#if defined(TRIO_EMBED_STRING)
+# define TRIO_STRING_PUBLIC static
+# define TRIO_FUNC_LENGTH
+# define TRIO_FUNC_TO_LONG
+# if TRIO_FEATURE_LOCALE
+#  define TRIO_FUNC_COPY_MAX
+# endif
+# if TRIO_FEATURE_DYNAMICSTRING
+#  define TRIO_FUNC_XSTRING_DUPLICATE
+# endif
+# if TRIO_EXTENSION && TRIO_FEATURE_SCANF
+#  define TRIO_FUNC_EQUAL_LOCALE
+# endif
+# if TRIO_FEATURE_ERRNO
+#  define TRIO_FUNC_ERROR
+# endif
+# if TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF
+#  define TRIO_FUNC_TO_DOUBLE
+# endif
+# if TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF
+#  define TRIO_FUNC_TO_FLOAT
+# endif
+# if TRIO_FEATURE_DYNAMICSTRING
+#  define TRIO_FUNC_STRING_EXTRACT
+# endif
+# if TRIO_FEATURE_DYNAMICSTRING
+#  define TRIO_FUNC_STRING_TERMINATE
+# endif
+# if TRIO_FEATURE_USER_DEFINED
+#  define TRIO_FUNC_DUPLICATE
+# endif
+# if TRIO_FEATURE_DYNAMICSTRING
+#  define TRIO_FUNC_STRING_DESTROY
+# endif
+# if TRIO_FEATURE_USER_DEFINED || (TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF)
+#  define TRIO_FUNC_EQUAL
+# endif
+# if TRIO_FEATURE_USER_DEFINED || TRIO_FEATURE_SCANF
+#  define TRIO_FUNC_EQUAL_CASE
+# endif
+# if (TRIO_EXTENSION && TRIO_FEATURE_SCANF)
+#  define TRIO_FUNC_EQUAL_MAX
+# endif
+# if TRIO_FEATURE_SCANF
+#  define TRIO_FUNC_TO_UPPER
+# endif
+# if TRIO_FEATURE_DYNAMICSTRING
+#  define TRIO_FUNC_XSTRING_APPEND_CHAR
+# endif
+#endif
+#include "triostr.h"
 
 /**************************************************************************
  *
@@ -76,8 +136,8 @@
 #endif
 
 #if TRIO_FEATURE_FLOAT
-# if defined(TRIO_COMPILER_SUPPORTS_C99) \
-  || defined(TRIO_COMPILER_SUPPORTS_UNIX01)
+# if defined(PREDEF_STANDARD_C99) \
+  || defined(PREDEF_STANDARD_UNIX03)
 #  if !defined(HAVE_FLOORL)
 #   define HAVE_FLOORL
 #  endif
@@ -111,7 +171,9 @@
 
 #include <assert.h>
 #include <ctype.h>
-#if !defined(TRIO_COMPILER_SUPPORTS_C99)
+#if defined(PREDEF_STANDARD_C99)
+# define isascii(x) ((x) & 0x7F)
+#else
 # define isblank(x) (((x)==32) || ((x)==9))
 #endif
 #if defined(TRIO_COMPILER_ANCIENT)
@@ -169,7 +231,7 @@ typedef unsigned long trio_flags_t;
 #endif /* TRIO_PLATFORM_WIN32 */
 
 #if TRIO_FEATURE_WIDECHAR
-# if defined(TRIO_COMPILER_SUPPORTS_ISO94)
+# if defined(PREDEF_STANDARD_C94)
 #  include <wchar.h>
 #  include <wctype.h>
 typedef wchar_t trio_wchar_t;
@@ -231,7 +293,7 @@ typedef unsigned long int trio_ulonglong_t;
 #endif
 
 /* Maximal and fixed integer types */
-#if defined(TRIO_COMPILER_SUPPORTS_C99)
+#if defined(PREDEF_STANDARD_C99)
 # include <stdint.h>
 typedef intmax_t trio_intmax_t;
 typedef uintmax_t trio_uintmax_t;
@@ -240,7 +302,7 @@ typedef int16_t trio_int16_t;
 typedef int32_t trio_int32_t;
 typedef int64_t trio_int64_t;
 #else
-# if defined(TRIO_COMPILER_SUPPORTS_UNIX98)
+# if defined(PREDEF_STANDARD_UNIX98)
 #  include <inttypes.h>
 typedef intmax_t trio_intmax_t;
 typedef uintmax_t trio_uintmax_t;
@@ -283,14 +345,22 @@ typedef trio_longlong_t trio_int64_t;
 # endif
 #endif
 
-#if !defined(HAVE_FLOORL)
-# define floorl(x) floor((double)(x))
+#if defined(HAVE_FLOORL)
+# define trio_floorl(x) floorl((x))
+#else
+# define trio_floorl(x) floor((double)(x))
 #endif
-#if !defined(HAVE_FMODL)
-# define fmodl(x,y) fmod((double)(x),(double)(y))
+
+#if defined(HAVE_FMODL)
+# define trio_fmodl(x,y) fmodl((x),(y))
+#else
+# define trio_fmodl(x,y) fmod((double)(x),(double)(y))
 #endif
-#if !defined(HAVE_POWL)
-# define powl(x,y) pow((double)(x),(double)(y))
+
+#if defined(HAVE_POWL)
+# define trio_powl(x,y) powl((x),(y))
+#else
+# define trio_powl(x,y) pow((double)(x),(double)(y))
 #endif
 
 #if TRIO_FEATURE_FLOAT
@@ -827,10 +897,13 @@ static trio_userdef_t *internalUserDef = NULL;
  *
  ************************************************************************/
 
+#if defined(TRIO_EMBED_NAN)
+# include "trionan.c"
+#endif
+
 #if defined(TRIO_EMBED_STRING)
-# define TRIO_STRING_PUBLIC static
 # include "triostr.c"
-#endif /* defined(TRIO_EMBED_STRING) */
+#endif
 
 /*************************************************************************
  * TrioIsQualifier
@@ -1116,14 +1189,15 @@ TRIO_ARGS2((number, exponent),
 	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+8);
 	  break;
 	default:
-	  result = powl((trio_long_double_t)number,
-			(trio_long_double_t)exponent);
+	  result = trio_powl((trio_long_double_t)number,
+			     (trio_long_double_t)exponent);
 	  break;
 	}
     }
   else
     {
-      return powl((trio_long_double_t)number, (trio_long_double_t)exponent);
+      return trio_powl((trio_long_double_t)number,
+		       (trio_long_double_t)exponent);
     }
   return result;
 }
@@ -2843,7 +2917,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	precision = 1;
 
       if ( (number < 1.0E-4) ||
-	   (number >= powl(base, (trio_long_double_t)precision)) )
+	   (number >= trio_powl(base, (trio_long_double_t)precision)) )
 	{
 	  /* Use scientific notation */
 	  flags |= FLAGS_FLOAT_E;
@@ -2857,9 +2931,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	   */
 	  workNumber = TrioLogarithm(number, base);
 	  workNumber = TRIO_FABS(workNumber);
-	  if (workNumber - floorl(workNumber) < epsilon)
+	  if (workNumber - trio_floorl(workNumber) < epsilon)
 	    workNumber--;
-	  leadingFractionZeroes = (int)floorl(workNumber);
+	  leadingFractionZeroes = (int)trio_floorl(workNumber);
 	}
     }
 
@@ -2876,8 +2950,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
       else
 	{
-	  exponent = (int)floorl(workNumber);
-	  number /= powl(dblBase, (trio_long_double_t)exponent);
+	  exponent = (int)trio_floorl(workNumber);
+	  number /= trio_powl(dblBase, (trio_long_double_t)exponent);
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
 	  if (isHex)
@@ -2889,7 +2963,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
     }
 
-  integerNumber = floorl(number);
+  integerNumber = trio_floorl(number);
   fractionNumber = number - integerNumber;
   
   /*
@@ -2920,13 +2994,13 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   dblFractionBase = TrioPower(base, fractionDigits);
   
   workNumber = number + 0.5 / dblFractionBase;
-  if (floorl(number) != floorl(workNumber))
+  if (trio_floorl(number) != trio_floorl(workNumber))
     {
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_FLOAT_E))
 	{
 	  /* The adjustment may require a change to scientific notation */
 	  if ( (workNumber < 1.0E-4) ||
-	       (workNumber >= powl(base, (trio_long_double_t)precision)) )
+	       (workNumber >= trio_powl(base, (trio_long_double_t)precision)) )
 	    {
 	      /* Use scientific notation */
 	      flags |= FLAGS_FLOAT_E;
@@ -2943,13 +3017,13 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  if (isHex)
 	    uExponent *= 4; /* log16(2) */
 	  workNumber = (number + 0.5 / dblFractionBase) / dblBase;
-	  integerNumber = floorl(workNumber);
+	  integerNumber = trio_floorl(workNumber);
 	  fractionNumber = workNumber - integerNumber;
 	}
       else
 	{
 	  /* Adjust if number was rounded up one digit (ie. 99 to 100) */
-	  integerNumber = floorl(number + 0.5);
+	  integerNumber = trio_floorl(number + 0.5);
 	  fractionNumber = 0.0;
 	  integerDigits = (integerNumber > epsilon)
 	    ? 1 + (int)TrioLogarithm(integerNumber, base)
@@ -2996,7 +3070,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
    *  + fraction + exponent
    */
   fractionAdjust /= dblFractionBase;
-  hasOnlyZeroes = (floorl((fractionNumber + fractionAdjust) * dblFractionBase) < epsilon);
+  hasOnlyZeroes = (trio_floorl((fractionNumber + fractionAdjust) *
+			       dblFractionBase) < epsilon);
   keepDecimalPoint = ( (flags & FLAGS_ALTERNATIVE) ||
 		       !((precision == 0) ||
 			 (!keepTrailingZeroes && hasOnlyZeroes)) );
@@ -3024,9 +3099,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  workFractionNumber *= dblBase;
 	  workFractionAdjust *= dblBase;
-	  workNumber = floorl(workFractionNumber + workFractionAdjust);
+	  workNumber = trio_floorl(workFractionNumber + workFractionAdjust);
 	  workFractionNumber -= workNumber;
-	  index = (int)fmodl(workNumber, dblBase);
+	  index = (int)trio_fmodl(workNumber, dblBase);
 	  if (index == 0)
 	    {
 	      trailingZeroes++;
@@ -3128,7 +3203,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   dblIntegerBase = 1.0 / TrioPower(base, integerDigits - 1);
   for (i = 0; i < integerDigits; i++)
     {
-      workNumber = floorl(((integerNumber + integerAdjust) * dblIntegerBase));
+      workNumber = trio_floorl(((integerNumber + integerAdjust)
+				* dblIntegerBase));
       if (i > integerThreshold)
 	{
 	  /* Beyond accuracy */
@@ -3136,7 +3212,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
       else
 	{
-	  self->OutStream(self, digits[(int)fmodl(workNumber, dblBase)]);
+	  self->OutStream(self, digits[(int)trio_fmodl(workNumber, dblBase)]);
 	}
       dblIntegerBase *= dblBase;
 
@@ -3183,9 +3259,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  fractionNumber *= dblBase;
 	  fractionAdjust *= dblBase;
-	  workNumber = floorl(fractionNumber + fractionAdjust);
+	  workNumber = trio_floorl(fractionNumber + fractionAdjust);
 	  fractionNumber -= workNumber;
-	  index = (int)fmodl(workNumber, dblBase);
+	  index = (int)trio_fmodl(workNumber, dblBase);
 	  if (index == 0)
 	    {
 	      trailingZeroes++;

@@ -51,6 +51,10 @@
 # endif
 #endif
 
+#if defined(__HP_aCC) || defined(__HP_cc)
+# define TRIO_COMPILER_HP
+#endif
+
 #if defined(_MSC_VER)
 # define TRIO_COMPILER_MSVC
 #endif
@@ -130,38 +134,45 @@
  * Standards support detection
  */
 
-#if defined(__STDC__) || defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
-# define TRIO_COMPILER_SUPPORTS_C89
-# if defined(__STDC_VERSION__)
-#  define TRIO_COMPILER_SUPPORTS_C90
-#  if (__STDC_VERSION__ >= 199409L)
-#   define TRIO_COMPILER_SUPPORTS_C94
-#  endif
-#  if (__STDC_VERSION__ >= 199901L)
-#   define TRIO_COMPILER_SUPPORTS_C99
-#  endif
-# else
-#  if defined(TRIO_COMPILER_SUNPRO)
-#   if (__SUNPRO_C >= 0x420)
-#    define TRIO_COMPILER_SUPPORTS_C94
-#   endif
-#  endif
+#if defined(__STDC__) \
+ || defined(_MSC_EXTENSIONS) \
+ || defined(TRIO_COMPILER_BORLAND)
+# define PREDEF_STANDARD_C89
+#endif
+#if defined(__STDC_VERSION__)
+# define PREDEF_STANDARD_C90
+#endif
+#if (__STDC_VERSION__ - 0 >= 199409L)
+# define PREDEF_STANDARD_C94
+#endif
+#if (__STDC_VERSION__ - 0 >= 199901L)
+# define PREDEF_STANDARD_C99
+#endif
+#if defined(TRIO_COMPILER_SUNPRO) && (TRIO_COMPILER_SUNPRO >= 0x420)
+# if !defined(PREDEF_STANDARD_C94)
+#  define PREDEF_STANDARD_C94
 # endif
 #endif
 
-#if defined(_XOPEN_SOURCE)
-# if (_XOPEN_VERSION >= 4)
-#  define TRIO_COMPILER_SUPPORTS_XPG4
-# endif
-# if defined(_XOPEN_SOURCE_EXTENDED)
-#  define TRIO_COMPILER_SUPPORTS_UNIX95
-# endif
-# if (_XOPEN_VERSION >= 500)
-#  define TRIO_COMPILER_SUPPORTS_UNIX98
-# endif
-# if (_XOPEN_VERSION >= 600)
-#  define TRIO_COMPILER_SUPPORTS_UNIX01
-# endif
+#if defined(TRIO_PLATFORM_UNIX)
+# include <unistd.h>
+#endif
+
+#if (_XOPEN_VERSION - 0 >= 3) || defined(_XOPEN_XPG3)
+# define PREDEF_STANDARD_XPG3
+#endif
+#if (_XOPEN_VERSION - 0 >= 4) || defined(_XOPEN_XPG4)
+# define PREDEF_STANDARD_XPG4
+#endif
+#if (_XOPEN_VERSION - 0 > 4) \
+ || (defined(_XOPEN_UNIX) && (_XOPEN_VERSION - 0 == 4))
+# define PREDEF_STANDARD_UNIX95
+#endif
+#if (_XOPEN_VERSION - 0 >= 500)
+# define PREDEF_STANDARD_UNIX98
+#endif
+#if (_XOPEN_VERSION - 0 >= 600)
+# define PREDEF_STANDARD_UNIX03
 #endif
 
 /*************************************************************************
@@ -175,7 +186,7 @@
 # define TRIO_PRIVATE static
 #endif
 
-#if !(defined(TRIO_COMPILER_SUPPORTS_C89) || defined(__cplusplus))
+#if !(defined(PREDEF_STANDARD_C89) || defined(__cplusplus))
 # define TRIO_COMPILER_ANCIENT
 #endif
 

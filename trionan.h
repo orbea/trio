@@ -15,8 +15,8 @@
  *
  ************************************************************************/
 
-#ifndef TRIO_NAN_H
-#define TRIO_NAN_H
+#ifndef TRIO_FP_H
+#define TRIO_FP_H
 
 #include "triodef.h"
 
@@ -24,6 +24,13 @@
 extern "C" {
 #endif
 
+#if !defined(TRIO_NAN_PUBLIC)
+# if !defined(TRIO_PUBLIC)
+#  define TRIO_PUBLIC
+# endif
+# define TRIO_NAN_PUBLIC TRIO_PUBLIC
+#endif
+  
 enum {
   TRIO_FP_INFINITE,
   TRIO_FP_NAN,
@@ -32,50 +39,139 @@ enum {
   TRIO_FP_ZERO
 };
 
+/*************************************************************************
+ * Dependencies
+ */
+
+#if defined(TRIO_EMBED_NAN)
+
+/*
+ * The application that trionan is embedded in must define which functions
+ * it uses.
+ *
+ * The following resolves internal dependencies.
+ */
+  
+# if defined(TRIO_FUNC_ISNAN) \
+  || defined(TRIO_FUNC_ISINF)
+#  if !defined(TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT)
+#   define TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT
+#  endif
+# endif
+
+# if defined(TRIO_FUNC_NINF)
+#  if !defined(TRIO_FUNC_PINF)
+#   define TRIO_FUNC_PINF
+#  endif
+# endif
+ 
+#else
+
+/*
+ * When trionan is not embedded all all functions are defined.
+ */
+  
+# define TRIO_FUNC_NAN
+# define TRIO_FUNC_PINF
+# define TRIO_FUNC_NINF
+# define TRIO_FUNC_NZERO
+# define TRIO_FUNC_ISNAN
+# define TRIO_FUNC_ISINF
+# define TRIO_FUNC_ISFINITE
+# define TRIO_FUNC_SIGNBIT
+# define TRIO_FUNC_FPCLASSIFY
+# define TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT
+  
+#endif
+
+/*************************************************************************
+ * Functions
+ */
+
 /*
  * Return NaN (Not-a-Number).
  */
-TRIO_PUBLIC double trio_nan TRIO_PROTO((void));
+#if defined(TRIO_FUNC_NAN)
+TRIO_NAN_PUBLIC double
+trio_nan
+TRIO_PROTO((void));
+#endif
 
 /*
  * Return positive infinity.
  */
-TRIO_PUBLIC double trio_pinf TRIO_PROTO((void));
+#if defined(TRIO_FUNC_PINF)
+TRIO_NAN_PUBLIC double
+trio_pinf
+TRIO_PROTO((void));
+#endif
 
 /*
  * Return negative infinity.
  */
-TRIO_PUBLIC double trio_ninf TRIO_PROTO((void));
-  
+#if defined(TRIO_FUNC_NINF)
+TRIO_NAN_PUBLIC double
+trio_ninf
+TRIO_PROTO((void));
+#endif
+
 /*
  * Return negative zero.
  */
-TRIO_PUBLIC double trio_nzero TRIO_PROTO((TRIO_NOARGS));
+#if defined(TRIO_FUNC_NZERO)
+TRIO_NAN_PUBLIC double
+trio_nzero
+TRIO_PROTO((TRIO_NOARGS));
+#endif
 
 /*
  * If number is a NaN return non-zero, otherwise return zero.
  */
-TRIO_PUBLIC int trio_isnan TRIO_PROTO((double number));
+#if defined(TRIO_FUNC_ISNAN)
+TRIO_NAN_PUBLIC int
+trio_isnan
+TRIO_PROTO((double number));
+#endif
 
 /*
  * If number is positive infinity return 1, if number is negative
  * infinity return -1, otherwise return 0.
  */
-TRIO_PUBLIC int trio_isinf TRIO_PROTO((double number));
+#if defined(TRIO_FUNC_ISINF)
+TRIO_NAN_PUBLIC int
+trio_isinf
+TRIO_PROTO((double number));
+#endif
 
 /*
  * If number is finite return non-zero, otherwise return zero.
  */
-TRIO_PUBLIC int trio_isfinite TRIO_PROTO((double number));
+#if defined(TRIO_FUNC_ISFINITE)
+TRIO_NAN_PUBLIC int
+trio_isfinite
+TRIO_PROTO((double number));
+#endif
 
-TRIO_PUBLIC int trio_signbit TRIO_PROTO((double number));
+#if defined(TRIO_FUNC_SIGNBIT)
+TRIO_NAN_PUBLIC int
+trio_signbit
+TRIO_PROTO((double number));
+#endif
 
-TRIO_PUBLIC int trio_fpclassify TRIO_PROTO((double number));
+#if defined(TRIO_FUNC_FPCLASSIFY)
+TRIO_NAN_PUBLIC int
+trio_fpclassify
+TRIO_PROTO((double number));
+#endif
 
-TRIO_PUBLIC int trio_fpclassify_and_signbit TRIO_PROTO((double number, int *is_negative));
+#if defined(TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT)
+TRIO_NAN_PUBLIC int
+trio_fpclassify_and_signbit
+TRIO_PROTO((double number, int *is_negative));
+#endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TRIO_NAN_H */
+#endif /* TRIO_FP_H */

@@ -57,7 +57,7 @@
 # define BOOLEAN_T int
 #endif
 
-#if TRIO_FEATURE_FLOAT && defined(TRIO_COMPILER_SUPPORTS_C99)
+#if TRIO_FEATURE_FLOAT && defined(PREDEF_STANDARD_C99)
 # if !defined(TRIO_COMPILER_DECC) || (__DECC_VER - 0 > 70000000)
 /*
  * The OSF/1 runtime that comes with the DECC compiler does not support
@@ -73,7 +73,7 @@
 #endif
 
 #if defined(TRIO_PLATFORM_UNIX)
-# if defined(TRIO_COMPILER_SUPPORTS_UNIX95)
+# if defined(PREDEF_STANDARD_UNIX95)
 #  define USE_STRCASECMP
 #  define USE_STRNCASECMP
 # endif
@@ -100,8 +100,8 @@
 
 #if TRIO_FEATURE_FLOAT
 # if !defined(HAVE_POWL)
-#  if defined(TRIO_COMPILER_SUPPORTS_C99) \
-   || defined(TRIO_COMPILER_SUPPORTS_UNIX01)
+#  if defined(PREDEF_STANDARD_C99) \
+   || defined(PREDEF_STANDARD_UNIX03)
 #   define HAVE_POWL
 #  else
 #   if defined(TRIO_COMPILER_MSVC)
@@ -145,6 +145,117 @@ static TRIO_CONST char rcsid[] = "@(#)$Id$";
 /** @addtogroup StaticStrings
     @{
 */
+
+/*
+ * internal_duplicate_max
+ */
+#if defined(TRIO_FUNC_DUPLICATE) \
+ || defined(TRIO_FUNC_DUPLICATE_MAX) \
+ || defined(TRIO_FUNC_STRING_DUPLICATE) \
+ || defined(TRIO_FUNC_XSTRING_DUPLICATE)
+
+TRIO_STRING_PRIVATE char *
+internal_duplicate_max
+TRIO_ARGS2((source, size),
+	   TRIO_CONST char *source,
+	   size_t size)
+{
+  char *target;
+
+  assert(source);
+
+  /* Make room for string plus a terminating zero */
+  size++;
+  target = trio_create(size);
+  if (target)
+    {
+      trio_copy_max(target, size, source);
+    }
+  return target;
+}
+
+#endif
+
+/*
+ * internal_string_alloc
+ */
+#if defined(TRIO_FUNC_STRING_CREATE) \
+ || defined(TRIO_FUNC_STRING_DUPLICATE) \
+ || defined(TRIO_FUNC_XSTRING_DUPLICATE)
+
+TRIO_STRING_PRIVATE trio_string_t *
+internal_string_alloc(TRIO_NOARGS)
+{
+  trio_string_t *self;
+  
+  self = (trio_string_t *)TRIO_MALLOC(sizeof(trio_string_t));
+  if (self)
+    {
+      self->content = NULL;
+      self->length = 0;
+      self->allocated = 0;
+    }
+  return self;
+}
+
+#endif
+
+/*
+ * internal_string_grow
+ *
+ * The size of the string will be increased by 'delta' characters. If
+ * 'delta' is zero, the size will be doubled.
+ */
+#if defined(TRIO_FUNC_STRING_CREATE) \
+ || defined(TRIO_FUNC_STRING_APPEND) \
+ || defined(TRIO_FUNC_XSTRING_APPEND) \
+ || defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
+
+TRIO_STRING_PRIVATE BOOLEAN_T
+internal_string_grow
+TRIO_ARGS2((self, delta),
+	   trio_string_t *self,
+	   size_t delta)
+{
+  BOOLEAN_T status = FALSE;
+  char *new_content;
+  size_t new_size;
+
+  new_size = (delta == 0)
+    ? ( (self->allocated == 0) ? 1 : self->allocated * 2 )
+    : self->allocated + delta;
+  
+  new_content = (char *)TRIO_REALLOC(self->content, new_size);
+  if (new_content)
+    {
+      self->content = new_content;
+      self->allocated = new_size;
+      status = TRUE;
+    }
+  return status;
+}
+
+/*
+ * internal_string_grow_to
+ *
+ * The size of the string will be increased to 'length' plus one characters.
+ * If 'length' is less than the original size, the original size will be
+ * used (that is, the size of the string is never decreased).
+ */
+TRIO_STRING_PRIVATE BOOLEAN_T
+internal_string_grow_to
+TRIO_ARGS2((self, length),
+	   trio_string_t *self,
+	   size_t length)
+{
+  length++; /* Room for terminating zero */
+  return (self->allocated < length)
+    ? internal_string_grow(self, length - self->allocated)
+    : TRUE;
+}
+
+#endif
+
 
 /**
    Create new string.
@@ -358,36 +469,6 @@ TRIO_ARGS3((target, max, source),
 
 #endif
 
-/*
- * TrioDuplicateMax
- */
-#if defined(TRIO_FUNC_DUPLICATE) \
- || defined(TRIO_FUNC_DUPLICATE_MAX) \
- || defined(TRIO_FUNC_STRING_DUPLICATE) \
- || defined(TRIO_FUNC_XSTRING_DUPLICATE)
-
-TRIO_STRING_PRIVATE char *
-TrioDuplicateMax
-TRIO_ARGS2((source, size),
-	   TRIO_CONST char *source,
-	   size_t size)
-{
-  char *target;
-
-  assert(source);
-
-  /* Make room for string plus a terminating zero */
-  size++;
-  target = trio_create(size);
-  if (target)
-    {
-      trio_copy_max(target, size, source);
-    }
-  return target;
-}
-
-#endif
-
 /**
    Duplicate @p source.
    
@@ -403,7 +484,7 @@ trio_duplicate
 TRIO_ARGS1((source),
 	   TRIO_CONST char *source)
 {
-  return TrioDuplicateMax(source, trio_length(source));
+  return internal_duplicate_max(source, trio_length(source));
 }
 
 #endif
@@ -435,7 +516,7 @@ TRIO_ARGS2((source, max),
     {
       length = max;
     }
-  return TrioDuplicateMax(source, length);
+  return internal_duplicate_max(source, length);
 }
 
 #endif
@@ -1366,87 +1447,6 @@ TRIO_ARGS1((target),
     @{
 */
 
-/*
- * TrioStringAlloc
- */
-#if defined(TRIO_FUNC_STRING_CREATE) \
- || defined(TRIO_FUNC_STRING_DUPLICATE) \
- || defined(TRIO_FUNC_XSTRING_DUPLICATE)
-
-TRIO_STRING_PRIVATE trio_string_t *
-TrioStringAlloc(TRIO_NOARGS)
-{
-  trio_string_t *self;
-  
-  self = (trio_string_t *)TRIO_MALLOC(sizeof(trio_string_t));
-  if (self)
-    {
-      self->content = NULL;
-      self->length = 0;
-      self->allocated = 0;
-    }
-  return self;
-}
-
-#endif
-
-/*
- * TrioStringGrow
- *
- * The size of the string will be increased by 'delta' characters. If
- * 'delta' is zero, the size will be doubled.
- */
-#if defined(TRIO_FUNC_STRING_CREATE) \
- || defined(TRIO_FUNC_STRING_APPEND) \
- || defined(TRIO_FUNC_XSTRING_APPEND) \
- || defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
-
-TRIO_STRING_PRIVATE BOOLEAN_T
-TrioStringGrow
-TRIO_ARGS2((self, delta),
-	   trio_string_t *self,
-	   size_t delta)
-{
-  BOOLEAN_T status = FALSE;
-  char *new_content;
-  size_t new_size;
-
-  new_size = (delta == 0)
-    ? ( (self->allocated == 0) ? 1 : self->allocated * 2 )
-    : self->allocated + delta;
-  
-  new_content = (char *)TRIO_REALLOC(self->content, new_size);
-  if (new_content)
-    {
-      self->content = new_content;
-      self->allocated = new_size;
-      status = TRUE;
-    }
-  return status;
-}
-
-/*
- * TrioStringGrowTo
- *
- * The size of the string will be increased to 'length' plus one characters.
- * If 'length' is less than the original size, the original size will be
- * used (that is, the size of the string is never decreased).
- */
-TRIO_STRING_PRIVATE BOOLEAN_T
-TrioStringGrowTo
-TRIO_ARGS2((self, length),
-	   trio_string_t *self,
-	   size_t length)
-{
-  length++; /* Room for terminating zero */
-  return (self->allocated < length)
-    ? TrioStringGrow(self, length - self->allocated)
-    : TRUE;
-}
-
-#endif
-
-
 /**
    Create a new dynamic string.
    
@@ -1462,10 +1462,10 @@ TRIO_ARGS1((initial_size),
 {
   trio_string_t *self;
 
-  self = TrioStringAlloc();
+  self = internal_string_alloc();
   if (self)
     {
-      if (TrioStringGrow(self,
+      if (internal_string_grow(self,
 			 (size_t)((initial_size > 0) ? initial_size : 1)))
 	{
 	  self->content[0] = (char)0;
@@ -1670,7 +1670,7 @@ TRIO_ARGS2((self, other),
   assert(other);
 
   length = self->length + other->length;
-  if (!TrioStringGrowTo(self, length))
+  if (!internal_string_grow_to(self, length))
     goto error;
   trio_copy(&self->content[self->length], other->content);
   self->length = length;
@@ -1700,7 +1700,7 @@ TRIO_ARGS2((self, other),
   assert(other);
 
   length = self->length + trio_length(other);
-  if (!TrioStringGrowTo(self, length))
+  if (!internal_string_grow_to(self, length))
     goto error;
   trio_copy(&self->content[self->length], other);
   self->length = length;
@@ -1727,7 +1727,7 @@ TRIO_ARGS2((self, character),
 
   if ((int)self->length >= trio_string_size(self))
     {
-      if (!TrioStringGrow(self, 0))
+      if (!internal_string_grow(self, 0))
 	goto error;
     }
   self->content[self->length] = character;
@@ -1837,10 +1837,10 @@ TRIO_ARGS1((other),
   
   assert(other);
 
-  self = TrioStringAlloc();
+  self = internal_string_alloc();
   if (self)
     {
-      self->content = TrioDuplicateMax(other->content, other->length);
+      self->content = internal_duplicate_max(other->content, other->length);
       if (self->content)
 	{
 	  self->length = other->length;
@@ -1870,10 +1870,10 @@ TRIO_ARGS1((other),
   
   assert(other);
 
-  self = TrioStringAlloc();
+  self = internal_string_alloc();
   if (self)
     {
-      self->content = TrioDuplicateMax(other, trio_length(other));
+      self->content = internal_duplicate_max(other, trio_length(other));
       if (self->content)
 	{
 	  self->length = trio_length(self->content);

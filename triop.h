@@ -143,7 +143,8 @@ extern "C" {
 # define TRIO_FEATURE_CLOSURE 0
 # define TRIO_FEATURE_STRERR 0
 # define TRIO_FEATURE_LOCALE 0
-# define TRIO_MINIMAL 1
+# define TRIO_EMBED_NAN 1
+# define TRIO_EMBED_STRING 1
 #endif
   
 /*
@@ -283,13 +284,17 @@ extern "C" {
 /*
  * TRIO_MINIMAL
  *
- * Define this to disable building the public triostr.h.  If you
- * define this, then you must not compile triostr.c separately.
- * TODO: Maybe this should be renamed to TRIO_NOSTRINGAPI?
- * TODO: Rename but keep TRIO_MINIMAL for backwards compatibility.
+ * Define this to disable building the public trionan.h and triostr.h.
+ * If you define this, then you must not compile trionan.c and triostr.c
+ * separately.
  */
 #if defined(TRIO_MINIMAL)
-# define TRIO_EMBED_STRING
+# if !defined(TRIO_EMBED_NAN)
+#  define TRIO_EMBED_NAN
+# endif
+# if !defined(TRIO_EMBED_STRING)
+#  define TRIO_EMBED_STRING
+# endif
 #endif
   
 /* Does not work yet. Do not enable */
