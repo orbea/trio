@@ -119,7 +119,7 @@ trio_length(const char *string)
 
 
 /*
- * TrioDuplicate
+ * TrioDuplicateMax
  */
 TRIO_PRIVATE char *
 TrioDuplicateMax(const char *source, size_t size)

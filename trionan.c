@@ -209,10 +209,11 @@ trio_is_special_quantity(double number,
 
 #endif /* USE_IEEE_754 */
 
+
 /**
    Generate positive infinity.
 
-   @return Positive infinity.
+   @return Floating-point representation of positive infinity.
 */
 TRIO_PUBLIC double
 trio_pinf(void)
@@ -256,7 +257,7 @@ trio_pinf(void)
 /**
    Generate negative infinity.
 
-   @return Negative infinity.
+   @return Floating-point value of negative infinity.
 */
 TRIO_PUBLIC double
 trio_ninf(void)
@@ -275,9 +276,9 @@ trio_ninf(void)
 }
 
 /**
-   Generate Not-A-Number.
+   Generate NaN.
 
-   @return Not-A-Number.
+   @return Floating-point representation of NaN.
 */
 TRIO_PUBLIC double
 trio_nan(void)
@@ -322,10 +323,10 @@ trio_nan(void)
 }
 
 /**
-   Check for Not-A-Number.
+   Check for NaN.
 
    @param number An arbitrary floating-point number.
-   @return Boolean value indicating success of failure.
+   @return Boolean value indicating whether or not the number is a NaN.
 */
 TRIO_PUBLIC int
 trio_isnan(TRIO_VOLATILE double number)
