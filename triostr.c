@@ -1004,7 +1004,7 @@ trio_string_append(trio_string_t *self,
   delta = trio_string_size(self) - (self->length + other->length);
   if (delta < 0)
     {
-      if (!TrioStringGrow(self, delta))
+      if (!TrioStringGrow(self, -delta))
 	goto error;
     }
   trio_copy(&self->content[self->length], other->content);
@@ -1017,7 +1017,7 @@ trio_string_append(trio_string_t *self,
 
 
 /*
- * trio_string_append
+ * trio_xstring_append
  */
 TRIO_PUBLIC int
 trio_xstring_append(trio_string_t *self,
@@ -1033,7 +1033,7 @@ trio_xstring_append(trio_string_t *self,
   delta = trio_string_size(self) - (self->length + length);
   if (delta < 0)
     {
-      if (!TrioStringGrow(self, delta))
+      if (!TrioStringGrow(self, -delta))
 	goto error;
     }
   trio_copy(&self->content[self->length], other);
@@ -1054,7 +1054,7 @@ trio_xstring_append_char(trio_string_t *self,
 {
   assert(self);
 
-  if (self->length > trio_string_size(self))
+  if (self->length >= trio_string_size(self))
     {
       if (!TrioStringGrow(self, 0))
 	goto error;
