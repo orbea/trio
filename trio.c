@@ -5241,7 +5241,7 @@ TrioScanProcess(trio_class_t *data,
       
       if ((EOF == ch) && (parameters[i].type != FORMAT_COUNT))
 	{
-	  return EOF; (assignment > 0) ? assignment : EOF;
+	  return (assignment > 0) ? assignment : EOF;
 	}
       
       if (CHAR_IDENTIFIER == format[index])
