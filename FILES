@@ -11,6 +11,8 @@ triodef.h
 trionan.c
 trionan.h
 triop.h
+triodef.h
+compare.c
 example.c
 regression.c
 man/man3/strio.3
