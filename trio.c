@@ -39,7 +39,8 @@
  *    the C99 hex-float. This means that you cannot scan %as as a hex-float
  *    immediately followed by an 's'.
  *  - Scanning of collating symbols.
- *  - Negative zero is not printed correctly.
+ *  - Hex-float formatting/scanning does not seem to work correctly (or I
+ *    may simply have gotten the regression data wrong)
  */
 
 /*************************************************************************
@@ -104,10 +105,6 @@
 
 /* mincore() can be used for debugging purposes */
 #define VALID(x) (NULL != (x))
-
-/* xlC crashes on log10(0) */
-#define guarded_log10(x) (((x) == 0.0) ? trio_ninf() : log10(x))
-#define guarded_log16(x) (guarded_log10(x) / log10(16.0))
 
 
 /*************************************************************************
@@ -907,6 +904,78 @@ TRIO_ARGS2((name, prev),
     (void)internalLeaveCriticalRegion(NULL);
   
   return def;
+}
+
+/*************************************************************************
+ * TrioPower
+ *
+ * Description:
+ *  Calculate pow(base, exponent), where exponent is an integer.
+ */
+TRIO_PRIVATE double
+TrioPower
+TRIO_ARGS2((number, exponent),
+	   int number,
+	   int exponent)
+{
+  double result;
+
+  if (number == 10)
+    {
+      switch (exponent)
+	{
+	  /* Speed up calculation of common cases */
+	case 0: result = (double)number * 1E-1; break;
+	case 1: result = (double)number * 1E+0; break;
+	case 2: result = (double)number * 1E+1; break;
+	case 3: result = (double)number * 1E+2; break;
+	case 4: result = (double)number * 1E+3; break;
+	case 5: result = (double)number * 1E+4; break;
+	case 6: result = (double)number * 1E+5; break;
+	case 7: result = (double)number * 1E+6; break;
+	case 8: result = (double)number * 1E+7; break;
+	case 9: result = (double)number * 1E+8; break;
+	default:
+	  result = pow((double)number, (double)exponent);
+	  break;
+	}
+    }
+  else
+    {
+      return pow((double)number, (double)exponent);
+    }
+  return result;
+}
+
+TRIO_PRIVATE double
+TrioLogarithm
+TRIO_ARGS2((number, base),
+	   double number,
+	   double base)
+{
+  double result;
+
+  if (number < 0.0)
+    {
+      result = trio_nan();
+    }
+  if (number == 0.0)
+    {
+      /* xlC crashes on log(0) */
+      result = trio_ninf();
+    }
+  else
+    {
+      if (base == 10.0)
+	{
+	  result = log10(number);
+	}
+      else
+	{
+	  result = log10(number) / log10(base);
+	}
+    }
+  return result;
 }
 
 /*************************************************************************
@@ -2354,12 +2423,15 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   double workNumber;
   int integerDigits;
   int fractionDigits;
+  int integerThreshold;
+  int fractionThreshold;
   int exponentDigits;
   int expectedWidth;
   int exponent;
   unsigned int uExponent = 0;
   double dblBase;
-  double dblExponentBase;
+  double dblPowerBase;
+  double adjust;
   BOOLEAN_T isNegative;
   BOOLEAN_T isExponentNegative = FALSE;
   BOOLEAN_T isHex;
@@ -2429,8 +2501,11 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   
   if (isNegative)
     number = -number;
+
+  if (isHex)
+    flags |= FLAGS_FLOAT_E;
   
-  if ((flags & FLAGS_FLOAT_G) || isHex)
+  if (flags & FLAGS_FLOAT_G)
     {
       if (precision == 0)
 	precision = 1;
@@ -2447,7 +2522,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
 	   * zero, then adjust the precision to include leading fractional
 	   * zeros.
 	   */
-	  workNumber = fabs(guarded_log10(number));
+	  workNumber = fabs(TrioLogarithm(number, dblBase));
 	  if (workNumber - floor(workNumber) < 0.001)
 	    workNumber--;
 	  zeroes = (int)floor(workNumber);
@@ -2457,7 +2532,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   if (flags & FLAGS_FLOAT_E)
     {
       /* Scale the number */
-      workNumber = guarded_log10(number);
+      workNumber = TrioLogarithm(number, dblBase);
       if (trio_isinf(workNumber) == -1)
 	{
 	  exponent = 0;
@@ -2468,7 +2543,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
       else
 	{
 	  exponent = (int)floor(workNumber);
-	  number /= pow(10.0, (double)exponent);
+	  number /= pow(dblBase, (double)exponent);
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
 	  /* No thousand separators */
@@ -2476,69 +2551,67 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
 	}
     }
 
-  integerNumber = fractionNumber = number;
+  integerNumber = floor(number);
+  fractionNumber = number - integerNumber;
   
   /*
    * Truncated number.
    *
-   * precision is number of significant digits for FLOAT_G
-   * and number of fractional digits for others
+   * Precision is number of significant digits for FLOAT_G
+   * and number of fractional digits for others.
    */
-  integerDigits = (floor(number) > DBL_EPSILON)
-    ? 1 + (int)guarded_log10(floor(integerNumber))
+  integerDigits = (integerNumber > DBL_EPSILON)
+    ? 1 + (int)TrioLogarithm(integerNumber, dblBase)
     : 1;
   fractionDigits = ((flags & FLAGS_FLOAT_G) && (zeroes == 0))
     ? precision - integerDigits
     : zeroes + precision;
+  
+  integerThreshold = integerDigits - DBL_DIG;
+  fractionThreshold = fractionDigits + (integerDigits - 1) - DBL_DIG;
 
-  if (!(integerDigits > DBL_DIG))
-    {
-      /* Within accuracy */
-      fractionNumber = floor(0.5 +
-			     fractionNumber * pow(dblBase,
-						  (double)fractionDigits));
-    }
-  workNumber = (isHex
-		? guarded_log16(0.5 + fractionNumber)
-		: guarded_log10(0.5 + fractionNumber));
-  if ((int)workNumber + 1 > integerDigits + fractionDigits)
+  dblPowerBase = TrioPower(base, fractionDigits);
+  
+  workNumber = number + 0.5 / dblPowerBase;
+  if (floor(number) != floor(workNumber))
     {
       if (flags & FLAGS_FLOAT_E)
 	{
 	  /* Adjust if number was rounded up one digit (ie. 0.99 to 1.00) */
-	  exponent--;
-	  uExponent -= (isExponentNegative) ? 1 : -1;
-	  fractionNumber /= dblBase;
+	  exponent++;
+	  isExponentNegative = (exponent < 0);
+	  uExponent = (isExponentNegative) ? -exponent : exponent;
+	  workNumber = (number + 0.5 / dblPowerBase) / dblBase;
+	  integerNumber = floor(workNumber);
+	  fractionNumber = workNumber - integerNumber;
 	}
       else
 	{
 	  /* Adjust if number was rounded up one digit (ie. 99 to 100) */
 	  integerDigits++;
-	  integerNumber = floor(integerNumber + 0.5);
+	  integerNumber = floor(number + 0.5);
 	}
     }
-  
+
   /* Build the fraction part */
   numberPointer = &numberBuffer[sizeof(numberBuffer) - 1];
   *numberPointer = NIL;
   hasOnlyZeroes = TRUE;
-  number = fractionNumber;
-  for (i = 0, dblExponentBase = dblBase;
-       i < fractionDigits;
-       i++, dblExponentBase *= dblBase)
+  adjust = 0.5;
+  for (i = 0; i < fractionDigits; i++)
     {
-      if ((integerDigits > DBL_DIG) ||
-	  (i < fractionDigits - DBL_DIG))
+      if ((integerThreshold > 0) || (i < fractionThreshold))
 	{
 	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
-	  number = floor((fractionNumber / dblExponentBase) + 0.5);
 	}
       else
 	{
-	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
-	  number = floor(fractionNumber / dblExponentBase);
+	  workNumber = floor(fractionNumber * dblPowerBase + adjust);
+	  *(--numberPointer) = digits[(int)fmod(workNumber, dblBase)];
+	  adjust /= dblBase;
 	}
+      dblPowerBase /= dblBase;
 
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_ALTERNATIVE))
         {
@@ -2564,23 +2637,24 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   /* Insert the integer part and thousand separators */
   charsPerThousand = (int)internalGrouping[0];
   groupingIndex = 1;
-  dblExponentBase = dblBase;
-  for (i = 1, dblExponentBase = dblBase;
+  dblPowerBase = dblBase;
+  workNumber = integerNumber;
+  for (i = 1, dblPowerBase = dblBase;
        i < integerDigits + 1;
-       i++, dblExponentBase *= dblBase)
+       i++, dblPowerBase *= dblBase)
     {
-      if (i < integerDigits - DBL_DIG)
+      if (i < integerThreshold)
 	{
 	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
-	  number = floor((integerNumber / dblExponentBase) + 0.5);
+	  workNumber = floor((integerNumber / dblPowerBase) + 0.5);
 	}
       else
 	{
-	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
-	  number = floor(integerNumber / dblExponentBase);
+	  *(--numberPointer) = digits[(int)fmod(workNumber, dblBase)];
+	  workNumber = floor(integerNumber / dblPowerBase);
 	}
-      if (number < DBL_EPSILON)
+      if (workNumber < DBL_EPSILON)
 	break;
 
       if ((i > 0)

@@ -333,6 +333,21 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%+f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "-3141.000000",
 		    "%+f", -3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "0.333333",
+		    "%f", 1.0/3.0);
+  nerrors += Verify(__FILE__, __LINE__, "0.666667",
+		    "%f", 2.0/3.0);
+  /* Beyond accuracy */
+  nerrors += Verify(__FILE__, __LINE__, "1.40000000000000000000000000000000",
+		    "%.32f", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "1.4000000000000000000000000000",
+		    "%.28f", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "1.400000000000000000000000",
+		    "%.24f", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "1.40000000000000000",
+		    "%.17f", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "39413.800000000000000000000000000000",
+		    "%.30f", 39413.80);
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
@@ -358,6 +373,8 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%#.2g", 99.9999);
   nerrors += Verify(__FILE__, __LINE__, "0.123",
 		    "%0g", 0.123);
+  nerrors += Verify(__FILE__, __LINE__, "1.00e+00",
+		    "%.2e", 0.9999);
   nerrors += Verify(__FILE__, __LINE__, "1",
 		    "%.2g", 0.9999);
   nerrors += Verify(__FILE__, __LINE__, "0.01",
@@ -433,16 +450,26 @@ VerifyFormatting(TRIO_NOARGS)
 #endif
 
 #if TRIO_C99
-  nerrors += Verify(__FILE__, __LINE__, "0xc45.000000",
+  nerrors += Verify(__FILE__, __LINE__, "0x2.a00000p+01",
+		    "%a", 42.0);
+  nerrors += Verify(__FILE__, __LINE__, "-0x2.a00000p+01",
+		    "%a", -42.0);
+  nerrors += Verify(__FILE__, __LINE__, "0x1.800000p+00",
+		    "%a", 1.5);
+  nerrors += Verify(__FILE__, __LINE__, "0x1.666666p+00",
+		    "%a", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "0xc.450000p+02",
 		    "%a", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "0XC45.000000",
+  nerrors += Verify(__FILE__, __LINE__, "0XC.450000P+02",
 		    "%A", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "0x3.241893p-2c",
+  /* FIXME: Is this the correct value? */
+  nerrors += Verify(__FILE__, __LINE__, "0xb.351c43p-25",
 		    "%a", 3.141e-44);
   nerrors += Verify(__FILE__, __LINE__, "256",
 		    "%zd", sizeof(buffer));
   nerrors += Verify(__FILE__, __LINE__, "42",
 		    "%td", 42);
+  /* Some compilers may not handle the LL suffix correctly */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		    "%jd", 42LL);
 #endif
@@ -647,11 +674,11 @@ VerifyScanningFloats(TRIO_NOARGS)
 				      "%.6g", 1234567.0);
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1234567",
 				      "%.10g", 1234567.0);
-  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x2a.000000",
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x2.a00000p+01",
 				      "%a", 42.0);
-  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x1.3c0c95p+06",
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x1.2d6870p+05",
 				      "%a", 1234567.0);
-  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0X1.3C0C95P+06",
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0X1.2D6870P+05",
 				      "%A", 1234567.0);
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.79769e+308",
 				      "%g", 1.79769e+308);

@@ -4,8 +4,14 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.7 - 2002/05/04
+Version 1.7 - 2002/05/07
 ------------------------
+* Fixed trio_to_double to handle hex-floats properly.
+
+* Fixed printing of %a-format to be like %e, not like %g.
+
+* Fixed floating-point printing of values beyond the machine accuracy.
+
 * Fixed %f for printing with large precision.
 
 * Fixed the usage of C99 nan(), which caused a crash on OSF/1 (reported by
