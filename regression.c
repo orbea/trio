@@ -452,6 +452,8 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.2g", 0.01);
   nerrors += Verify(__FILE__, __LINE__, "0.010",
 		    "%#.2g", 0.01);
+  nerrors += Verify(__FILE__, __LINE__, "1e-04",
+		    "%5.g", 0.999999e-4);
   /* Double width and precision */
   nerrors += Verify(__FILE__, __LINE__, "      1e-05",
 		    "%11.5g", 1e-5);
@@ -475,6 +477,26 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%11.5g", 1e4);
   nerrors += Verify(__FILE__, __LINE__, "      1e+05",
 		    "%11.5g", 1e5);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e-05",
+		    "%11.2g", 0.99e-4);
+  nerrors += Verify(__FILE__, __LINE__, "    0.00099",
+		    "%11.2g", 0.99e-3);
+  nerrors += Verify(__FILE__, __LINE__, "     0.0099",
+		    "%11.2g", 0.99e-2);
+  nerrors += Verify(__FILE__, __LINE__, "      0.099",
+		    "%11.2g", 0.99e-1);
+  nerrors += Verify(__FILE__, __LINE__, "       0.99",
+		    "%11.2g", 0.99e0);
+  nerrors += Verify(__FILE__, __LINE__, "        9.9",
+		    "%11.2g", 0.99e1);
+  nerrors += Verify(__FILE__, __LINE__, "         99",
+		    "%11.2g", 0.99e2);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e+02",
+		    "%11.2g", 0.99e3);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e+03",
+		    "%11.2g", 0.99e4);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e+04",
+		    "%11.2g", 0.99e5);
   /* Double width, precision, and alternative */
   nerrors += Verify(__FILE__, __LINE__, " 1.0000e-05",
 		    "%#11.5g", 1e-5);
@@ -498,6 +520,26 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%#11.5g", 1e4);
   nerrors += Verify(__FILE__, __LINE__, " 1.0000e+05",
 		    "%#11.5g", 1e5);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e-05",
+		    "%#11.2g", 0.99e-4);
+  nerrors += Verify(__FILE__, __LINE__, "    0.00099",
+		    "%#11.2g", 0.99e-3);
+  nerrors += Verify(__FILE__, __LINE__, "     0.0099",
+		    "%#11.2g", 0.99e-2);
+  nerrors += Verify(__FILE__, __LINE__, "      0.099",
+		    "%#11.2g", 0.99e-1);
+  nerrors += Verify(__FILE__, __LINE__, "       0.99",
+		    "%#11.2g", 0.99e0);
+  nerrors += Verify(__FILE__, __LINE__, "        9.9",
+		    "%#11.2g", 0.99e1);
+  nerrors += Verify(__FILE__, __LINE__, "        99.",
+		    "%#11.2g", 0.99e2);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e+02",
+		    "%#11.2g", 0.99e3);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e+03",
+		    "%#11.2g", 0.99e4);
+  nerrors += Verify(__FILE__, __LINE__, "    9.9e+04",
+		    "%#11.2g", 0.99e5);
 /*   nerrors += Verify(__FILE__, __LINE__, "", */
 /* 		    ""); */
   /* Double width, precision, and zero padding */

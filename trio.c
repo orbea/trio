@@ -2724,7 +2724,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   int i;
   int index;
   BOOLEAN_T hasOnlyZeroes;
-  int zeroes = 0;
+  int leadingFractionZeroes = 0;
   register int trailingZeroes;
   BOOLEAN_T keepTrailingZeroes;
   BOOLEAN_T keepDecimalPoint;
@@ -2856,7 +2856,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	   */
 	  workNumber = TrioLogarithm(number, base);
 	  workNumber = TRIO_FABS(workNumber);
-	  zeroes = (int)floorl(workNumber);
+	  if (workNumber - floorl(workNumber) < epsilon)
+	    workNumber--;
+	  leadingFractionZeroes = (int)floorl(workNumber);
 	}
     }
 
@@ -2904,10 +2906,13 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   fractionDigits = precision;
   if (flags & FLAGS_FLOAT_G)
     {
-      fractionDigits -= integerDigits;
-      if (zeroes > 0)
+      if (leadingFractionZeroes > 0)
 	{
-	  fractionDigits += zeroes;
+	  fractionDigits += leadingFractionZeroes;
+	}
+      if ((integerNumber > epsilon) || (number <= epsilon))
+	{
+	  fractionDigits -= integerDigits;
 	}
     }
 
@@ -2916,7 +2921,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   workNumber = number + 0.5 / dblFractionBase;
   if (floorl(number) != floorl(workNumber))
     {
-      if (flags & FLAGS_FLOAT_G)
+      if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_FLOAT_E))
 	{
 	  /* The adjustment may require a change to scientific notation */
 	  if ( (workNumber < 1.0E-4) ||
