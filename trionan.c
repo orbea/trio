@@ -29,37 +29,6 @@
  *   2. Use IEEE 754 bit-patterns if possible.
  *   3. Use platform-specific techniques.
  *
- * This program has been tested on the following platforms (in
- * alphabetic order)
- *
- *   OS              CPU          Compiler
- * -------------------------------------------------
- *   AIX 4.1.4       PowerPC      gcc
- *   Darwin 1.3.7    PowerPC      gcc
- *   FreeBSD 2.2     x86          gcc
- *   FreeBSD 3.3     x86          gcc
- *   FreeBSD 4.3     x86          gcc
- *   FreeBSD 4.3     Alpha        gcc
- *   HP-UX 10.20     PA-RISC      gcc
- *   HP-UX 10.20     PA-RISC      HP C++
- *   IRIX 6.5        MIPS         MIPSpro C
- *   Linux 2.2       x86          gcc
- *   Linux 2.2       Alpha        gcc
- *   Linux 2.4       IA64         gcc
- *   Linux 2.4       StrongARM    gcc
- *   NetBSD 1.4      x86          gcc
- *   NetBSD 1.4      StrongARM    gcc
- *   NetBSD 1.5      Alpha        gcc
- *   OpenVMS 7.1     Alpha        DEC C 6.0
- *   RISC OS 4       StrongARM    Norcroft C
- *   Solaris 2.5.1   x86          gcc
- *   Solaris 2.5.1   Sparc        gcc
- *   Solaris 2.6     Sparc        WorkShop 4.2
- *   Solaris 8       Sparc        Forte C 6
- *   Tru64 4.0D      Alpha        gcc
- *   Tru64 5.1       Alpha        gcc
- *   WinNT           x86          MSVC 5.0 & 6.0
- *
  ************************************************************************/
 
 /*
