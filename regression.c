@@ -311,6 +311,30 @@ VerifyFormatting(TRIO_NOARGS)
 		   "%#X", 42);
   nerrors += Verify(__FILE__, __LINE__, "0x00c ",
 		   "%-#6.3x", 12);
+  nerrors += Verify(__FILE__, __LINE__, "",
+		   "%.d", 0);
+  nerrors += Verify(__FILE__, __LINE__, "",
+		   "%#.d", 0);
+  nerrors += Verify(__FILE__, __LINE__, "42",
+		   "%.d", 42);
+  nerrors += Verify(__FILE__, __LINE__, "",
+		   "%.o", 0);
+  nerrors += Verify(__FILE__, __LINE__, "    0000",
+		   "%8.4o", 0);
+  nerrors += Verify(__FILE__, __LINE__, "       0",
+		   "%8o", 0);
+  nerrors += Verify(__FILE__, __LINE__, "00000000",
+		   "%08o", 0);
+  nerrors += Verify(__FILE__, __LINE__, "0",
+		   "%#.o", 0);
+  nerrors += Verify(__FILE__, __LINE__, "52",
+		   "%.o", 42);
+  nerrors += Verify(__FILE__, __LINE__, "",
+		   "%.x", 0);
+  nerrors += Verify(__FILE__, __LINE__, "",
+		   "%#.x", 0);
+  nerrors += Verify(__FILE__, __LINE__, "2a",
+		   "%.x", 42);
   sprintf(buffer, "%u", UINT_MAX);
   nerrors += Verify(__FILE__, __LINE__, buffer,
 		   "%u", -1);
@@ -373,6 +397,10 @@ VerifyFormatting(TRIO_NOARGS)
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "3141",
+		    "%.f", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "12",
+		    "%.f", 12.34);
   nerrors += Verify(__FILE__, __LINE__, "3141.000",
 		    "%.3f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.000000",
@@ -385,10 +413,16 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%#.4f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.",
 		    "%#.0f", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "3141.",
+		    "%#.f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "11.0000",
 		    "%#.4f", 11.0);
   nerrors += Verify(__FILE__, __LINE__, "100.00",
 		    "%.2f", 99.9999);
+  nerrors += Verify(__FILE__, __LINE__, "3e+03",
+		    "%.e", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "3.e+03",
+		    "%#.e", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "100",
 		    "%.2g", 99.9999);
   nerrors += Verify(__FILE__, __LINE__, "100.",
@@ -399,6 +433,8 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.2e", 0.9999);
   nerrors += Verify(__FILE__, __LINE__, "1",
 		    "%.2g", 0.9999);
+  nerrors += Verify(__FILE__, __LINE__, "2",
+		    "%.g", 1.5);
   nerrors += Verify(__FILE__, __LINE__, "0.01",
 		    "%.2g", 0.01);
   nerrors += Verify(__FILE__, __LINE__, "0.010",

@@ -1691,6 +1691,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	      break;
 
 	    case SPECIFIER_OCTAL:
+	      flags |= FLAGS_UNSIGNED;
 	      flags &= ~FLAGS_BASE_PARAMETER;
 	      base = BASE_OCTAL;
 	      parameters[pos].type = FORMAT_INT;
@@ -2152,7 +2153,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	   int base)
 {
   BOOLEAN_T isNegative;
-  BOOLEAN_T isZero;
+  BOOLEAN_T isNumberZero;
+  BOOLEAN_T isPrecisionZero;
+  BOOLEAN_T ignoreNumber;
   char buffer[MAX_CHARS_IN(trio_uintmax_t) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *bufferend;
   char *pointer;
@@ -2170,11 +2173,23 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   if (base == NO_BASE)
     base = BASE_DECIMAL;
 
-  isNegative = (flags & FLAGS_UNSIGNED)
-    ? FALSE
-    : ((trio_intmax_t)number < 0);
-  if (isNegative)
-    number = -((trio_intmax_t)number);
+  isNumberZero = (number == 0);
+  isPrecisionZero = (precision == 0);
+  ignoreNumber = (isNumberZero
+		  && isPrecisionZero
+		  && !((flags & FLAGS_ALTERNATIVE) && (base == BASE_OCTAL)));
+
+  if (flags & FLAGS_UNSIGNED)
+    {
+      isNegative = FALSE;
+      flags &= ~FLAGS_SHOWSIGN;
+    }
+  else
+    {
+      isNegative = ((trio_intmax_t)number < 0);
+      if (isNegative)
+	number = -((trio_intmax_t)number);
+    }
 
   if (flags & FLAGS_QUAD)
     number &= (trio_ulonglong_t)-1;
@@ -2182,8 +2197,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     number &= (unsigned long)-1;
   else
     number &= (unsigned int)-1;
-  
-  isZero = (number == 0);
   
   /* Build number */
   pointer = bufferend = &buffer[sizeof(buffer) - 1];
@@ -2212,8 +2225,11 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
     }
 
-  /* Adjust width */
-  width -= (bufferend - pointer) - 1;
+  if (! ignoreNumber)
+    {
+      /* Adjust width */
+      width -= (bufferend - pointer) - 1;
+    }
 
   /* Adjust precision */
   if (NO_PRECISION != precision)
@@ -2224,10 +2240,15 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       flags |= FLAGS_NILPADDING;
     }
 
+  /* Calculate padding */
+  count = (! ((flags & FLAGS_LEFTADJUST) || (precision == NO_PRECISION)))
+    ? precision
+    : 0;
+  
   /* Adjust width further */
   if (isNegative || (flags & FLAGS_SHOWSIGN) || (flags & FLAGS_SPACE))
     width--;
-  if (flags & FLAGS_ALTERNATIVE)
+  if ((flags & FLAGS_ALTERNATIVE) && !isNumberZero)
     {
       switch (base)
 	{
@@ -2236,7 +2257,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  width -= 2;
 	  break;
 	case BASE_OCTAL:
-	  width--;
+	  if (!(flags & FLAGS_NILPADDING) || (count == 0))
+	    width--;
 	  break;
 	default:
 	  break;
@@ -2247,7 +2269,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   if (! ((flags & FLAGS_LEFTADJUST) ||
 	 ((flags & FLAGS_NILPADDING) && (precision == NO_PRECISION))))
     {
-      count = (precision == NO_PRECISION) ? 0 : precision;
       while (width-- > count)
 	self->OutStream(self, CHAR_ADJUST);
     }
@@ -2260,7 +2281,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   else if (flags & FLAGS_SPACE)
     self->OutStream(self, ' ');
 
-  if (flags & FLAGS_ALTERNATIVE)
+  /* Prefix is not written when the value is zero */
+  if ((flags & FLAGS_ALTERNATIVE) && !isNumberZero)
     {
       switch (base)
 	{
@@ -2270,11 +2292,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  break;
 
 	case BASE_OCTAL:
-	  /* Only a single zero must be printed if the value is zero */
-	  if (!isZero)
-	    {
-	      self->OutStream(self, '0');
-	    }
+	  if (!(flags & FLAGS_NILPADDING) || (count == 0))
+	    self->OutStream(self, '0');
 	  break;
 
 	case BASE_HEX:
@@ -2299,10 +2318,13 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
     }
 
-  /* Output the number itself */
-  while (*(++pointer))
+  if (! ignoreNumber)
     {
-      self->OutStream(self, *pointer);
+      /* Output the number itself */
+      while (*(++pointer))
+	{
+	  self->OutStream(self, *pointer);
+	}
     }
 
   /* Output trailing spaces if needed */
@@ -2677,7 +2699,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 
   if (flags & FLAGS_ROUNDING)
     precision = baseDigits;
-  
+
   if (precision == NO_PRECISION)
     precision = FLT_DIG;
   
