@@ -4,14 +4,18 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
- (2001/05/16)
+Version 1.x - 2001/05/16
+------------------------
 * trio's treatment of the field width when the %e code was used was not
   correct (Gisli Ottarsson reported). It turns out the fraction part should
   be zero-padded by default and the exponent part should be zero-prefixed
   if it is only one digit. At least that's how the GNU and Sun libc's work.
   The trio floating point output looks identical to them now.
 
- (2001/04/24)
+* Fixed group scanning with modifiers.
+
+* Fixed compilation for 64-bit Digital Unix.
+
 * Igor Zlatkovic
   Fixed compilation of dprintf, which uses read/write, for MSCC.
 
