@@ -2821,7 +2821,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     + ((flags & FLAGS_QUOTE)
        ? TrioCalcThousandSeparatorLength(integerDigits)
        : 0);
-  if (isNegative || (flags & FLAGS_SHOWSIGN))
+  if (isNegative || (flags & FLAGS_SHOWSIGN) || (flags & FLAGS_SPACE))
     expectedWidth += sizeof("-") - 1;
   if (exponentDigits > 0)
     expectedWidth += exponentDigits +
@@ -2837,6 +2837,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	self->OutStream(self, '-');
       else if (flags & FLAGS_SHOWSIGN)
 	self->OutStream(self, '+');
+      else if (flags & FLAGS_SPACE)
+	self->OutStream(self, ' ');
       if (isHex)
 	{
 	  self->OutStream(self, '0');
@@ -2864,6 +2866,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	self->OutStream(self, '-');
       else if (flags & FLAGS_SHOWSIGN)
 	self->OutStream(self, '+');
+      else if (flags & FLAGS_SPACE)
+	self->OutStream(self, ' ');
       if (isHex)
 	{
 	  self->OutStream(self, '0');

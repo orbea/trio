@@ -314,6 +314,10 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%16.4e", -2.342E-02);
   nerrors += Verify(__FILE__, __LINE__, "     -2.3420e-22",
 		    "%16.4e", -2.342E-22);
+  nerrors += Verify(__FILE__, __LINE__, "      2.3420e-02",
+		    "% 16.4e", 2.342E-02);
+  nerrors += Verify(__FILE__, __LINE__, " 2.3420e-02",
+		    "% 1.4e", 2.342E-02);
   nerrors += Verify(__FILE__, __LINE__, "3.141000E-44",
 		    "%E", 3.141e-44);
   nerrors += Verify(__FILE__, __LINE__, "0",

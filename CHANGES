@@ -4,6 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.9 - 2002/08/27
+------------------------
+* Fixed space flag for floating-point numbers (reported by Ian Main)
+
+
 Version 1.8 - 2002/07/10
 ------------------------
 * Fixed infinite loop in multibyte handling (reported by Gisli Ottarsson).
