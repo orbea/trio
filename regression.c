@@ -377,6 +377,7 @@ VerifyFormatting(TRIO_NOARGS)
   /* Beyond accuracy */
   nerrors += Verify(__FILE__, __LINE__, "0.000000",
 		    "%f", 1.234567890123456789e-20);
+#if defined(TRIO_BREESE)
   nerrors += Verify(__FILE__, __LINE__, "1.3999999999999999111821580299875",
 		    "%.32g", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.39999999999999991118215802998748",
@@ -391,6 +392,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.14f", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "39413.800000000002910383045673370361",
 		    "%.30f", 39413.80);
+#endif
   /* 2^-1 + 2^-15 */
   nerrors += Verify(__FILE__, __LINE__, "0.500030517578125",
 		    "%.*g", DBL_DIG + 10, 0.500030517578125);

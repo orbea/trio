@@ -69,7 +69,9 @@
 #define TRIO_TRUE (1 == 1)
 #define TRIO_FALSE (0 == 1)
 
-/* We must enable IEEE floating-point on Alpha */
+/*
+ * We must enable IEEE floating-point on Alpha
+ */
 #if defined(__alpha) && !defined(_IEEE_FP)
 # if defined(TRIO_COMPILER_DECC)
 #  if defined(TRIO_PLATFORM_VMS)
@@ -377,7 +379,7 @@ TRIO_ARGS1((number),
    * Microsoft Visual C++ and Borland C++ Builder have an _isnan()
    * function.
    */
-  return _isnan(number);
+  return _isnan(number) ? TRIO_TRUE : TRIO_FALSE;
 
 #elif defined(USE_IEEE_754)
   /*
