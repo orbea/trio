@@ -372,9 +372,10 @@ TRIO_ARGS1((number),
    */
   return isnan(number);
   
-#elif defined(TRIO_COMPILER_MSVC)
+#elif defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
   /*
-   * MSVC has an _isnan() function
+   * Microsoft Visual C++ and Borland C++ Builder have an _isnan()
+   * function.
    */
   return _isnan(number);
 
@@ -449,9 +450,10 @@ TRIO_ARGS1((number),
     ? ((number > 0.0) ? 1 : -1)
     : 0;
   
-#elif defined(TRIO_COMPILER_MSVC)
+#elif defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
   /*
-   * MSVC has an _fpclass() function that can be used to detect infinity.
+   * Microsoft Visual C++ and Borland C++ Builder have an _fpclass()
+   * function that can be used to detect infinity.
    */
   return ((_fpclass(number) == _FPCLASS_PINF)
 	  ? 1
@@ -514,9 +516,9 @@ TRIO_ARGS1((number),
    */
   return isfinite(number);
   
-#elif defined(TRIO_COMPILER_MSVC)
+#elif defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
   /*
-   * MSVC uses _finite().
+   * Microsoft Visual C++ and Borland C++ Builder use _finite().
    */
   return _finite(number);
 
@@ -583,9 +585,10 @@ TRIO_ARGS2((number, is_negative),
 #  define TRIO_POSITIVE_NORMAL FP_POS_NORM
 #  define TRIO_NEGATIVE_NORMAL FP_NEG_NORM
   
-# elif defined(TRIO_COMPILER_MSVC)
+# elif defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
   /*
-   * MSVC has an _fpclass() function.
+   * Microsoft Visual C++ and Borland C++ Builder have an _fpclass()
+   * function.
    */
 #  define TRIO_FPCLASSIFY(n) _fpclass(n)
 #  define TRIO_QUIET_NAN _FPCLASS_QNAN
@@ -890,7 +893,7 @@ int main(TRIO_NOARGS)
 	 ((unsigned char *)&my_ninf)[6],
 	 ((unsigned char *)&my_ninf)[7],
 	 trio_isnan(my_ninf), trio_isinf(my_ninf));
-	 
+  
   return 0;
 }
 #endif

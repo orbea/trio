@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.10 - 2002/11/21
+Version 1.10 - 2002/12/08
 -------------------------
+* Rune Enggaard Lausen
+  Fixed compilation for Borland C++ Builder.
+
 * Fixed precision of hex-float numbers (reported by James Antill)
 
 * Fixed plus sign only to be added for signed numbers.

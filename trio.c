@@ -64,6 +64,10 @@
 # endif
 #endif
 
+#if (defined(TRIO_COMPILER_MSVC) && (_MSC_VER >= 1100)) || defined(TRIO_COMPILER_BCB)
+# define TRIO_COMPILER_SUPPORTS_MSVC_INT
+#endif
+
 /*************************************************************************
  * Generic definitions
  */
@@ -131,8 +135,6 @@ typedef unsigned long trio_flags_t;
 # define write _write
 #endif /* TRIO_PLATFORM_WIN32 */
 
-#define TRIO_MSVC_VERSION_5 1100
-
 #if TRIO_WIDECHAR
 # if defined(TRIO_COMPILER_SUPPORTS_ISO94)
 #  include <wchar.h>
@@ -181,14 +183,9 @@ typedef int trio_wint_t;
 #if defined(USE_LONGLONG)
 typedef signed long long int trio_longlong_t;
 typedef unsigned long long int trio_ulonglong_t;
-#elif defined(TRIO_COMPILER_MSVC)
-# if (_MSC_VER >= TRIO_MSVC_VERSION_5)
+#elif defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
 typedef signed __int64 trio_longlong_t;
 typedef unsigned __int64 trio_ulonglong_t;
-# else
-typedef signed long int trio_longlong_t;
-typedef unsigned long int trio_ulonglong_t;
-# endif
 #else
 typedef TRIO_SIGNED long int trio_longlong_t;
 typedef unsigned long int trio_ulonglong_t;
@@ -211,7 +208,7 @@ typedef int8_t trio_int8_t;
 typedef int16_t trio_int16_t;
 typedef int32_t trio_int32_t;
 typedef int64_t trio_int64_t;
-#elif defined(TRIO_COMPILER_MSVC) && (_MSC_VER >= TRIO_MSVC_VERSION_5)
+#elif defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
 typedef trio_longlong_t trio_intmax_t;
 typedef trio_ulonglong_t trio_uintmax_t;
 typedef __int8 trio_int8_t;

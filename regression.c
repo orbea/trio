@@ -507,11 +507,13 @@ VerifyFormatting(TRIO_NOARGS)
 #endif
   
 #if TRIO_BSD || TRIO_GNU
+# if defined(TRIO_COMPILER_SUPPORTS_LL)
   /* This may fail if the preprocessor does not recognize LL */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		    "%qd", 42LL);
+# endif
 #endif
-
+  
 #if TRIO_C99
   nerrors += Verify(__FILE__, __LINE__, "0x2.ap+1",
 		    "%a", 42.0);
@@ -531,9 +533,11 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%zd", sizeof(buffer));
   nerrors += Verify(__FILE__, __LINE__, "42",
 		    "%td", 42);
+# if defined(TRIO_COMPILER_SUPPORTS_LL)
   /* Some compilers may not handle the LL suffix correctly */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		    "%jd", 42LL);
+# endif
 #endif
 
 #if TRIO_WIDECHAR

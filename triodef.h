@@ -75,7 +75,7 @@
 # define TRIO_PLATFORM_HPUX
 #endif
 
-#if defined(__STDC__) || defined(TRIO_COMPILER_MSVC)
+#if defined(__STDC__) || defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
 # define TRIO_COMPILER_SUPPORTS_C89
 # if defined(__STDC_VERSION__)
 #  define TRIO_COMPILER_SUPPORTS_C90
@@ -201,6 +201,14 @@ typedef void * trio_pointer_t;
 #   undef TRIO_COMPILER_SUPPORTS_C99
 #  endif
 # endif
+#endif
+
+/*
+ * Not all preprocessors supports the LL token.
+ */
+#if defined(TRIO_COMPILER_BCB)
+#else
+# define TRIO_COMPILER_SUPPORTS_LL
 #endif
 
 #endif /* TRIO_TRIODEF_H */
