@@ -33,9 +33,11 @@ static TRIO_CONST char rcsid[] = "@(#)$Id$";
 /*************************************************************************
  *
  */
-void Dump(buffer, rc)
-     char *buffer;
-     int rc;
+void
+Dump
+TRIO_ARGS2((buffer, rc),
+	   char *buffer,
+	   int rc)
 {
   if (rc < 0)
     {
@@ -51,11 +53,13 @@ void Dump(buffer, rc)
 /*************************************************************************
  *
  */
-void Report(file, line, expected, got)
-     TRIO_CONST char *file;
-     int line;
-     TRIO_CONST char *expected;
-     TRIO_CONST char *got;
+void
+Report
+TRIO_ARGS4((file, line, expected, got),
+	   TRIO_CONST char *file,
+	   int line,
+	   TRIO_CONST char *expected,
+	   TRIO_CONST char *got)
 {
   printf("Verification failed in %s:%d.\n", file, line);
   printf("  Expected \"%s\"\n", expected);
@@ -66,20 +70,13 @@ void Report(file, line, expected, got)
  *
  */
 int
-#if defined(TRIO_COMPILER_ANCIENT)
-Verify(file, line, result, fmt, va_alist)
-     TRIO_CONST char *file;
-     int line;
-     TRIO_CONST char *result;
-     TRIO_CONST char *fmt;
-     va_dcl
-#else
-Verify(TRIO_CONST char *file,
-       int line,
-       TRIO_CONST char *result,
-       TRIO_CONST char *fmt,
-       ...)
-#endif
+Verify
+TRIO_VARGS5((file, line, result, fmt, va_alist),
+	    TRIO_CONST char *file,
+	    int line,
+	    TRIO_CONST char *result,
+	    TRIO_CONST char *fmt,
+	    TRIO_VA_DECL)
 {
   int rc;
   va_list args;
@@ -102,7 +99,8 @@ Verify(TRIO_CONST char *file,
 /*************************************************************************
  *
  */
-int VerifyReturnValues(TRIO_NOARGS)
+int
+VerifyReturnValues(TRIO_NOARGS)
 {
   int nerr = 0;
   int rc;
@@ -167,7 +165,8 @@ int VerifyReturnValues(TRIO_NOARGS)
  */
 #define TEST_STRING "0123456789"
 
-int VerifyAllocate(TRIO_NOARGS)
+int
+VerifyAllocate(TRIO_NOARGS)
 {
   int nerr = 0;
   int rc;
@@ -204,7 +203,8 @@ int VerifyAllocate(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyFormatting(TRIO_NOARGS)
+int
+VerifyFormatting(TRIO_NOARGS)
 {
   int nerrors = 0;
   char buffer[256];
@@ -492,7 +492,8 @@ int VerifyFormatting(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyErrors(TRIO_NOARGS)
+int
+VerifyErrors(TRIO_NOARGS)
 {
   char buffer[512];
   int rc;
@@ -545,12 +546,14 @@ int VerifyErrors(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyScanningOneInteger(file, line, expected, format, original)
-     TRIO_CONST char *file;
-     int line;
-     TRIO_CONST char *expected;
-     TRIO_CONST char *format;
-     int original;
+int
+VerifyScanningOneInteger
+TRIO_ARGS5((file, line, expected, format, original),
+	   TRIO_CONST char *file,
+	   int line,
+	   TRIO_CONST char *expected,
+	   TRIO_CONST char *format,
+	   int original)
 {
   int number;
   char data[512];
@@ -560,7 +563,8 @@ int VerifyScanningOneInteger(file, line, expected, format, original)
   return Verify(file, line, expected, format, number);
 }
 
-int VerifyScanningIntegers(TRIO_NOARGS)
+int
+VerifyScanningIntegers(TRIO_NOARGS)
 {
   int nerrors = 0;
 
@@ -591,12 +595,14 @@ int VerifyScanningIntegers(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyScanningOneFloat(file, line, expected, format, original)
-     TRIO_CONST char *file;
-     int line;
-     TRIO_CONST char *expected;
-     TRIO_CONST char *format;
-     double original;
+int
+VerifyScanningOneFloat
+TRIO_ARGS5((file, line, expected, format, original),
+	   TRIO_CONST char *file,
+	   int line,
+	   TRIO_CONST char *expected,
+	   TRIO_CONST char *format,
+	   double original)
 {
   double number;
   char data[512];
@@ -606,7 +612,8 @@ int VerifyScanningOneFloat(file, line, expected, format, original)
   return Verify(file, line, expected, format, number);
 }
 
-int VerifyScanningFloats(TRIO_NOARGS)
+int
+VerifyScanningFloats(TRIO_NOARGS)
 {
   int nerrors = 0;
 
@@ -659,12 +666,14 @@ int VerifyScanningFloats(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyScanningOneString(file, line, expected, format, original)
-     TRIO_CONST char *file;
-     int line;
-     TRIO_CONST char *expected;
-     TRIO_CONST char *format;
-     char *original;
+int
+VerifyScanningOneString
+TRIO_ARGS5((file, line, expected, format, original),
+	   TRIO_CONST char *file,
+	   int line,
+	   TRIO_CONST char *expected,
+	   TRIO_CONST char *format,
+	   char *original)
 {
   char string[512];
   char data[512];
@@ -674,7 +683,8 @@ int VerifyScanningOneString(file, line, expected, format, original)
   return Verify(file, line, expected, "%s", string);
 }
 
-int VerifyScanningStrings(TRIO_NOARGS)
+int
+VerifyScanningStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
 
@@ -707,7 +717,8 @@ int VerifyScanningStrings(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyScanningRegression(TRIO_NOARGS)
+int
+VerifyScanningRegression(TRIO_NOARGS)
 {
   int nerrors = 0;
   int rc;
@@ -736,7 +747,8 @@ int VerifyScanningRegression(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyScanning(TRIO_NOARGS)
+int
+VerifyScanning(TRIO_NOARGS)
 {
   int nerrors = 0;
 
@@ -751,7 +763,8 @@ int VerifyScanning(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyStrings(TRIO_NOARGS)
+int
+VerifyStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
   char buffer[512];
@@ -835,7 +848,8 @@ int VerifyStrings(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int VerifyDynamicStrings(TRIO_NOARGS)
+int
+VerifyDynamicStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
   trio_string_t *string;
@@ -869,7 +883,8 @@ int VerifyDynamicStrings(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-static int VerifyNaN(void)
+int
+VerifyNaN(TRIO_NOARGS)
 {
   double ninf_number = trio_ninf();
   double pinf_number = trio_pinf();
@@ -893,7 +908,8 @@ static int VerifyNaN(void)
 /*************************************************************************
  *
  */
-int main(TRIO_NOARGS)
+int
+main(TRIO_NOARGS)
 {
   int nerrors = 0;
 
@@ -928,4 +944,3 @@ int main(TRIO_NOARGS)
   
   return nerrors ? 1 : 0;
 }
-

@@ -193,8 +193,9 @@ static TRIO_CONST unsigned char ieee_754_qnan_array[] = {
  * trio_make_double
  */
 TRIO_PRIVATE double
-trio_make_double(values)
-     TRIO_CONST unsigned char *values;
+trio_make_double
+TRIO_ARGS1((values),
+	   TRIO_CONST unsigned char *values)
 {
   TRIO_VOLATILE double result;
   int i;
@@ -209,9 +210,10 @@ trio_make_double(values)
  * trio_is_special_quantity
  */
 TRIO_PRIVATE int
-trio_is_special_quantity(number, has_mantissa)
-     double number;
-     int *has_mantissa;
+trio_is_special_quantity
+TRIO_ARGS2((number, has_mantissa),
+	   double number,
+	   int *has_mantissa)
 {
   unsigned int i;
   unsigned char current;
@@ -232,8 +234,9 @@ trio_is_special_quantity(number, has_mantissa)
  * trio_is_negative
  */
 TRIO_PRIVATE int
-trio_is_negative(number)
-     double number;
+trio_is_negative
+TRIO_ARGS1((number),
+	   double number)
 {
   unsigned int i;
   int is_negative = TRIO_FALSE;
@@ -384,8 +387,9 @@ trio_nan(TRIO_NOARGS)
    @return Boolean value indicating whether or not the number is a NaN.
 */
 TRIO_PUBLIC int
-trio_isnan(number)
-     TRIO_VOLATILE double number;
+trio_isnan
+TRIO_ARGS1((number),
+	   TRIO_VOLATILE double number)
 {
 #if (defined(TRIO_COMPILER_SUPPORTS_C99) && defined(isnan)) \
  || defined(TRIO_COMPILER_SUPPORTS_UNIX95)
@@ -453,8 +457,9 @@ trio_isnan(number)
    @return 1 if positive infinity, -1 if negative infinity, 0 otherwise.
 */
 TRIO_PUBLIC int
-trio_isinf(number)
-     TRIO_VOLATILE double number;
+trio_isinf
+TRIO_ARGS1((number),
+	   TRIO_VOLATILE double number)
 {
 #if defined(TRIO_COMPILER_DECC)
   /*
@@ -536,8 +541,9 @@ trio_isinf(number)
    @return Boolean value indicating whether or not the number is a finite.
 */
 TRIO_PUBLIC int
-trio_isfinite(number)
-     TRIO_VOLATILE double number;
+trio_isfinite
+TRIO_ARGS1((number),
+	   TRIO_VOLATILE double number)
 {
 #if defined(TRIO_COMPILER_SUPPORTS_C99) && defined(isfinite)
   /*
@@ -573,9 +579,10 @@ trio_isfinite(number)
  * The sign of NaN is always false
  */
 TRIO_PUBLIC int
-trio_fpclassign(number, is_negative)
-     TRIO_VOLATILE double number;
-     int *is_negative;
+trio_fpclassign
+TRIO_ARGS2((number, is_negative),
+	   TRIO_VOLATILE double number,
+	   int *is_negative)
 {
 #if defined(fpclassify) && defined(signbit)
   /*
@@ -761,8 +768,9 @@ trio_fpclassign(number, is_negative)
    sign bit set (i.e. is negative).
 */
 TRIO_PUBLIC int
-trio_signbit(number)
-     TRIO_VOLATILE double number;
+trio_signbit
+TRIO_ARGS1((number),
+	   TRIO_VOLATILE double number)
 {
   int is_negative;
   
@@ -777,8 +785,9 @@ trio_signbit(number)
    @return Enumerable value indicating the class of @p number
 */
 TRIO_PUBLIC int
-trio_fpclassify(number)
-     TRIO_VOLATILE double number;
+trio_fpclassify
+TRIO_ARGS1((number),
+	   TRIO_VOLATILE double number)
 {
   int dummy;
   
