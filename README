@@ -26,8 +26,13 @@ you want documentation) to the appropriate directories.
 
 Catch some usage examples in example.c
 
-Send feedback and patches to Daniel.Stenberg@haxx.nu
+Send feedback and patches to the mailing list, subscription and other
+information is found here:
+
+        http://lists.sourceforge.net/lists/listinfo/ctrio-talk
 
 Enjoy!
 
-http://www.sourceforge.net/projects/ctrio/
+Trio web page
+
+        http://www.contactor.se/~dast/trio/
