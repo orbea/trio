@@ -2333,9 +2333,8 @@ TrioWriteDouble(trio_class_t *self,
   int groupingIndex;
   char *work;
   int i;
-  BOOLEAN_T onlyzero;
+  BOOLEAN_T hasOnlyZeroes;
   int zeroes = 0;
-  BOOLEAN_T fakezero;
   
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -2452,9 +2451,9 @@ TrioWriteDouble(trio_class_t *self,
     ? precision - integerDigits
     : zeroes + precision;
 
-  fakezero = (integerDigits > DBL_DIG);
-  if (!fakezero)
+  if (!(integerDigits > DBL_DIG))
     {
+      /* Within accuracy */
       number = floor(0.5 + number * pow(dblBase, (double)fractionDigits));
     }
   workNumber = (isHex
@@ -2479,11 +2478,12 @@ TrioWriteDouble(trio_class_t *self,
   /* Build the fraction part */
   numberPointer = &numberBuffer[sizeof(numberBuffer) - 1];
   *numberPointer = NIL;
-  onlyzero = TRUE;
+  hasOnlyZeroes = TRUE;
   for (i = 0; i < fractionDigits; i++)
     {
-      if (fakezero)
+      if (integerDigits > DBL_DIG)
 	{
+	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
 	}
       else
@@ -2496,16 +2496,16 @@ TrioWriteDouble(trio_class_t *self,
         {
           /* Prune trailing zeroes */
           if (numberPointer[0] != digits[0])
-            onlyzero = FALSE;
-          else if (onlyzero && (numberPointer[0] == digits[0]))
+            hasOnlyZeroes = FALSE;
+          else if (hasOnlyZeroes && (numberPointer[0] == digits[0]))
             numberPointer++;
         }
       else
-        onlyzero = FALSE;
+        hasOnlyZeroes = FALSE;
     }
   
   /* Insert decimal point */
-  if ((flags & FLAGS_ALTERNATIVE) || ((fractionDigits > 0) && !onlyzero))
+  if ((flags & FLAGS_ALTERNATIVE) || ((fractionDigits > 0) && !hasOnlyZeroes))
     {
       i = trio_length(internalDecimalPoint);
       while (i> 0)
@@ -2518,8 +2518,9 @@ TrioWriteDouble(trio_class_t *self,
   groupingIndex = 1;
   for (i = 1; i < integerDigits + 1; i++)
     {
-      if (fakezero && (i < integerDigits - DBL_DIG))
+      if (i < integerDigits - DBL_DIG)
 	{
+	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
 	}
       else
