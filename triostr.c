@@ -58,8 +58,10 @@
 #if defined(TRIO_COMPILER_SUPPORTS_C99)
 # define USE_STRTOD
 # define USE_STRTOF
-#elif defined(TRIO_COMPILER_MSVC)
-# define USE_STRTOD
+#else
+# if defined(TRIO_COMPILER_MSVC)
+#  define USE_STRTOD
+# endif
 #endif
 
 #if defined(TRIO_PLATFORM_UNIX)
@@ -76,7 +78,9 @@
 #  define strcasecmp(x,y) stricmp(x,y)
 #  define strncasecmp(x,y,n) strnicmp(x,y,n)
 # endif
-#elif defined(TRIO_PLATFORM_WIN32)
+#endif
+
+#if defined(TRIO_PLATFORM_WIN32)
 # define USE_STRCASECMP
 # define strcasecmp(x,y) strcmpi(x,y)
 #endif
@@ -90,9 +94,11 @@
 # if defined(TRIO_COMPILER_SUPPORTS_C99) \
   || defined(TRIO_COMPILER_SUPPORTS_UNIX01)
 #  define HAVE_POWL
-# elif defined(TRIO_COMPILER_MSVC)
-#  if defined(powl)
-#   define HAVE_POWL
+# else
+#  if defined(TRIO_COMPILER_MSVC)
+#   if defined(powl)
+#    define HAVE_POWL
+#   endif
 #  endif
 # endif
 #endif
@@ -577,7 +583,8 @@ TRIO_ARGS1((error_number),
   
   return strerror(error_number);
 
-#elif defined(USE_SYS_ERRLIST)
+#else
+# if defined(USE_SYS_ERRLIST)
 
   extern char *sys_errlist[];
   extern int sys_nerr;
@@ -586,10 +593,11 @@ TRIO_ARGS1((error_number),
     ? "unknown"
     : sys_errlist[error_number];
  
-#else
+# else
   
   return "unknown";
-  
+
+# endif
 #endif
 }
 

@@ -84,7 +84,8 @@
 # if !defined(HAVE_FMODL)
 #  define HAVE_FMODL
 # endif
-#elif defined(TRIO_COMPILER_MSVC)
+#endif
+#if defined(TRIO_COMPILER_MSVC)
 # if defined(floorl)
 #  define HAVE_FLOORL
 # endif
@@ -197,10 +198,14 @@ typedef int trio_wint_t;
 # if !defined(USE_LONGLONG)
 #  if defined(TRIO_COMPILER_GCC) && !defined(__STRICT_ANSI__)
 #   define USE_LONGLONG
-#  elif defined(TRIO_COMPILER_SUNPRO)
-#   define USE_LONGLONG
-#  elif defined(_LONG_LONG) || defined(_LONGLONG)
-#   define USE_LONGLONG
+#  else
+#   if defined(TRIO_COMPILER_SUNPRO)
+#    define USE_LONGLONG
+#   else
+#    if defined(_LONG_LONG) || defined(_LONGLONG)
+#     define USE_LONGLONG
+#    endif
+#   endif
 #  endif
 # endif
 #endif
@@ -209,12 +214,14 @@ typedef int trio_wint_t;
 #if defined(USE_LONGLONG)
 typedef signed long long int trio_longlong_t;
 typedef unsigned long long int trio_ulonglong_t;
-#elif defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
+#else
+# if defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
 typedef signed __int64 trio_longlong_t;
 typedef unsigned __int64 trio_ulonglong_t;
-#else
+# else
 typedef TRIO_SIGNED long int trio_longlong_t;
 typedef unsigned long int trio_ulonglong_t;
+# endif
 #endif
 
 /* Maximal and fixed integer types */
@@ -226,43 +233,47 @@ typedef int8_t trio_int8_t;
 typedef int16_t trio_int16_t;
 typedef int32_t trio_int32_t;
 typedef int64_t trio_int64_t;
-#elif defined(TRIO_COMPILER_SUPPORTS_UNIX98)
-# include <inttypes.h>
+#else
+# if defined(TRIO_COMPILER_SUPPORTS_UNIX98)
+#  include <inttypes.h>
 typedef intmax_t trio_intmax_t;
 typedef uintmax_t trio_uintmax_t;
 typedef int8_t trio_int8_t;
 typedef int16_t trio_int16_t;
 typedef int32_t trio_int32_t;
 typedef int64_t trio_int64_t;
-#elif defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
+# else
+#  if defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
 typedef trio_longlong_t trio_intmax_t;
 typedef trio_ulonglong_t trio_uintmax_t;
 typedef __int8 trio_int8_t;
 typedef __int16 trio_int16_t;
 typedef __int32 trio_int32_t;
 typedef __int64 trio_int64_t;
-#else
+#  else
 typedef trio_longlong_t trio_intmax_t;
 typedef trio_ulonglong_t trio_uintmax_t;
-# if defined(TRIO_INT8_T)
+#   if defined(TRIO_INT8_T)
 typedef TRIO_INT8_T trio_int8_t;
-# else
+#   else
 typedef TRIO_SIGNED char trio_int8_t;
-# endif
-# if defined(TRIO_INT16_T)
+#   endif
+#   if defined(TRIO_INT16_T)
 typedef TRIO_INT16_T trio_int16_t;
-# else
+#   else
 typedef TRIO_SIGNED short trio_int16_t;
-# endif
-# if defined(TRIO_INT32_T)
+#   endif
+#   if defined(TRIO_INT32_T)
 typedef TRIO_INT32_T trio_int32_t;
-# else
+#   else
 typedef TRIO_SIGNED int trio_int32_t;
-# endif
-# if defined(TRIO_INT64_T)
+#   endif
+#   if defined(TRIO_INT64_T)
 typedef TRIO_INT64_T trio_int64_t;
-# else
+#   else
 typedef trio_longlong_t trio_int64_t;
+#   endif
+#  endif
 # endif
 #endif
 
