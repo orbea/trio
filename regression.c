@@ -676,6 +676,23 @@ int VerifyScanningStrings(void)
 /*************************************************************************
  *
  */
+int VerifyScanningRegression(void)
+{
+  int nerrors = 0;
+  int rc;
+  int index;
+  double number;
+
+  rc = trio_sscanf("1.5", "%lf%n", &number, &index);
+  nerrors += Verify(__FILE__, __LINE__, "1 3 1.500000" ,
+		    "%d %d %f", rc, index, number);
+  
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
 int VerifyScanning(void)
 {
   int nerrors = 0;
@@ -683,7 +700,8 @@ int VerifyScanning(void)
   nerrors += VerifyScanningIntegers();
   nerrors += VerifyScanningFloats();
   nerrors += VerifyScanningStrings();
-
+  nerrors += VerifyScanningRegression();
+  
   return nerrors;
 }
 

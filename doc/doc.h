@@ -132,6 +132,7 @@ order sorted by surname)
 @li Paul Janzen
 @li Tero Jänkä
 @li Howard Kapustein
+@li Alexander Lukyanov
 @li Jose Ortiz
 @li Joe Orton
 @li Gisli Ottarsson

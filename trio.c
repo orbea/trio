@@ -5238,8 +5238,11 @@ TrioScanProcess(trio_class_t *data,
 	  continue; /* while */
 	}
 #endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
-      if (EOF == ch)
-	return EOF;
+      
+      if ((EOF == ch) && (parameters[i].type != FORMAT_COUNT))
+	{
+	  return EOF; (assignment > 0) ? assignment : EOF;
+	}
       
       if (CHAR_IDENTIFIER == format[index])
 	{
@@ -5559,8 +5562,11 @@ TrioInStreamFile(trio_class_t *self,
 	? TRIO_ERROR_RETURN(TRIO_ERRNO, 0)
 	: TRIO_ERROR_RETURN(TRIO_EOF, 0);
     }
-  self->processed++;
-  self->committed++;
+  else
+    {
+      self->processed++;
+      self->committed++;
+    }
   
   if (VALID(intPointer))
     {
@@ -5591,8 +5597,11 @@ TrioInStreamFileDescriptor(trio_class_t *self,
     {
       self->current = (size == 0) ? EOF : input;
     }
-  self->committed++;
-  self->processed++;
+  if (self->current != EOF)
+    {
+      self->committed++;
+      self->processed++;
+    }
   
   if (VALID(intPointer))
     {
@@ -5616,10 +5625,15 @@ TrioInStreamString(trio_class_t *self,
   buffer = (unsigned char **)self->location;
   self->current = (*buffer)[0];
   if (self->current == NIL)
-    self->current = EOF;
-  (*buffer)++;
-  self->processed++;
-  self->committed++;
+    {
+      self->current = EOF;
+    }
+  else
+    {
+      (*buffer)++;
+      self->processed++;
+      self->committed++;
+    }
   
   if (VALID(intPointer))
     {
