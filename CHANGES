@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.8 - 2002/05/25
+Version 1.8 - 2002/06/22
 ------------------------
+* Added the customizable cprintf/cscanf family which enables to user to specify
+  input and output stream functions (suggested by Florian Schulze).
+
 * Alexander Lukyanov
   Fixed boundary case for scanning and EOF.
 
@@ -176,10 +179,10 @@ Version 1.4 - 2001/06/03
 Version 1.3 - 2001/05/16
 ------------------------
 * trio's treatment of the field width when the %e code was used was not
-  correct (Gisli Ottarsson reported). It turns out the fraction part should
-  be zero-padded by default and the exponent part should be zero-prefixed
-  if it is only one digit. At least that's how the GNU and Sun libc's work.
-  The trio floating point output looks identical to them now.
+  correct (reported by Gisli Ottarsson). It turns out the fraction part should
+  be zero-padded by default and the exponent part should be zero-prefixed if
+  it is only one digit. At least that's how the GNU and Sun libc's work. The
+  trio floating point output looks identical to them now.
 
 * Fixed group scanning with modifiers.
 
