@@ -64,6 +64,9 @@
 
 static const char rcsid[] = "@(#)$Id$";
 
+/** @addtogroup SpecialQuantities Special Quantifies
+    @{
+*/
 
 /*************************************************************************
  * Include files
@@ -161,6 +164,10 @@ static TRIO_CONST unsigned char ieee_754_qnan_array[] = {
 
 
 /*************************************************************************
+ * Functions
+ */
+
+/*
  * trio_make_double
  */
 TRIO_PRIVATE double
@@ -175,7 +182,7 @@ trio_make_double(TRIO_CONST unsigned char *values)
   return result;
 }
 
-/*************************************************************************
+/*
  * trio_examine_double
  */
 TRIO_PRIVATE int
@@ -199,10 +206,11 @@ trio_is_special_quantity(double number,
 
 #endif /* USE_IEEE_754 */
 
+/**
+   Generate positive infinity.
 
-/*************************************************************************
- * trio_pinf
- */
+   @return Positive infinity.
+*/
 TRIO_PUBLIC double
 trio_pinf(void)
 {
@@ -242,9 +250,11 @@ trio_pinf(void)
   return result;
 }
 
-/*************************************************************************
- * trio_ninf
- */
+/**
+   Generate negative infinity.
+
+   @return Negative infinity.
+*/
 TRIO_PUBLIC double
 trio_ninf(void)
 {
@@ -261,9 +271,11 @@ trio_ninf(void)
   return result;
 }
 
-/*************************************************************************
- * trio_nan
- */
+/**
+   Generate Not-A-Number.
+
+   @return Not-A-Number.
+*/
 TRIO_PUBLIC double
 trio_nan(void)
 {
@@ -306,9 +318,12 @@ trio_nan(void)
   return result;
 }
 
-/*************************************************************************
- * trio_isnan
- */
+/**
+   Check for Not-A-Number.
+
+   @param number An arbitrary floating-point number.
+   @return Boolean value indicating success of failure.
+*/
 TRIO_PUBLIC int
 trio_isnan(TRIO_VOLATILE double number)
 {
@@ -370,9 +385,12 @@ trio_isnan(TRIO_VOLATILE double number)
 #endif
 }
 
-/*************************************************************************
- * trio_isinf
- */
+/**
+   Check for infinity.
+
+   @param number An arbitrary floating-point number.
+   @return 1 if positive infinity, -1 if negative infinity, 0 otherwise.
+*/
 TRIO_PUBLIC int
 trio_isinf(TRIO_VOLATILE double number)
 {
@@ -437,6 +455,8 @@ trio_isinf(TRIO_VOLATILE double number)
   
 #endif
 }
+
+/** @} SpecialQuantities */
 
 /*************************************************************************
  * For test purposes.

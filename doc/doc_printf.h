@@ -15,7 +15,7 @@
  *
  ************************************************************************/
 
-/** @addtogroup Printf Formatted Scanning Functions.
+/** @addtogroup Printf Formatted Printing Functions.
 Variations of formatted printing functions.
 
 @b SYNOPSIS
@@ -405,13 +405,13 @@ Non-printable characters are converted into C escapes, or hexadecimal numbers
 where no C escapes exists for the character. The C escapes, the hexadecimal
 number, and all backslashes are prepended by a backslash ( @c \ ).
 The supported C escapes are
-@li @c \\a (\007) = alert
-@li @c \\b (\010) = backspace
-@li @c \\f (\014) = formfeed
-@li @c \\n (\012) = newline
-@li @c \\r (\015) = carriage return
-@li @c \\t (\011) = horizontal tab
-@li @c \\v (\013) = vertical tab
+@li @c \a (\007) = alert
+@li @c \b (\010) = backspace
+@li @c \f (\014) = formfeed
+@li @c \n (\012) = newline
+@li @c \r (\015) = carriage return
+@li @c \t (\011) = horizontal tab
+@li @c \v (\013) = vertical tab
 
 @verbatim
   trio_printf("|One %s Three|One %'s Three|\n", "Two", "Two");
