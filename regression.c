@@ -299,6 +299,8 @@ VerifyFormatting(TRIO_NOARGS)
 		   "%o", 42);
   nerrors += Verify(__FILE__, __LINE__, "052",
 		   "%#o", 42);
+  nerrors += Verify(__FILE__, __LINE__, "0",
+		   "%#o", 0);
   nerrors += Verify(__FILE__, __LINE__, "2a",
 		    "%x", 42);
   nerrors += Verify(__FILE__, __LINE__, "2A",
