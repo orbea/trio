@@ -67,17 +67,24 @@ static const char rcsid[] = "@(#)$Id$";
  */
 #if defined(__GNUC__)
 # define TRIO_COMPILER_GCC
-#endif
-#if defined(__SUNPRO_C)
+#elif defined(__SUNPRO_C)
 # define TRIO_COMPILER_SUNPRO
-#endif
-#if defined(_MSC_VER)
+#elif defined(__SUNPRO_CC)
+# define TRIO_COMPILER_SUNPRO
+# define __SUNPRO_C __SUNPRO_CC
+#elif defined(__xlC__)
+# define TRIO_COMPILER_XLC
+#elif defined(__DECC)
+# define TRIO_COMPILER_DECC
+#elif defined(_MSC_VER)
 # define TRIO_COMPILER_MSVC
 #endif
 
-#if defined(unix)
+#if defined(unix) || defined(__unix) || defined(__unix__)
 # define PLATFORM_UNIX
-#elif defined(__xlC__) || defined(_AIX)
+#elif defined(TRIO_COMPILER_XLC) || defined(_AIX)
+# define PLATFORM_UNIX
+#elif defined(TRIO_COMPILER_DECC) || defined(__alpha)
 # define PLATFORM_UNIX
 #elif defined(__QNX__)
 # define PLATFORM_UNIX
@@ -85,16 +92,22 @@ static const char rcsid[] = "@(#)$Id$";
 # define PLATFORM_UNIX
 #elif defined(AMIGA) && defined(TRIO_COMPILER_GCC)
 # define PLATFORM_UNIX
-#elif defined(WIN32) || defined(_WIN32) || defined(TRIO_COMPILER_MSVC)
+#elif defined(TRIO_COMPILER_MSVC) || defined(WIN32) || defined(_WIN32)
 # define PLATFORM_WIN32
 #endif
 
-#if defined(__STDC__) && defined(__STDC_VERSION__)
-# if (__STDC_VERSION__ >= 199409L)
-#  define TRIO_COMPILER_SUPPORTS_ISO94
-# endif
-# if (__STDC_VERSION__ >= 199901L)
-#  define TRIO_COMPILER_SUPPORTS_C99
+#if defined(__STDC__)
+# if defined(__STDC_VERSION__)
+#  if (__STDC_VERSION__ >= 199409L)
+#   define TRIO_COMPILER_SUPPORTS_ISO94
+#  endif
+#  if (__STDC_VERSION__ >= 199901L)
+#   define TRIO_COMPILER_SUPPORTS_C99
+#  endif
+# elif defined(TRIO_COMPILER_SUNPRO)
+#  if (__SUNPRO_C >= 0x420)
+#   define TRIO_COMPILER_SUPPORTS_ISO94
+#  endif
 # endif
 #endif
 
@@ -173,16 +186,17 @@ static const char rcsid[] = "@(#)$Id$";
 
 /* Wide characters */
 #define iswascii(x) ((x) < 128)
-#if defined(__FreeBSD__) || defined(__NetBSD__)
-# define WCONST(x) L ## x
-# include <stdlib.h>
-#elif defined(COMPILER_DECC)
+#if defined(TRIO_COMPILER_DECC)
 # define WCONST(x) L ## x
 # include <sys/types.h>
 #elif defined(TRIO_COMPILER_SUPPORTS_ISO94)
 # define WCONST(x) L ## x
-# include <wchar.h>
-# include <wctype.h>
+# if !defined(TRIO_COMPILER_SUPPORTS_C99)
+#  include <stdlib.h>
+# else
+#  include <wchar.h>
+#  include <wctype.h>
+# endif
 #else
 # define WCONST(x) (x)
 typedef char wchar_t;

@@ -22,11 +22,21 @@ static const char rcsid[] = "@(#)$Id$";
 /*************************************************************************
  * Platform and compiler support detection
  */
+#if defined(__GNUC__)
+# define TRIO_COMPILER_GCC
+#elif defined(_MSC_VER)
+# define TRIO_COMPILER_MSVC
+#elif defined(__DECC)
+# define TRIO_COMPILER_DECC
+#elif defined(__xlC__)
+# define TRIO_COMPILER_XLC
+#endif
+
 #if defined(unix) || defined(__unix__)
 # define PLATFORM_UNIX
-#elif defined(__xlC__) || defined(_AIX)
+#elif defined(TRIO_COMPILER_XLC) || defined(_AIX)
 # define PLATFORM_UNIX
-#elif defined(__DECC) || defined(__osf__)
+#elif defined(TRIO_COMPILER_DECC) || defined(__osf__)
 # define PLATFORM_UNIX
 #elif defined(__NetBSD__)
 # define PLATFORM_UNIX
@@ -34,28 +44,15 @@ static const char rcsid[] = "@(#)$Id$";
 # defined PLATFORM_UNIX
 #endif
 
-#if defined(__GNUC__)
-# define COMPILER_GCC
-#endif
-#if defined(_MSC_VER)
-# define COMPILER_MSVC
-#endif
-#if defined(__DECC)
-# define COMPILER_DECC
-#endif
-#if defined(__xlC__)
-# define COMPILER_XLC
-#endif
-
 #if defined(__STDC__) && defined(__STDC_VERSION__)
 # if (__STDC_VERSION__ >= 199901L)
-#  define COMPILER_SUPPORTS_C99
+#  define TRIO_COMPILER_SUPPORTS_C99
 # endif
 #endif
 
 #if defined(_XOPEN_SOURCE)
 # if defined(_XOPEN_SOURCE_EXTENDED)
-#  define COMPILER_SUPPORTS_UNIX95
+#  define TRIO_COMPILER_SUPPORTS_UNIX95
 # endif
 #endif
 
@@ -69,15 +66,15 @@ static const char rcsid[] = "@(#)$Id$";
 #endif
 
 /* Some IBM xlC compiler fu */
-#if defined(COMPILER_XLC)
+#if defined(TRIO_COMPILER_XLC)
 # pragma options float=nans
 #endif
 
 /* We must enable IEEE floating-point on Alpha */
-#if defined(__osf__) && !defined(_IEEE_FP)
-# if defined(COMPILER_DECC)
+#if defined(__alpha) && !defined(_IEEE_FP)
+# if defined(TRIO_COMPILER_DECC)
 #  error "Must be compiled with option -ieee"
-# elif defined(COMPILER_GCC)
+# elif defined(TRIO_COMPILER_GCC)
 #  error "Must be compiled with option -mieee"
 # endif
 #endif
@@ -107,7 +104,7 @@ InternalNumberDivide(double dividend, double divisor)
 double
 trio_nan()
 {
-#if defined(COMPILER_SUPPORTS_C99)
+#if defined(TRIO_COMPILER_SUPPORTS_C99)
   return nan(NULL);
   
 #elif defined(DBL_QNAN)
@@ -149,7 +146,7 @@ trio_isnan(double number)
    */
   return isnan(number);
   
-#elif defined(COMPILER_SUPPORTS_UNIX95)
+#elif defined(TRIO_COMPILER_SUPPORTS_UNIX95)
   /*
    * UNIX95 defines isnan() as a function. This function was already
    * present in XPG4, but this is a bit tricky to detect with compiler
@@ -158,7 +155,7 @@ trio_isnan(double number)
    */
   return isnan(number);
   
-#elif defined(COMPILER_MSVC)
+#elif defined(TRIO_COMPILER_MSVC)
   /*
    * MSC has an _isnan() function
    */
@@ -197,7 +194,7 @@ trio_isnan(double number)
 int
 trio_isinf(double number)
 {
-#if defined(COMPILER_DECC)
+#if defined(TRIO_COMPILER_DECC)
   /*
    * DECC has an isinf() macro, but it works differently than that
    * of C99, so we use the fp_class() function instead
@@ -212,7 +209,7 @@ trio_isinf(double number)
    */
   return isinf(number);
   
-#elif defined(COMPILER_MSVC)
+#elif defined(TRIO_COMPILER_MSVC)
   /*
    * MSVC has an _fpclass() function that can be used to detect infinty
    */
