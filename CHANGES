@@ -4,7 +4,7 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.8 - 2002/05/21
+Version 1.8 - 2002/05/24
 ------------------------
 * Alexander Lukyanov
   Fixed boundary case for scanning and EOF.
@@ -23,6 +23,8 @@ Version 1.8 - 2002/05/21
 
 * Rewrote TrioWriteDouble to avoid temporary buffers and thus the danger of
   buffer overflows (for instance %.5000f).
+
+* Fixed formatting of non-decimal exponents.
 
 * Fixed thousand separator checking.
 

@@ -2811,7 +2811,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     expectedWidth += sizeof("-") - 1;
   if (exponentDigits > 0)
     expectedWidth += exponentDigits +
-      ((exponentDigits > 1) ? sizeof("E+") : sizeof("E+0")) - 1;
+      (((base != BASE_DECIMAL) || (exponentDigits > 1))
+       ? sizeof("E+") - 1
+       : sizeof("E+0") - 1);
   if (isHex)
     expectedWidth += sizeof("0X") - 1;
   
@@ -2954,7 +2956,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       self->OutStream(self, (isExponentNegative) ? '-' : '+');
 
       /* The exponent must contain at least two digits */
-      if (exponentDigits == 1)
+      if ((base == BASE_DECIMAL) && (exponentDigits == 1))
         self->OutStream(self, '0');
 
       exponentBase = (int)TrioPower(base, exponentDigits - 1);
