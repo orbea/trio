@@ -4,8 +4,10 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.x - 2001/05/26
+Version 1.x - 2001/06/02
 ------------------------
+* Added hex-float (%a and %A) for scanning.
+
 * Added wide character arguments (%ls, %ws, %S, %lc, %wc, and %C) for both
   printf and scanf.
 
@@ -14,14 +16,16 @@ Version 1.x - 2001/05/26
   namespace is set to either ":enter" to lock a mutex, or ":leave" to unlock a
   mutex.
 
-* Added equivalence class expressions for scanning. For example, %[=a=] scans
+* Added equivalence class expressions for scanning. For example, %[[=a=]] scans
   for all letters in the same equivalence class as the letter 'a' as defined
   by the locale.
 
+* Changed character class expressions for scanning. The expressions must now
+  be embedded withing an extra set of brackets, e.g. %[[:alpha:]]. This was
+  done to adhere to the syntax of UNIX98 regular expressions.
+
 * Added the possibility to specify standard support (TRIO_C99 etc.) as compiler
   options.
-
-* Added hex-float (%a and %A) for scanning.
 
 * Fixed conversion of hex-float in StrToDouble.
 

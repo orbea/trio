@@ -100,14 +100,20 @@ See \Cmd{trio_printf}{3}.
 \item Duplicates are ignored.
 \end{itemize}
 
-\item Equivalence Class Expression (==) [TRIO]\\
-Locale dependent (LC_COLLATE)
+\item Equivalence Class Expression ([= =]) [TRIO]\\
+Locale dependent (LC_COLLATE).
+Only one expression can appear inside the delimiters.
 \begin{description}
 \item[=a=] All letters in the same equivalence class as the letter 'a'.
 \end{description}
+\begin{enumerate}
+\item[] \texttt{trio_scanf("\%[[=a=]b]\Bs n", buffer);}
+\item[] \texttt{trio_scanf("\%[[=a=][=b=]]\Bs n", buffer);}
+\end{enumerate}
 
-\item Character Class Expression (::) [TRIO]\\
-Locale dependent (LC_CTYPE)
+\item Character Class Expression ([: :]) [TRIO]\\
+Locale dependent (LC_CTYPE).
+Only one expression can appear inside the delimiters.
 \begin{description}
 \item[:alnum:] :alpha: and :digit:
 \item[:alpha:] :lower: and :upper:
@@ -121,6 +127,10 @@ Locale dependent (LC_CTYPE)
 \item[:upper:] Upper case alphabetic letters
 \item[:xdigit:] Hexadecimal digits
 \end{description}
+\begin{enumerate}
+\item[] \texttt{trio_scanf("\%[[:alnum:]]\Bs n", buffer);}
+\item[] \texttt{trio_scanf("\%[[:alpha:][:digit:]]\Bs n", buffer);}
+\end{enumerate}
 
 \end{description}
 

@@ -38,102 +38,17 @@
  *    %as or %a[ it is interpreted as the alloc modifier, otherwise as
  *    the C99 hex-float. This means that you cannot scan %as as a hex-float
  *    immediately followed by an 's'.
+ *  - Scanning of collating symbols.
  */
 
 static const char rcsid[] = "@(#)$Id$";
 
-#if defined(unix) || defined(__xlC__) || defined(__QNX__)
-# define PLATFORM_UNIX
-#elif defined(AMIGA) && defined(__GNUC__)
-# define PLATFORM_UNIX
-#endif
-
-#if defined(WIN32) || defined(_WIN32) || defined(_MSC_VER)
-# define PLATFORM_WIN32
-#endif
-
 /*************************************************************************
- * Include files
+ * Trio include files
  */
-
 #include "trio.h"
 #include "triop.h"
 #include "strio.h"
-
-#if !(defined(DEBUG) || defined(NDEBUG))
-# define NDEBUG
-#endif
-#include <assert.h>
-#include <ctype.h>
-#include <math.h>
-#include <limits.h>
-#include <float.h>
-#include <stdarg.h>
-#include <errno.h>
-#if TRIO_C99
-# include <stdint.h>
-#endif
-#if defined(PLATFORM_UNIX)
-# include <unistd.h>
-# include <locale.h>
-# define USE_LOCALE
-#endif /* PLATFORM_UNIX */
-#if defined(PLATFORM_WIN32)
-# include <io.h>
-# define read _read
-# define write _write
-#endif /* PLATFORM_WIN32 */
-
-#if TRIO_MICROSOFT
-# if TRIO_C99 || defined(__GNUC__)
-#  if TRIO_C99
-#   include <stdint.h>
-#  else
-#   include <sys/types.h>
-#  endif
-#  define TRIO_INT8 int8_t
-#  define TRIO_INT16 int16_t
-#  define TRIO_INT32 int32_t
-#  define TRIO_INT64 int64_t
-# elif defined(PLATFORM_WIN32)
-#  define TRIO_INT8 __int8
-#  define TRIO_INT16 __int16
-#  define TRIO_INT32 __int32
-#  define TRIO_INT64 __int64
-# else
-#  undef TRIO_MICROSOFT
-#  define TRIO_MICROSOFT 0
-# endif
-#endif
-
-#if TRIO_WIDECHAR
-# include <wchar.h>
-#endif
-
-/*************************************************************************
- * Generic definitions
- */
-
-#ifndef NULL
-# define NULL 0
-#endif
-#define NIL ((char)0)
-#ifdef __cplusplus
-# undef TRUE
-# undef FALSE
-# define TRUE true
-# define FALSE false
-# define BOOLEAN_T bool
-#else
-# ifndef FALSE
-#  define FALSE (1 == 0)
-#  define TRUE (! FALSE)
-# endif
-# define BOOLEAN_T int
-#endif
-
-/* mincore() can be used for debugging purposes */
-#define VALID(x) (NULL != (x))
 
 /*
  * Encode the error code and the position. This is decoded
@@ -145,23 +60,93 @@ static const char rcsid[] = "@(#)$Id$";
 # define TRIO_ERROR_RETURN(x,y) (-1)
 #endif
 
+
+/*************************************************************************
+ * Platform and compiler support detection
+ */
+#if defined(unix) || defined(__xlC__) || defined(_AIX) || defined(__QNX__)
+# define PLATFORM_UNIX
+#elif defined(AMIGA) && defined(__GNUC__)
+# define PLATFORM_UNIX
+#elif defined(WIN32) || defined(_WIN32) || defined(_MSC_VER)
+# define PLATFORM_WIN32
+#endif
+
+#if defined(__STDC__) && defined(__STDC_VERSION__)
+# if (__STDC_VERSION__ >= 199901L)
+#  define TRIO_COMPILER_SUPPORTS_C99
+# endif
+#endif
+
+#if defined(_XOPEN_SOURCE) && defined(_XOPEN_SOURCE_EXTENDED)
+# define TRIO_COMPILER_SUPPORTS_UNIX98
+#endif
+
+#if defined(__STDC_ISO_10646__) || defined(MB_LEN_MAX) || defined(USE_MULTIBYTE) || TRIO_WIDECHAR
+# define TRIO_COMPILER_SUPPORTS_MULTIBYTE
+# if !defined(MB_LEN_MAX)
+#  define MB_LEN_MAX 6
+# endif
+#endif
+
+
+/*************************************************************************
+ * Generic definitions
+ */
+
+#if !(defined(DEBUG) || defined(NDEBUG))
+# define NDEBUG
+#endif
+#include <assert.h>
+#include <ctype.h>
+#include <math.h>
+#include <limits.h>
+#include <float.h>
+#include <stdarg.h>
+#include <errno.h>
+
+#ifndef NULL
+# define NULL 0
+#endif
+#define NIL ((char)0)
+#ifndef FALSE
+# define FALSE (1 == 0)
+# define TRUE (! FALSE)
+#endif
+#define BOOLEAN_T int
+
+/* mincore() can be used for debugging purposes */
+#define VALID(x) (NULL != (x))
+
 /* xlC crashes on log10(0) */
 #define guarded_log10(x) (((x) == 0.0) ? -HUGE_VAL : log10(x))
 #define guarded_log16(x) (guarded_log10(x) / log10(16.0))
 
-/*************************************************************************
- * Internal definitions
- */
 
-#if defined(__STDC_ISO_10646__) || defined(MB_LEN_MAX) || TRIO_WIDECHAR
-# define USE_MULTIBYTE 1
-# if !defined(MB_LEN_MAX)
-#  define MB_LEN_MAX 6
-# endif
-#else
-# define USE_MULTIBYTE 0
+/*************************************************************************
+ * Platform specific definitions
+ */
+#if defined(PLATFORM_UNIX)
+# include <unistd.h>
+# include <locale.h>
+# define USE_LOCALE
+#endif /* PLATFORM_UNIX */
+#if defined(PLATFORM_WIN32)
+# include <io.h>
+# define read _read
+# define write _write
+#endif /* PLATFORM_WIN32 */
+
+#if TRIO_WIDECHAR
+# include <wchar.h>
 #endif
 
+
+/*************************************************************************
+ * Compiler dependent definitions
+ */
+
+/* Support for long long */
 #ifndef __cplusplus
 # if !defined(USE_LONGLONG)
 #  if defined(__GNUC__) && !defined(__STRICT_ANSI__)
@@ -176,26 +161,81 @@ static const char rcsid[] = "@(#)$Id$";
 
 /* The extra long numbers */
 #if defined(USE_LONGLONG)
-# define LONGLONG long long int
-# define ULONGLONG unsigned long long int
+typedef signed long long int trio_longlong_t;
+typedef unsigned long long int trio_ulonglong_t;
 #elif defined(_MSC_VER)
 # define USE_LONGLONG
-# define LONGLONG __int64
-# define ULONGLONG unsigned __int64
+typedef signed __int64 trio_longlong_t;
+typedef unsigned __int64 trio_ulonglong_t;
 #else
-# define LONGLONG long int
-# define ULONGLONG unsigned long int
+typedef signed long int trio_longlong_t;
+typedef unsigned long int trio_ulonglong_t;
 #endif
 
-/* The longest possible integer */
-#if TRIO_C99
-# define LONGEST uintmax_t
-# define SLONGEST intmax_t
+/* C99 types */
+#if defined(TRIO_COMPILER_SUPPORTS_C99)
+# include <stdint.h>
+typedef ptrdiff_t trio_ptrdiff_t;
+typedef intmax_t trio_intmax_t;
+typedef uintmax_t trio_uintmax_t;
 #else
-# define LONGEST ULONGLONG
-# define SLONGEST LONGLONG
+typedef trio_longlong_t trio_ptrdiff_t;
+typedef trio_longlong_t trio_intmax_t;
+typedef trio_ulonglong_t trio_uintmax_t;
 #endif
 
+/* Determine fixed sized integers */
+#if TRIO_MICROSOFT
+# if defined(PLATFORM_WIN32)
+#  define TRIO_INT8 __int8
+#  define TRIO_INT16 __int16
+#  define TRIO_INT32 __int32
+#  define TRIO_INT64 __int64
+# else
+#  if defined(TRIO_COMPILER_SUPPORTS_C99)
+#   include <stdint.h>
+#  elif defined(TRIO_COMPILER_SUPPORTS_UNIX98)
+#   include <inttypes.h>
+#  elif defined(PLATFORM_UNIX)
+#   include <sys/types.h>
+#  endif
+#  if !defined(TRIO_INT8)
+#   if defined(INT8_MIN)
+#    define TRIO_INT8 int8_t
+#   else
+#    define TRIO_INT8 signed char
+#   endif
+#  endif /* ! TRIO_INT8 */
+#  if !defined(TRIO_INT16)
+#   if defined(INT16_MIN)
+#    define TRIO_INT16 int16_t
+#   else
+#    define TRIO_INT16 signed short
+#   endif
+#  endif /* ! TRIO_INT16 */
+#  if !defined(TRIO_INT32)
+#   if defined(INT32_MIN)
+#    define TRIO_INT32 int32_t
+#   else
+#    define TRIO_INT32 unsigned int
+#   endif
+#  endif /* ! TRIO_INT32 */
+#  if !defined(TRIO_INT64)
+#   if defined(INT64_MIN)
+#    define TRIO_INT64 int64_t
+#   else
+#    define TRIO_INT64 trio_longlong_t
+#   endif
+#  endif /* ! TRIO_INT64 */
+# endif
+#endif
+
+
+/*************************************************************************
+ * Internal definitions
+ */
+
+/* Long double sizes */
 #ifdef LDBL_DIG
 # define MAX_MANTISSA_DIGITS LDBL_DIG
 # define MAX_EXPONENT_DIGITS 4
@@ -552,8 +592,8 @@ typedef struct {
 #endif
     void *pointer;
     union {
-      SLONGEST as_signed;
-      LONGEST as_unsigned;
+      trio_uintmax_t as_signed;
+      trio_intmax_t as_unsigned;
     } number;
     double doubleNumber;
     double *doublePointer;
@@ -908,13 +948,13 @@ TrioPreprocess(int type,
 
   index = 0;
   parameterPosition = 0;
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   mblen(NULL, 0);
 #endif
   
   while (format[index])
     {
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
       if (! isascii(format[index]))
 	{
 	  /*
@@ -925,7 +965,7 @@ TrioPreprocess(int type,
 	  index += (charlen > 0) ? charlen : 1;
 	  continue; /* while */
 	}
-#endif /* USE_MULTIBYTE */
+#endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
       if (CHAR_IDENTIFIER == format[index++])
 	{
 	  if (CHAR_IDENTIFIER == format[index])
@@ -1152,7 +1192,7 @@ TrioPreprocess(int type,
 		case QUALIFIER_SIZE_T:
 		  flags |= FLAGS_SIZE_T;
 		  /* Modify flags for later truncation of number */
-		  if (sizeof(size_t) == sizeof(ULONGLONG))
+		  if (sizeof(size_t) == sizeof(trio_ulonglong_t))
 		    flags |= FLAGS_QUAD;
 		  else if (sizeof(size_t) == sizeof(long))
 		    flags |= FLAGS_LONG;
@@ -1162,9 +1202,9 @@ TrioPreprocess(int type,
 #if defined(QUALIFIER_PTRDIFF_T)
 		case QUALIFIER_PTRDIFF_T:
 		  flags |= FLAGS_PTRDIFF_T;
-		  if (sizeof(ptrdiff_t) == sizeof(ULONGLONG))
+		  if (sizeof(trio_ptrdiff_t) == sizeof(trio_ulonglong_t))
 		    flags |= FLAGS_QUAD;
-		  else if (sizeof(ptrdiff_t) == sizeof(long))
+		  else if (sizeof(trio_ptrdiff_t) == sizeof(long))
 		    flags |= FLAGS_LONG;
 		  break;
 #endif
@@ -1172,9 +1212,9 @@ TrioPreprocess(int type,
 #if defined(QUALIFIER_INTMAX_T)
 		case QUALIFIER_INTMAX_T:
 		  flags |= FLAGS_INTMAX_T;
-		  if (sizeof(intmax_t) == sizeof(ULONGLONG))
+		  if (sizeof(trio_intmax_t) == sizeof(trio_ulonglong_t))
 		    flags |= FLAGS_QUAD;
-		  else if (sizeof(intmax_t) == sizeof(long))
+		  else if (sizeof(trio_intmax_t) == sizeof(long))
 		    flags |= FLAGS_LONG;
 		  break;
 #endif
@@ -1344,11 +1384,30 @@ TrioPreprocess(int type,
 	    case SPECIFIER_GROUP:
 	      if (TYPE_SCAN == type)
 		{
+		  int depth = 1;
 		  parameters[pos].type = FORMAT_GROUP;
-		  while (format[index])
+		  if (format[index] == QUALIFIER_CIRCUMFLEX)
+		    index++;
+		  if (format[index] == SPECIFIER_UNGROUP)
+		    index++;
+		  if (format[index] == QUALIFIER_MINUS)
+		    index++;
+		  /* Skip nested brackets */
+		  while (format[index] != NIL)
 		    {
-		      if (format[index++] == SPECIFIER_UNGROUP)
-			break; /* while */
+		      if (format[index] == SPECIFIER_GROUP)
+			{
+			  depth++;
+			}
+		      else if (format[index] == SPECIFIER_UNGROUP)
+			{
+			  if (--depth <= 0)
+			    {
+			      index++;
+			      break;
+			    }
+			}
+		      index++;
 		    }
 		}
 	      break;
@@ -1632,18 +1691,18 @@ TrioPreprocess(int type,
 	    {
               if (argarray == NULL)
                 parameters[i].data.pointer = 
-                  (LONGEST *)va_arg(arglist, void *);
+                  (trio_uintmax_t *)va_arg(arglist, void *);
               else
                 {
                   if (parameters[i].type == FORMAT_CHAR)
                     parameters[i].data.pointer =
-                      (LONGEST *)((char *)argarray[num]);
+                      (trio_uintmax_t *)((char *)argarray[num]);
                   else if (parameters[i].flags & FLAGS_SHORT)
                     parameters[i].data.pointer =
-                      (LONGEST *)((short *)argarray[num]);
+                      (trio_uintmax_t *)((short *)argarray[num]);
                   else
                     parameters[i].data.pointer =
-                      (LONGEST *)((int *)argarray[num]);
+                      (trio_uintmax_t *)((int *)argarray[num]);
                 }
 	    }
 	  else
@@ -1677,7 +1736,7 @@ TrioPreprocess(int type,
 		  else if (varsize <= (int)sizeof(long))
 		    parameters[i].flags |= FLAGS_LONG;
 #if defined(QUALIFIER_INTMAX_T)
-		  else if (varsize <= (int)sizeof(LONGLONG))
+		  else if (varsize <= (int)sizeof(trio_longlong_t))
 		    parameters[i].flags |= FLAGS_QUAD;
 		  else
 		    parameters[i].flags |= FLAGS_INTMAX_T;
@@ -1690,44 +1749,44 @@ TrioPreprocess(int type,
 #if defined(QUALIFIER_SIZE_T) || defined(QUALIFIER_SIZE_T_UPPER)
 	      if (parameters[i].flags & FLAGS_SIZE_T)
 		parameters[i].data.number.as_unsigned = (argarray == NULL)
-		  ? (LONGEST)va_arg(arglist, size_t)
-		  : (LONGEST)(*((size_t *)argarray[num]));
+		  ? (trio_uintmax_t)va_arg(arglist, size_t)
+		  : (trio_uintmax_t)(*((size_t *)argarray[num]));
 	      else
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 	      if (parameters[i].flags & FLAGS_PTRDIFF_T)
 		parameters[i].data.number.as_unsigned = (argarray == NULL)
-		  ? (LONGEST)va_arg(arglist, ptrdiff_t)
-		  : (LONGEST)(*((ptrdiff_t *)argarray[num]));
+		  ? (trio_uintmax_t)va_arg(arglist, trio_ptrdiff_t)
+		  : (trio_uintmax_t)(*((trio_ptrdiff_t *)argarray[num]));
 	      else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
 	      if (parameters[i].flags & FLAGS_INTMAX_T)
 		parameters[i].data.number.as_unsigned = (argarray == NULL)
-		  ? (LONGEST)va_arg(arglist, intmax_t)
-		  : (LONGEST)(*((intmax_t *)argarray[num]));
+		  ? (trio_uintmax_t)va_arg(arglist, trio_intmax_t)
+		  : (trio_uintmax_t)(*((trio_intmax_t *)argarray[num]));
 	      else
 #endif
 	      if (parameters[i].flags & FLAGS_QUAD)
 		parameters[i].data.number.as_unsigned = (argarray == NULL)
-		  ? (LONGEST)va_arg(arglist, ULONGLONG)
-		  : (LONGEST)(*((ULONGLONG *)argarray[num]));
+		  ? (trio_uintmax_t)va_arg(arglist, trio_ulonglong_t)
+		  : (trio_uintmax_t)(*((trio_ulonglong_t *)argarray[num]));
 	      else if (parameters[i].flags & FLAGS_LONG)
 		parameters[i].data.number.as_unsigned = (argarray == NULL)
-		  ? (LONGEST)va_arg(arglist, long)
-		  : (LONGEST)(*((long *)argarray[num]));
+		  ? (trio_uintmax_t)va_arg(arglist, long)
+		  : (trio_uintmax_t)(*((long *)argarray[num]));
 	      else
 		{
 		  if (argarray == NULL)
-		    parameters[i].data.number.as_unsigned = (LONGEST)va_arg(arglist, int);
+		    parameters[i].data.number.as_unsigned = (trio_uintmax_t)va_arg(arglist, int);
 		  else
 		    {
 		      if (parameters[i].type == FORMAT_CHAR)
-			parameters[i].data.number.as_unsigned = (LONGEST)(*((char *)argarray[num]));
+			parameters[i].data.number.as_unsigned = (trio_uintmax_t)(*((char *)argarray[num]));
 		      else if (parameters[i].flags & FLAGS_SHORT)
-			parameters[i].data.number.as_unsigned = (LONGEST)(*((short *)argarray[num]));
+			parameters[i].data.number.as_unsigned = (trio_uintmax_t)(*((short *)argarray[num]));
 		      else
-			parameters[i].data.number.as_unsigned = (LONGEST)(*((int *)argarray[num]));
+			parameters[i].data.number.as_unsigned = (trio_uintmax_t)(*((int *)argarray[num]));
 		    }
 		}
 	    }
@@ -1744,8 +1803,8 @@ TrioPreprocess(int type,
 	      : argarray[num];
 	  else
 	    parameters[i].data.number.as_unsigned = (argarray == NULL)
-	      ? (LONGEST)va_arg(arglist, int)
-	      : (LONGEST)(*((int *)argarray[num]));
+	      ? (trio_uintmax_t)va_arg(arglist, int)
+	      : (trio_uintmax_t)(*((int *)argarray[num]));
 	  break;
 
 	case FORMAT_DOUBLE:
@@ -1823,14 +1882,14 @@ TrioPreprocess(int type,
  */
 static void
 TrioWriteNumber(trio_T *self,
-		SLONGEST number,
+		trio_intmax_t number,
 		unsigned long flags,
 		int width,
 		int precision,
 		int base)
 {
   BOOLEAN_T isNegative;
-  char buffer[MAX_CHARS_IN(LONGEST) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
+  char buffer[MAX_CHARS_IN(trio_intmax_t) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *bufferend;
   char *pointer;
   const char *digits;
@@ -1849,11 +1908,11 @@ TrioWriteNumber(trio_T *self,
 
   if (flags & FLAGS_UNSIGNED)
     isNegative = FALSE;
-  else if ((isNegative = (((SLONGEST)number) < 0)))
+  else if ((isNegative = (((trio_intmax_t)number) < 0)))
     number = -number;
 
   if (flags & FLAGS_QUAD)
-    number &= (ULONGLONG)-1;
+    number &= (trio_ulonglong_t)-1;
   else if (flags & FLAGS_LONG)
     number &= (unsigned long)-1;
   else
@@ -2032,7 +2091,7 @@ TrioWriteStringCharacter(trio_T *self,
 	    case '\\': self->OutStream(self, '\\'); break;
 	    default:
 	      self->OutStream(self, 'x');
-	      TrioWriteNumber(self, (SLONGEST)ch,
+	      TrioWriteNumber(self, (trio_intmax_t)ch,
 			      FLAGS_UNSIGNED | FLAGS_NILPADDING,
 			      2, 2, BASE_HEX);
 	      break;
@@ -2175,7 +2234,7 @@ TrioWriteWideString(trio_T *self,
   assert(VALID(self));
   assert(VALID(self->OutStream));
 
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   mblen(NULL, 0);
 #endif
   
@@ -2374,7 +2433,9 @@ TrioWriteDouble(trio_T *self,
     : zeroes + precision;
   
   number = floor(0.5 + number * pow(dblBase, (double)fractionDigits));
-  workNumber = (isHex ? guarded_log16(number) : guarded_log10(number));
+  workNumber = (isHex
+		? guarded_log16(0.5 + number)
+		: guarded_log10(0.5 + number));
   if ((int)workNumber + 1 > integerDigits + fractionDigits)
     {
       if (flags & FLAGS_FLOAT_E)
@@ -2578,7 +2639,7 @@ TrioFormatProcess(trio_T *data,
 		  parameter_T *parameters)
 
 {
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   int charlen;
 #endif
   int i;
@@ -2592,13 +2653,13 @@ TrioFormatProcess(trio_T *data,
   
   index = 0;
   i = 0;
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   mblen(NULL, 0);
 #endif
   
   while (format[index])
     {
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
       if (! isascii(format[index]))
 	{
 	  charlen = mblen(&format[index], MB_LEN_MAX);
@@ -2608,7 +2669,7 @@ TrioFormatProcess(trio_T *data,
 	    }
 	  continue; /* while */
 	}
-#endif /* USE_MULTIBYTE */
+#endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
       if (CHAR_IDENTIFIER == format[index])
 	{
 	  if (CHAR_IDENTIFIER == format[index + 1])
@@ -2758,17 +2819,17 @@ TrioFormatProcess(trio_T *data,
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 		      if (flags & FLAGS_PTRDIFF_T)
-			*(ptrdiff_t *)pointer = (ptrdiff_t)data->committed;
+			*(trio_ptrdiff_t *)pointer = (trio_ptrdiff_t)data->committed;
 		      else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
 		      if (flags & FLAGS_INTMAX_T)
-			*(intmax_t *)pointer = (intmax_t)data->committed;
+			*(trio_intmax_t *)pointer = (trio_intmax_t)data->committed;
 		      else
 #endif
 		      if (flags & FLAGS_QUAD)
 			{
-			  *(ULONGLONG *)pointer = (ULONGLONG)data->committed;
+			  *(trio_ulonglong_t *)pointer = (trio_ulonglong_t)data->committed;
 			}
 		      else if (flags & FLAGS_LONG)
 			{
@@ -2803,7 +2864,7 @@ TrioFormatProcess(trio_T *data,
 		    {
 		      data->OutStream(data, '#');
 		      TrioWriteNumber(data,
-				      (SLONGEST)parameters[i].data.errorNumber,
+				      (trio_intmax_t)parameters[i].data.errorNumber,
 				      flags,
 				      width,
 				      precision,
@@ -3929,7 +3990,7 @@ trio_print_int(void *ref,
   reference_T *self = (reference_T *)ref;
 
   TrioWriteNumber(self->data,
-		  (SLONGEST)number,
+		  (trio_intmax_t)number,
 		  self->parameter->flags,
 		  self->parameter->width,
 		  self->parameter->precision,
@@ -3946,7 +4007,7 @@ trio_print_uint(void *ref,
   reference_T *self = (reference_T *)ref;
 
   TrioWriteNumber(self->data,
-		  (SLONGEST)number,
+		  (trio_intmax_t)number,
 		  self->parameter->flags | FLAGS_UNSIGNED,
 		  self->parameter->width,
 		  self->parameter->precision,
@@ -3995,7 +4056,7 @@ trio_print_pointer(void *ref,
 {
   reference_T *self = (reference_T *)ref;
   unsigned long flags;
-  LONGLONG number;
+  trio_uintmax_t number;
 
   if (NULL == pointer)
     {
@@ -4012,14 +4073,14 @@ trio_print_pointer(void *ref,
        * optimising compiler). The (char *) casting is done
        * to please ANSI C++.
        */
-      number = (ULONGLONG)((char *)pointer - (char *)0);
+      number = (trio_uintmax_t)((char *)pointer - (char *)0);
       /* Shrink to size of pointer */
-      number &= (ULONGLONG)-1;
+      number &= (trio_uintmax_t)-1;
       flags = self->parameter->flags;
       flags |= (FLAGS_UNSIGNED | FLAGS_ALTERNATIVE |
 	        FLAGS_NILPADDING);
       TrioWriteNumber(self->data,
-		      number,
+		      (trio_intmax_t)number,
 		      flags,
 		      POINTER_WIDTH,
 		      NO_PRECISION,
@@ -4217,156 +4278,169 @@ TrioGetCharacterClass(const char *format,
 	  
 #if TRIO_EXTENSION
 
-	case QUALIFIER_DOT: /* Collating symbol */
-	  /*
-	   * FIXME: This will be easier to implement when multibyte
-	   * characters have been implemented. Until now, we ignore
-	   * this feature.
-	   */
-	  characterclass[(int)ch]++;
-	  break;
+	case SPECIFIER_GROUP:
 	  
-	case QUALIFIER_EQUAL: /* Equivalence class expressions */
-	  {
-	    int after;
-	    unsigned int j;
-	    unsigned int k;
-	    
-	    /* Find matching sign */
-	    for (after = index + 1;
-		 ((format[after] != NIL) &&
-		  (format[after] != SPECIFIER_UNGROUP) &&
-		  (format[after] != QUALIFIER_EQUAL));
-		 after++)
-	      ;
-	    if (format[after] == QUALIFIER_EQUAL)
+	  switch (format[index + 1])
+	    {
+	    case QUALIFIER_DOT: /* Collating symbol */
+	      /*
+	       * FIXME: This will be easier to implement when multibyte
+	       * characters have been implemented. Until now, we ignore
+	       * this feature.
+	       */
+	      for (i = index + 2; ; i++)
+		{
+		  if (format[i] == NIL)
+		    /* Error in syntax */
+		    return -1;
+		  else if (format[i] == QUALIFIER_DOT)
+		    break; /* for */
+		}
+	      if (format[++i] != SPECIFIER_UNGROUP)
+		return -1;
+	      
+	      index = i;
+	      break;
+	  
+	    case QUALIFIER_EQUAL: /* Equivalence class expressions */
 	      {
+		unsigned int j;
+		unsigned int k;
+	    
 		if (internalCollationUnconverted)
 		  {
 		    /* Lazy evalutation of collation array */
 		    TrioGetCollation();
 		    internalCollationUnconverted = FALSE;
 		  }
-		for (i = index + 1; i < after; i++)
+		for (i = index + 2; ; i++)
 		  {
-		    /* Mark any equivalent character */
-		    k = (unsigned int)format[i];
-		    for (j = 0; internalCollationArray[k][j] != NIL; j++)
-		      characterclass[(int)internalCollationArray[k][j]]++;
+		    if (format[i] == NIL)
+		      /* Error in syntax */
+		      return -1;
+		    else if (format[i] == QUALIFIER_EQUAL)
+		      break; /* for */
+		    else
+		      {
+			/* Mark any equivalent character */
+			k = (unsigned int)format[i];
+			for (j = 0; internalCollationArray[k][j] != NIL; j++)
+			  characterclass[(int)internalCollationArray[k][j]]++;
+		      }
 		  }
-		index = after + 1;
+		if (format[++i] != SPECIFIER_UNGROUP)
+		  return -1;
+		
+		index = i;
 	      }
-	    else
-	      {
-		/* Handle as normal character */
-		characterclass[(int)ch]++;
-	      }
-	  }
-	  break;
+	      break;
 	  
-	case QUALIFIER_COLON: /* Character class expressions */
+	    case QUALIFIER_COLON: /* Character class expressions */
 	  
-	  if (StrEqualMax(CLASS_ALNUM, sizeof(CLASS_ALNUM) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isalnum(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_ALNUM) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_ALPHA, sizeof(CLASS_ALPHA) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isalpha(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_ALPHA) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_CNTRL, sizeof(CLASS_CNTRL) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (iscntrl(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_CNTRL) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_DIGIT, sizeof(CLASS_DIGIT) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isdigit(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_DIGIT) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_GRAPH, sizeof(CLASS_GRAPH) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isgraph(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_GRAPH) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_LOWER, sizeof(CLASS_LOWER) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (islower(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_LOWER) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_PRINT, sizeof(CLASS_PRINT) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isprint(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_PRINT) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_PUNCT, sizeof(CLASS_PUNCT) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (ispunct(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_PUNCT) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_SPACE, sizeof(CLASS_SPACE) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isspace(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_SPACE) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_UPPER, sizeof(CLASS_UPPER) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isupper(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_UPPER) - 1;
-	    }
-	  else if (StrEqualMax(CLASS_XDIGIT, sizeof(CLASS_XDIGIT) - 1,
-			  &format[index]))
-	    {
-	      for (i = 0; i < MAX_CHARACTER_CLASS; i++)
-		if (isxdigit(i))
-		  characterclass[i]++;
-	      index += sizeof(CLASS_XDIGIT) - 1;
-	    }
-	  else
-	    {
-	      characterclass[(int)ch]++;
-	    }
-	  break;
+	      if (StrEqualMax(CLASS_ALNUM, sizeof(CLASS_ALNUM) - 1,
+			      &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isalnum(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_ALNUM) - 1;
+		}
+	      else if (StrEqualMax(CLASS_ALPHA, sizeof(CLASS_ALPHA) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isalpha(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_ALPHA) - 1;
+		}
+	      else if (StrEqualMax(CLASS_CNTRL, sizeof(CLASS_CNTRL) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (iscntrl(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_CNTRL) - 1;
+		}
+	      else if (StrEqualMax(CLASS_DIGIT, sizeof(CLASS_DIGIT) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isdigit(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_DIGIT) - 1;
+		}
+	      else if (StrEqualMax(CLASS_GRAPH, sizeof(CLASS_GRAPH) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isgraph(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_GRAPH) - 1;
+		}
+	      else if (StrEqualMax(CLASS_LOWER, sizeof(CLASS_LOWER) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (islower(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_LOWER) - 1;
+		}
+	      else if (StrEqualMax(CLASS_PRINT, sizeof(CLASS_PRINT) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isprint(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_PRINT) - 1;
+		}
+	      else if (StrEqualMax(CLASS_PUNCT, sizeof(CLASS_PUNCT) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (ispunct(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_PUNCT) - 1;
+		}
+	      else if (StrEqualMax(CLASS_SPACE, sizeof(CLASS_SPACE) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isspace(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_SPACE) - 1;
+		}
+	      else if (StrEqualMax(CLASS_UPPER, sizeof(CLASS_UPPER) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isupper(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_UPPER) - 1;
+		}
+	      else if (StrEqualMax(CLASS_XDIGIT, sizeof(CLASS_XDIGIT) - 1,
+				   &format[index]))
+		{
+		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
+		    if (isxdigit(i))
+		      characterclass[i]++;
+		  index += sizeof(CLASS_XDIGIT) - 1;
+		}
+	      else
+		{
+		  characterclass[(int)ch]++;
+		}
+	      break;
 
+	    default:
+	      characterclass[(int)ch]++;
+	      break;
+	    }
+	  break;
+	  
 #endif /* TRIO_EXTENSION */
 	  
 	default:
-	  if (isascii(ch))
-	    characterclass[(int)ch]++;
-	  else
-	    ; /* FIXME: multibyte character */
+	  characterclass[(int)ch]++;
 	  break;
 	}
     }
@@ -4381,12 +4455,12 @@ TrioGetCharacterClass(const char *format,
  */
 static BOOLEAN_T
 TrioReadNumber(trio_T *self,
-	       LONGEST *target,
+	       trio_uintmax_t *target,
 	       unsigned long flags,
 	       int width,
 	       int base)
 {
-  LONGEST number = 0;
+  trio_uintmax_t number = 0;
   int digit;
   int count;
   BOOLEAN_T isNegative = FALSE;
@@ -4396,6 +4470,18 @@ TrioReadNumber(trio_T *self,
   assert(VALID(self->InStream));
   assert((base >= MIN_BASE && base <= MAX_BASE) || (base == NO_BASE));
 
+  if (internalDigitsUnconverted)
+    {
+      /* Lazy evaluation of digits array */
+      memset(internalDigitArray, -1, sizeof(internalDigitArray));
+      for (j = 0; j < (int)sizeof(internalDigitsLower) - 1; j++)
+	{
+	  internalDigitArray[(int)internalDigitsLower[j]] = j;
+	  internalDigitArray[(int)internalDigitsUpper[j]] = j;
+	}
+      internalDigitsUnconverted = FALSE;
+    }
+  
   TrioSkipWhitespaces(self);
   
   if (!(flags & FLAGS_UNSIGNED))
@@ -4501,7 +4587,7 @@ TrioReadChar(trio_T *self,
 {
   int i;
   char ch;
-  LONGEST number;
+  trio_uintmax_t number;
   
   assert(VALID(self));
   assert(VALID(self->InStream));
@@ -4664,7 +4750,7 @@ TrioReadWideString(trio_T *self,
 
   TrioSkipWhitespaces(self);
 
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   mblen(NULL, 0);
 #endif
   
@@ -4891,7 +4977,7 @@ TrioReadPointer(trio_T *self,
 		void **target,
 		unsigned long flags)
 {
-  LONGEST number;
+  trio_uintmax_t number;
   char buffer[sizeof(null)];
 
   flags |= (FLAGS_UNSIGNED | FLAGS_ALTERNATIVE | FLAGS_NILPADDING);
@@ -4938,7 +5024,7 @@ TrioScan(const void *source,
 	 va_list arglist,
 	 void **argarray)
 {
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   int charlen;
 #endif
   int status;
@@ -4970,16 +5056,6 @@ TrioScan(const void *source,
       TrioSetLocale();
     }
 #endif
-  if (internalDigitsUnconverted)
-    {
-      memset(internalDigitArray, -1, sizeof(internalDigitArray));
-      for (i = 0; i < (int)sizeof(internalDigitsLower) - 1; i++)
-	{
-	  internalDigitArray[(int)internalDigitsLower[i]] = i;
-	  internalDigitArray[(int)internalDigitsUpper[i]] = i;
-	}
-      internalDigitsUnconverted = FALSE;
-    }
   
   status = TrioPreprocess(TYPE_SCAN, format, parameters, arglist, argarray);
   if (status < 0)
@@ -4990,13 +5066,13 @@ TrioScan(const void *source,
   index = 0;
   data->InStream(data, &ch);
 
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   mblen(NULL, 0);
 #endif
 
   while (format[index])
     {
-#if USE_MULTIBYTE
+#if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
       if (! isascii(format[index]))
 	{
 	  charlen = mblen(&format[index], MB_LEN_MAX);
@@ -5011,7 +5087,7 @@ TrioScan(const void *source,
 	    }
 	  continue; /* while */
 	}
-#endif /* USE_MULTIBYTE */
+#endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
       if (EOF == ch)
 	return EOF;
       
@@ -5054,7 +5130,7 @@ TrioScan(const void *source,
 	    {
 	    case FORMAT_INT:
 	      {
-		LONGEST number;
+		trio_uintmax_t number;
 
 		if (0 == base)
 		  base = BASE_DECIMAL;
@@ -5077,16 +5153,16 @@ TrioScan(const void *source,
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 		    if (flags & FLAGS_PTRDIFF_T)
-		      *(ptrdiff_t *)pointer = (ptrdiff_t)number;
+		      *(trio_ptrdiff_t *)pointer = (trio_ptrdiff_t)number;
 		    else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
 		    if (flags & FLAGS_INTMAX_T)
-		      *(intmax_t *)pointer = (intmax_t)number;
+		      *(trio_intmax_t *)pointer = (trio_intmax_t)number;
 		    else
 #endif
 		    if (flags & FLAGS_QUAD)
-		      *(ULONGLONG *)pointer = (ULONGLONG)number;
+		      *(trio_ulonglong_t *)pointer = (trio_ulonglong_t)number;
 		    else if (flags & FLAGS_LONG)
 		      *(long int *)pointer = (long int)number;
 		    else if (flags & FLAGS_SHORT)
@@ -5178,17 +5254,17 @@ TrioScan(const void *source,
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 		  if (flags & FLAGS_PTRDIFF_T)
-		    *(ptrdiff_t *)pointer = (ptrdiff_t)data->committed;
+		    *(trio_ptrdiff_t *)pointer = (trio_ptrdiff_t)data->committed;
 		  else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
 		  if (flags & FLAGS_INTMAX_T)
-		    *(intmax_t *)pointer = (intmax_t)data->committed;
+		    *(trio_intmax_t *)pointer = (trio_intmax_t)data->committed;
 		  else
 #endif
 		  if (flags & FLAGS_QUAD)
 		    {
-		      *(ULONGLONG *)pointer = (ULONGLONG)data->committed;
+		      *(trio_ulonglong_t *)pointer = (trio_ulonglong_t)data->committed;
 		    }
 		  else if (flags & FLAGS_LONG)
 		    {
@@ -5510,3 +5586,4 @@ trio_sscanfv(const char *buffer,
   
   return TrioScan(&buffer, 0, TrioInStreamString, format, dummy, args);
 }
+
