@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.9 - 2002/09/10
+Version 1.9 - 2002/10/06
 ------------------------
+* Craig Berry
+  Fixed compilation on VMS.
+
 * Albert Chin-A-Young
   Fixed incorrect conditional expression in trio_isinf.
 

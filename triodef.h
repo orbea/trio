@@ -42,11 +42,17 @@
 # define TRIO_COMPILER_BCB
 #endif
 
-#if defined(unix) || defined(__unix) || defined(__unix__)
+#if defined(VMS) || defined(__VMS)
+/*
+ * VMS is placed first to avoid identifying the platform as Unix
+ * based on the DECC compiler later on.
+ */
+# define TRIO_PLATFORM_VMS
+#elif defined(unix) || defined(__unix) || defined(__unix__)
 # define TRIO_PLATFORM_UNIX
 #elif defined(TRIO_COMPILER_XLC) || defined(_AIX)
 # define TRIO_PLATFORM_UNIX
-#elif defined(TRIO_COMPILER_DECC) || defined(__osf__)
+#elif defined(TRIO_COMPILER_DECC) || defined(__osf___)
 # define TRIO_PLATFORM_UNIX
 #elif defined(__NetBSD__)
 # define TRIO_PLATFORM_UNIX
@@ -59,8 +65,6 @@
 # define TRIO_PLATFORM_UNIX
 #elif defined(TRIO_COMPILER_MSVC) || defined(WIN32) || defined(_WIN32)
 # define TRIO_PLATFORM_WIN32
-#elif defined(VMS) || defined(__VMS)
-# define TRIO_PLATFORM_VMS
 #elif defined(mpeix) || defined(__mpexl)
 # define TRIO_PLATFORM_MPEIX
 #endif
@@ -165,6 +169,32 @@ typedef void * trio_pointer_t;
 # define TRIO_INLINE __inline
 #else
 # define TRIO_INLINE
+#endif
+
+/*************************************************************************
+ * Workarounds
+ */
+
+#if defined(TRIO_PLATFORM_VMS)
+/*
+ * Computations done with constants at compile time can trigger these
+ * even when compiling with IEEE enabled.
+ */
+# pragma message disable (UNDERFLOW, FLOATOVERFL)
+
+# if (__CRTL_VER > 80000000)
+/*
+ * Although the compiler supports C99 language constructs, the C
+ * run-time library does not contain all C99 functions.
+ *
+ * This was the case for 70300022. Update the 80000000 value when
+ * it has been accurately determined what version of the library
+ * supports C99.
+ */
+#  if defined(TRIO_COMPILER_SUPPORTS_C99)
+#   undef TRIO_COMPILER_SUPPORTS_C99
+#  endif
+# endif
 #endif
 
 #endif /* TRIO_TRIODEF_H */

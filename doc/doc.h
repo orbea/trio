@@ -134,6 +134,7 @@ The project space is located at http://sourceforge.net/projects/ctrio/
 We have received contributions from the following persons (in alphabetic
 order sorted by surname)
 
+@li Craig Berry
 @li Stan Boehm
 @li Robert Collins
 @li Danny Dulai
