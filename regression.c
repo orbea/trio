@@ -607,6 +607,9 @@ VerifyFormatting(TRIO_NOARGS)
 #if TRIO_FEATURE_SIZE_T_UPPER
   nerrors += Verify(__FILE__, __LINE__, "256",
 		    "%Zd", sizeof(buffer));
+#endif
+
+#if TRIO_FEATURE_ERRNO
   errno = EINTR;
   nerrors += Verify(__FILE__, __LINE__, "Interrupted system call",
 		    "%m");
