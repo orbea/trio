@@ -64,10 +64,6 @@
 
 static const char rcsid[] = "@(#)$Id$";
 
-/** @addtogroup SpecialQuantities Special Quantifies
-    @{
-*/
-
 /*************************************************************************
  * Include files
  */
@@ -85,6 +81,13 @@ static const char rcsid[] = "@(#)$Id$";
 # include <fp_class.h>
 #endif
 #include <assert.h>
+
+#if defined(TRIO_DOCUMENTATION)
+# include "doc/doc_nan.h"
+#endif
+/** @addtogroup SpecialQuantities
+    @{
+*/
 
 /*************************************************************************
  * Definitions
