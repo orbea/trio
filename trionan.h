@@ -72,7 +72,7 @@ TRIO_PUBLIC int trio_signbit TRIO_PROTO((double number));
 
 TRIO_PUBLIC int trio_fpclassify TRIO_PROTO((double number));
 
-TRIO_PUBLIC int trio_fpclassign TRIO_PROTO((double number, int *is_negative));
+TRIO_PUBLIC int trio_fpclassify_and_signbit TRIO_PROTO((double number, int *is_negative));
 
 #ifdef __cplusplus
 }

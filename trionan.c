@@ -64,7 +64,7 @@
 
 /*
  * TODO:
- *  o Put all the magic into trio_fpclassign(), and use this from
+ *  o Put all the magic into trio_fpclassify_and_signbit(), and use this from
  *    trio_isnan() etc.
  */
 
@@ -579,7 +579,7 @@ TRIO_ARGS1((number),
  * The sign of NaN is always false
  */
 TRIO_PUBLIC int
-trio_fpclassign
+trio_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	   TRIO_VOLATILE double number,
 	   int *is_negative)
@@ -774,7 +774,7 @@ TRIO_ARGS1((number),
 {
   int is_negative;
   
-  (void)trio_fpclassign(number, &is_negative);
+  (void)trio_fpclassify_and_signbit(number, &is_negative);
   return is_negative;
 }
 
@@ -791,7 +791,7 @@ TRIO_ARGS1((number),
 {
   int dummy;
   
-  return trio_fpclassign(number, &dummy);
+  return trio_fpclassify_and_signbit(number, &dummy);
 }
 
 
