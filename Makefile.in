@@ -2,10 +2,12 @@ CC	= @CC@
 CFLAGS	= @CFLAGS@ -DDEBUG
 OBJS	= triostr.o trio.o trionan.o
 TARGETLIB	= libtrio.a
+TARGETINCS	= trio.h triop.h triodef.h trionan.h triostr.h
 LDFLAGS	= -L. -ltrio -lm
 AR	= ar
 RANLIB	= @RANLIB@
 ERASE	= rm -f
+MKDIR	= mkdir -p
 GENDOC	= doxygen
 
 PURIFY = purify
@@ -25,10 +27,12 @@ test:
 	./regression
 
 install:	$(TARGETLIB)
-	$(INSTALL) -d $(libdir)
-	$(INSTALL) -d $(includedir)
+	$(MKDIR) $(libdir)
+	$(MKDIR) $(includedir)
 	$(INSTALL_DATA) $(TARGETLIB) $(libdir)/$(TARGETLIB)
-	$(INSTALL_DATA) trio.h triop.h triodef.h $(includedir)    
+	for i in $(TARGET_INCS);do \
+	(set -x;$(INSTALL_DATA) $$i $(includedir)); \
+	done
 
 pure: $(TOBJS) $(OBJS)
 	$(PURIFY) $(PURIFYOPTIONS) $(CC) $(CFLAGS) $^ $(LDFLAGS)

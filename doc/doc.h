@@ -145,6 +145,7 @@ order sorted by surname)
 @li Richard Jinks
 @li Tero Jänkä
 @li Howard Kapustein
+@li Mehdi Lavasani
 @li Alexander Lukyanov
 @li Emmanuel Mogenet
 @li Jacob Navia
