@@ -14,6 +14,10 @@ Version 1.x - 2001/05/26
   namespace is set to either ":enter" to lock a mutex, or ":leave" to unlock a
   mutex.
 
+* Added equivalence class expressions for scanning. For example, %[=a=] scans
+  for all letters in the same equivalence class as the letter 'a' as defined
+  by the locale.
+
 * Added the possibility to specify standard support (TRIO_C99 etc.) as compiler
   options.
 

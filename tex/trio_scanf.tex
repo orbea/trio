@@ -100,7 +100,13 @@ See \Cmd{trio_printf}{3}.
 \item Duplicates are ignored.
 \end{itemize}
 
-\item Class Expression (::) [TRIO]\\
+\item Equivalence Class Expression (==) [TRIO]\\
+Locale dependent (LC_COLLATE)
+\begin{description}
+\item[=a=] All letters in the same equivalence class as the letter 'a'.
+\end{description}
+
+\item Character Class Expression (::) [TRIO]\\
 Locale dependent (LC_CTYPE)
 \begin{description}
 \item[:alnum:] :alpha: and :digit:

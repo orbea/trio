@@ -147,7 +147,7 @@ static const char rcsid[] = "@(#)$Id$";
 
 /* xlC crashes on log10(0) */
 #define guarded_log10(x) (((x) == 0.0) ? -HUGE_VAL : log10(x))
-#define guarded_log16(x) (guarded_log10(x) / log10(16))
+#define guarded_log16(x) (guarded_log10(x) / log10(16.0))
 
 /*************************************************************************
  * Internal definitions
@@ -528,6 +528,7 @@ enum {
 # define QUALIFIER_VARSIZE '&' /* This should remain undocumented */
 # define QUALIFIER_PARAM '@' /* Experimental */
 # define QUALIFIER_COLON ':' /* For scanlists */
+# define QUALIFIER_EQUAL '=' /* For scanlists */
 #endif
 
 
@@ -567,7 +568,7 @@ typedef struct {
 
 /* General trio "class" */
 typedef struct _trio_T {
-  const void *location;
+  void *location;
   void (*OutStream)(struct _trio_T *, int);
   void (*InStream)(struct _trio_T *, int *);
   /*
@@ -624,6 +625,10 @@ static const char internalDigitsLower[] = "0123456789abcdefghijklmnopqrstuvwxyz"
 static const char internalDigitsUpper[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static BOOLEAN_T internalDigitsUnconverted = TRUE;
 static int internalDigitArray[128];
+#if TRIO_EXTENSION
+static BOOLEAN_T internalCollationUnconverted = TRUE;
+static char internalCollationArray[256][256];
+#endif
 
 static volatile trio_callback_t internalEnterCriticalRegion = NULL;
 static volatile trio_callback_t internalLeaveCriticalRegion = NULL;
@@ -2017,7 +2022,7 @@ TrioWriteStringCharacter(trio_T *self,
 	  self->OutStream(self, CHAR_BACKSLASH);
 	  switch (ch)
 	    {
-	    case '\a': self->OutStream(self, 'a'); break;
+	    case '\007': self->OutStream(self, 'a'); break;
 	    case '\b': self->OutStream(self, 'b'); break;
 	    case '\f': self->OutStream(self, 'f'); break;
 	    case '\n': self->OutStream(self, 'n'); break;
@@ -2121,7 +2126,7 @@ TrioWriteString(trio_T *self,
 #if TRIO_WIDECHAR
 static int
 TrioWriteWideStringCharacter(trio_T *self,
-			     wint_t wch,
+			     wchar_t wch,
 			     unsigned long flags,
 			     int width)
 {
@@ -2201,8 +2206,7 @@ TrioWriteWideString(trio_T *self,
 
   while (length > 0)
     {
-      size = TrioWriteWideStringCharacter(self, (wint_t)*wstring++,
-					  flags, length);
+      size = TrioWriteWideStringCharacter(self, *wstring++, flags, length);
       if (size == 0)
 	break; /* while */
       length -= size;
@@ -2665,14 +2669,14 @@ TrioFormatProcess(trio_T *data,
 		  if (flags & FLAGS_WIDECHAR)
 		    {
 		      TrioWriteWideStringCharacter(data,
-						   (wint_t)parameters[i].data.number.as_signed,
+						   (wchar_t)parameters[i].data.number.as_signed,
 						   flags,
 						   NO_WIDTH);
 		    }
 		  else
 #endif
 		    TrioWriteStringCharacter(data,
-					     parameters[i].data.number.as_signed,
+					     (int)parameters[i].data.number.as_signed,
 					     flags);
 
 		  if (flags & FLAGS_LEFTADJUST)
@@ -4095,6 +4099,37 @@ TrioSkipWhitespaces(trio_T *self)
 }
 
 /*************************************************************************
+ * TrioGetCollation [private]
+ */
+#if TRIO_EXTENSION
+static void
+TrioGetCollation()
+{
+  int i;
+  int j;
+  int k;
+  char first[2];
+  char second[2];
+
+  /* This is computational expensive */
+  first[1] = NIL;
+  second[1] = NIL;
+  for (i = 0; i < 256; i++)
+    {
+      k = 0;
+      first[0] = (char)i;
+      for (j = 0; j < 256; j++)
+	{
+	  second[0] = (char)j;
+	  if (strcoll(first, second) == 0)
+	    internalCollationArray[i][k++] = (char)j;
+	}
+      internalCollationArray[i][k] = NIL;
+    }
+}
+#endif
+
+/*************************************************************************
  * TrioGetCharacterClass [private]
  *
  * FIXME:
@@ -4103,11 +4138,13 @@ TrioSkipWhitespaces(trio_T *self)
 static int
 TrioGetCharacterClass(const char *format,
 		      int *indexPointer,
-		      int *flagsPointer,
+		      unsigned long *flagsPointer,
 		      int *characterclass)
 {
   int index = *indexPointer;
   int i;
+  int j;
+  int after;
   char ch;
   char range_begin;
   char range_end;
@@ -4140,7 +4177,7 @@ TrioGetCharacterClass(const char *format,
     }
   /* Collect characters */
   for (ch = format[index];
-       ch != SPECIFIER_UNGROUP && ch != NIL;
+       (ch != SPECIFIER_UNGROUP) && (ch != NIL);
        ch = format[++index])
     {
       switch (ch)
@@ -4179,7 +4216,46 @@ TrioGetCharacterClass(const char *format,
 	    
 	  ch = range_end;
 	  break;
+	  
+#if TRIO_EXTENSION
 
+	case QUALIFIER_DOT: /* Collating symbol */
+	  /*
+	   * FIXME: This will be easier to implement when multibyte
+	   * characters have been implemented. Until now, we ignore
+	   * this feature.
+	   */
+	  characterclass[(int)ch]++;
+	  break;
+	  
+	case QUALIFIER_EQUAL: /* Equivalence class expressions */
+	  /* Find matching sign */
+	  for (after = index + 1;
+	       ((format[after] != NIL) &&
+		(format[after] != SPECIFIER_UNGROUP) &&
+		(format[after] != QUALIFIER_EQUAL));
+	       after++)
+	    ;
+	  if (format[after] == QUALIFIER_EQUAL)
+	    {
+	      if (internalCollationUnconverted)
+		{
+		  TrioGetCollation();
+		  internalCollationUnconverted = FALSE;
+		}
+	      for (i = index + 1; i < after; i++)
+		{
+		  for (j = 0; internalCollationArray[(int)format[i]][j] != NIL; j++)
+		    characterclass[(int)internalCollationArray[(int)format[i]][j]]++;
+		}
+	      index = after + 1;
+	    }
+	  else
+	    {
+	      characterclass[(int)ch]++;
+	    }
+	  break;
+	  
 	case QUALIFIER_COLON: /* Character class expressions */
 	  
 	  if (StrEqualMax(CLASS_ALNUM, sizeof(CLASS_ALNUM) - 1,
@@ -4276,8 +4352,13 @@ TrioGetCharacterClass(const char *format,
 	    }
 	  break;
 
+#endif /* TRIO_EXTENSION */
+	  
 	default:
-	  characterclass[(int)ch]++;
+	  if (isascii(ch))
+	    characterclass[(int)ch]++;
+	  else
+	    ; /* FIXME: multibyte character */
 	  break;
 	}
     }
@@ -4293,7 +4374,7 @@ TrioGetCharacterClass(const char *format,
 static BOOLEAN_T
 TrioReadNumber(trio_T *self,
 	       LONGEST *target,
-	       int flags,
+	       unsigned long flags,
 	       int width,
 	       int base)
 {
@@ -4422,13 +4503,13 @@ TrioReadChar(trio_T *self,
        i++)
     {
       ch = (char)self->current;
+      self->InStream(self, NULL);
       if ((flags & FLAGS_ALTERNATIVE) && (ch == CHAR_BACKSLASH))
 	{
-	  self->InStream(self, NULL);
 	  switch (self->current)
 	    {
 	    case '\\': ch = '\\'; break;
-	    case 'a': ch = '\a'; break;
+	    case 'a': ch = '\007'; break;
 	    case 'b': ch = '\b'; break;
 	    case 'f': ch = '\f'; break;
 	    case 'n': ch = '\n'; break;
@@ -4458,6 +4539,7 @@ TrioReadChar(trio_T *self,
 	      break;
 	    }
 	}
+      
       if (target)
 	target[i] = ch;
     }
@@ -4470,7 +4552,7 @@ TrioReadChar(trio_T *self,
 static BOOLEAN_T
 TrioReadString(trio_T *self,
 	       char *target,
-	       int flags,
+	       unsigned long flags,
 	       int width)
 {
   int i;
@@ -4541,7 +4623,7 @@ TrioReadWideChar(trio_T *self,
 	      buffer[j] = NIL;
 	      self->InStream(self, NULL);
 	    }
-	  while ((j < sizeof(buffer)) && (mblen(buffer, j) != j));
+	  while ((j < (int)sizeof(buffer)) && (mblen(buffer, (size_t)j) != j));
 	}
       if (target)
 	{
@@ -4563,7 +4645,7 @@ TrioReadWideChar(trio_T *self,
 static BOOLEAN_T
 TrioReadWideString(trio_T *self,
 		   wchar_t *target,
-		   int flags,
+		   unsigned long flags,
 		   int width)
 {
   int i;
@@ -4608,7 +4690,7 @@ static BOOLEAN_T
 TrioReadGroup(trio_T *self,
 	      char *target,
 	      int *characterclass,
-	      int flags,
+	      unsigned long flags,
 	      int width)
 {
   int ch;
@@ -4643,7 +4725,7 @@ TrioReadGroup(trio_T *self,
 static BOOLEAN_T
 TrioReadDouble(trio_T *self,
 	       double *target,
-	       int flags,
+	       unsigned long flags,
 	       int width)
 {
   int ch;
@@ -4799,7 +4881,7 @@ TrioReadDouble(trio_T *self,
 static BOOLEAN_T
 TrioReadPointer(trio_T *self,
 		void **target,
-		int flags)
+		unsigned long flags)
 {
   LONGEST number;
   char buffer[sizeof(null)];
@@ -4860,7 +4942,7 @@ TrioScan(const void *source,
   int cnt;
   int index; /* Index of format string */
   int i; /* Index of current parameter */
-  int flags;
+  unsigned long flags;
   int width;
   int base;
   void *pointer;
@@ -4871,7 +4953,7 @@ TrioScan(const void *source,
   memset(&internalData, 0, sizeof(internalData));
   data = &internalData;
   data->InStream = InStream;
-  data->location = source;
+  data->location = (void *)source;
   data->max = sourceSize;
 
 #if defined(USE_LOCALE)
@@ -5058,7 +5140,9 @@ TrioScan(const void *source,
 		index++;
 		
 		memset(characterclass, 0, sizeof(characterclass));
-		rc = TrioGetCharacterClass(format, &index, &flags,
+		rc = TrioGetCharacterClass(format,
+					   &index,
+					   &flags,
 					   characterclass);
 		if (rc < 0)
 		  return rc;
