@@ -278,11 +278,6 @@ VerifyFormatting(TRIO_NOARGS)
   /* Integer zero-padding, width, and precision */
   nerrors += Verify(__FILE__, __LINE__, "  000012",
 		    "%08.6d", 12);
-#if TRIO_EXTENSION
-  /* Integer thousand separator */
-  nerrors += Verify(__FILE__, __LINE__, "Number 1,000,000",
-		    "Number %'d", 1000000);
-#endif
   /* Integer base */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		   "%u", 42);
@@ -337,18 +332,9 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%f", 1.0/3.0);
   nerrors += Verify(__FILE__, __LINE__, "0.666667",
 		    "%f", 2.0/3.0);
-#if TRIO_EXTENSION
-  /* Double thousand separator */
-  nerrors += Verify(__FILE__, __LINE__, "1,000,000.000000",
-		    "%'f", 1000000.0);
-#endif
   /* Beyond accuracy */
-  nerrors += Verify(__FILE__, __LINE__, "123456789012345680868.000000",
-		    "%f", 1.234567890123456789e20);
   nerrors += Verify(__FILE__, __LINE__, "0.000000",
 		    "%f", 1.234567890123456789e-20);
-  nerrors += Verify(__FILE__, __LINE__, "1.23456789012345677901e-20",
-		    "%.20e", 1.2345678901234567e-20);
   nerrors += Verify(__FILE__, __LINE__, "1.3999999999999999111821580299875",
 		    "%.32g", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.39999999999999991118215802998748",
@@ -363,21 +349,9 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.14f", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "39413.800000000002910383045673370361",
 		    "%.30f", 39413.80);
-#if TRIO_EXTENSION
-  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000",
-		    "%Rf", 1.234567890123456789e20);
-  nerrors += Verify(__FILE__, __LINE__, "1.4",
-		    "%.32Rf", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "1.4",
-		    "%.17Rf", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "39413.8",
-		    "%.30Rf", 39413.80);
-#endif
   /* 2^-1 + 2^-15 */
   nerrors += Verify(__FILE__, __LINE__, "0.500030517578125",
 		    "%.*g", DBL_DIG + 10, 0.500030517578125);
-  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666629659233",
-		    "%.*g", DBL_DIG + 10, 2.0/3.0);
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
@@ -420,26 +394,12 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%-16e", 3141.5);
   nerrors += Verify(__FILE__, __LINE__, "03.142e+03",
 		    "%010.3e", 3141.5);
-  /* Long double */
 #if !defined(TRIO_COMPILER_ANCIENT)
+  /* Long double */
   nerrors += Verify(__FILE__, __LINE__, "1.400000",
 		    "%Lf", 1.4L);
-# if TRIO_EXTENSION
-  nerrors += Verify(__FILE__, __LINE__, "1.4",
-		    "%RLf", 1.4L);
-  nerrors += Verify(__FILE__, __LINE__, "1.4",
-		    "%.30RLf", 1.4L);
-  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
-		    "%RLf", (2.0L/3.0L));
-  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
-		    "%.30RLf", (2.0L/3.0L));
-# endif
 #endif
-#if TRIO_EXTENSION
-  /* Thousand separator */
-  nerrors += Verify(__FILE__, __LINE__, "31,415.200000",
-		    "%'f", 31415.2);
-#endif
+  
   /* Special cases */
   nerrors += Verify(__FILE__, __LINE__, "1.00",
 		    "%.2f", 0.999);
@@ -473,12 +433,6 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.4s", "testing");
   nerrors += Verify(__FILE__, __LINE__, "test",
 		    "%.*s", 4, "testing");
-#if TRIO_EXTENSION
-  /* Quote flag */
-  nerrors += Verify(__FILE__, __LINE__, "Another \"quoted\" string",
-		   "Another %'s string", "quoted");
-#endif
-  
 #if TRIO_UNIX98
   /* Positional */
   nerrors += Verify(__FILE__, __LINE__, "222 111",
@@ -556,6 +510,9 @@ VerifyFormatting(TRIO_NOARGS)
 		    "NonPrintable %#s", "\01 \07 \\");
   nerrors += Verify(__FILE__, __LINE__, "\\a \\b \\t \\n \\v \\f \\r",
 		    "%#s", "\007 \010 \011 \012 \013 \014 \015");
+  /* Quote flag */
+  nerrors += Verify(__FILE__, __LINE__, "Another \"quoted\" string",
+		   "Another %'s string", "quoted");
   /* Integer base */
   nerrors += Verify(__FILE__, __LINE__, "Number 42 == 1120 (base 3)",
 		    "Number %d == %..3i (base 3)", 42, 42);
@@ -565,6 +522,54 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%..3o", 42);
   nerrors += Verify(__FILE__, __LINE__, "2a",
 		    "%..3x", 42);
+  /* Integer thousand separator */
+  nerrors += Verify(__FILE__, __LINE__, "Number 1,000,000",
+		    "Number %'d", 1000000);
+  /* Float thousand separator */
+  nerrors += Verify(__FILE__, __LINE__, "31,415.200000",
+		    "%'f", 31415.2);
+  nerrors += Verify(__FILE__, __LINE__, "1,000,000.000000",
+		    "%'f", 1000000.0);
+  /* Rounding modifier */
+  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000",
+		    "%Rf", 1.234567890123456789e20);
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%.32Rf", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%.17Rf", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "39413.8",
+		    "%.30Rf", 39413.80);
+# if !defined(TRIO_COMPILER_ANCIENT)
+  /* Long double */
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%RLf", 1.4L);
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%.30RLf", 1.4L);
+# endif
+#endif
+
+#if defined(TRIO_BREESE)
+  /*
+   * These results depends on issues beyond our control. For example,
+   * the accuracy of floating-point numbers depends on the underlying
+   * floating-point hardware (e.g. whether IEEE 754 double or extended-
+   * double format is used).
+   *
+   * These tests are therefore not part of the normal regression test,
+   * but we keep them here for development purposes.
+   */
+  nerrors += Verify(__FILE__, __LINE__, "123456789012345680868.000000",
+		    "%f", 1.234567890123456789e20);
+  nerrors += Verify(__FILE__, __LINE__, "1.23456789012345677901e-20",
+		    "%.20e", 1.2345678901234567e-20);
+  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666629659233",
+		    "%.*g", DBL_DIG + 10, 2.0/3.0);
+# if !defined(TRIO_COMPILER_ANCIENT)
+  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
+		    "%RLf", (2.0L/3.0L));
+  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
+		    "%.30RLf", (2.0L/3.0L));
+# endif
 #endif
   
   return nerrors;
@@ -839,7 +844,7 @@ VerifyScanningRegression(TRIO_NOARGS)
   int rc;
   int index;
   double dnumber;
-  long double ldnumber;
+  trio_long_double_t ldnumber;
   long lnumber;
   int number;
   char ch;
@@ -857,15 +862,17 @@ VerifyScanningRegression(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "0 3",
 		    "%d %d", rc, number);
   rc = trio_sscanf("0.141882295971771490", "%lf", &dnumber);
+  number = 33;
+  rc = trio_sscanf("total 1", "total %d", &number);
+  nerrors += Verify(__FILE__, __LINE__, "1 1",
+		    "%d %d", rc, number);
+#if defined(TRIO_BREESE)
   nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971771488",
 		    "%d %.18f", rc, dnumber);
   rc = trio_sscanf("0.141882295971771490", "%Lf", &ldnumber);
   nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971771490",
 		    "%d %.18Lf", rc, ldnumber);
-  number = 33;
-  rc = trio_sscanf("total 1", "total %d", &number);
-  nerrors += Verify(__FILE__, __LINE__, "1 1",
-		    "%d %d", rc, number);
+#endif
   return nerrors;
 }
 

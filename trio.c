@@ -266,6 +266,12 @@ typedef trio_longlong_t trio_int64_t;
 # define MAX_MANTISSA_DIGITS DECIMAL_DIG
 # define MAX_EXPONENT_DIGITS 3
 # define MAX_DOUBLE_DIGITS DBL_MAX_10_EXP
+#endif
+
+#if defined(TRIO_COMPILER_ANCIENT) || !defined(LDBL_DIG)
+# undef LDBL_DIG
+# undef LDBL_MANT_DIG
+# undef LDBL_EPSILON
 # define LDBL_DIG DBL_DIG
 # define LDBL_MANT_DIG DBL_MANT_DIG
 # define LDBL_EPSILON DBL_EPSILON
@@ -1028,16 +1034,36 @@ TRIO_ARGS2((number, exponent),
       switch (exponent)
 	{
 	  /* Speed up calculation of common cases */
-	case 0: result = (trio_long_double_t)number * 1E-1L; break;
-	case 1: result = (trio_long_double_t)number * 1E+0L; break;
-	case 2: result = (trio_long_double_t)number * 1E+1L; break;
-	case 3: result = (trio_long_double_t)number * 1E+2L; break;
-	case 4: result = (trio_long_double_t)number * 1E+3L; break;
-	case 5: result = (trio_long_double_t)number * 1E+4L; break;
-	case 6: result = (trio_long_double_t)number * 1E+5L; break;
-	case 7: result = (trio_long_double_t)number * 1E+6L; break;
-	case 8: result = (trio_long_double_t)number * 1E+7L; break;
-	case 9: result = (trio_long_double_t)number * 1E+8L; break;
+	case 0:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E-1);
+	  break;
+	case 1:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+0);
+	  break;
+	case 2:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+1);
+	  break;
+	case 3:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+2);
+	  break;
+	case 4:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+3);
+	  break;
+	case 5:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+4);
+	  break;
+	case 6:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+5);
+	  break;
+	case 7:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+6);
+	  break;
+	case 8:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+7);
+	  break;
+	case 9:
+	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+8);
+	  break;
 	default:
 	  result = powl((trio_long_double_t)number,
 			(trio_long_double_t)exponent);
@@ -1062,14 +1088,10 @@ TRIO_ARGS2((number, base),
 {
   double result;
 
-  if (number < 0.0)
-    {
-      result = trio_nan();
-    }
-  if (number == 0.0)
+  if (number <= 0.0)
     {
       /* xlC crashes on log(0) */
-      result = trio_ninf();
+      result = (number == 0.0) ? trio_ninf() : trio_nan();
     }
   else
     {
@@ -2534,9 +2556,10 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   trio_long_double_t workNumber;
   int integerDigits;
   int fractionDigits;
+  int exponentDigits;
+  int baseDigits;
   int integerThreshold;
   int fractionThreshold;
-  int exponentDigits;
   int expectedWidth;
   int exponent = 0;
   unsigned int uExponent = 0;
@@ -2559,7 +2582,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   register int trailingZeroes;
   BOOLEAN_T keepTrailingZeroes;
   BOOLEAN_T keepDecimalPoint;
-  trio_long_double_t baseDigits;
   trio_long_double_t epsilon;
   
   assert(VALID(self));
@@ -2609,21 +2631,21 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     {
       baseDigits = (base == 10)
 	? LDBL_DIG
-	: floor(LDBL_MANT_DIG / TrioLogarithmBase(base));
+	: (int)floor(LDBL_MANT_DIG / TrioLogarithmBase(base));
       epsilon = LDBL_EPSILON;
     }
   else if (flags & FLAGS_SHORT)
     {
       baseDigits = (base == BASE_DECIMAL)
 	? FLT_DIG
-	: floor(FLT_MANT_DIG / TrioLogarithmBase(base));
+	: (int)floor(FLT_MANT_DIG / TrioLogarithmBase(base));
       epsilon = FLT_EPSILON;
     }
   else
     {
       baseDigits = (base == BASE_DECIMAL)
 	? DBL_DIG
-	: floor(DBL_MANT_DIG / TrioLogarithmBase(base));
+	: (int)floor(DBL_MANT_DIG / TrioLogarithmBase(base));
       epsilon = DBL_EPSILON;
     }
 
@@ -2723,14 +2745,14 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  exponent++;
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
-	  workNumber = (number + 0.5L / dblFractionBase) / dblBase;
+	  workNumber = (number + 0.5 / dblFractionBase) / dblBase;
 	  integerNumber = floorl(workNumber);
 	  fractionNumber = workNumber - integerNumber;
 	}
       else
 	{
 	  /* Adjust if number was rounded up one digit (ie. 99 to 100) */
-	  integerNumber = floorl(number + 0.5L);
+	  integerNumber = floorl(number + 0.5);
 	  fractionNumber = 0.0;
 	  integerDigits = (integerNumber > epsilon)
 	    ? 1 + (int)TrioLogarithm(integerNumber, base)
@@ -2779,7 +2801,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     {
       exponentDigits = (uExponent == 0)
 	? 1
-	: (int)ceil(TrioLogarithm(uExponent + 1, base));
+	: (int)ceil(TrioLogarithm((double)(uExponent + 1), base));
     }
   else
     exponentDigits = 0;
@@ -2843,23 +2865,21 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
   
   /* Output the integer part and thousand separators */
-  dblIntegerBase = TrioPower(base, integerDigits - 1);
-  workNumber = floorl(integerNumber / dblIntegerBase);
+  dblIntegerBase = 1.0 / TrioPower(base, integerDigits - 1);
   for (i = 0; i < integerDigits; i++)
     {
-      dblIntegerBase /= dblBase;
+      workNumber = floorl(((integerNumber + integerAdjust) * dblIntegerBase));
       if (i > integerThreshold)
 	{
 	  /* Beyond accuracy */
 	  self->OutStream(self, digits[0]);
-	  workNumber = floorl(((integerNumber + integerAdjust) / dblIntegerBase));
 	}
       else
 	{
 	  self->OutStream(self, digits[(int)fmodl(workNumber, dblBase)]);
-	  workNumber = floorl((integerNumber + integerAdjust) / dblIntegerBase);
 	}
-
+      dblIntegerBase *= dblBase;
+      
       if (((flags & (FLAGS_FLOAT_E | FLAGS_QUOTE)) == FLAGS_QUOTE)
 	  && TrioFollowedBySeparator(integerDigits - i))
 	{
