@@ -6,6 +6,12 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.10 - 2002/10/25
 -------------------------
+* Rewrote check for IEEE compilation option to remove dependency on additional
+  scripts.
+
+* Mehdi Lavasani
+  Makefile install target fixed to work with older install programs.
+
 * Collapsed the DECC, MSVC, HP-UX, and AIX code for trio_fpclassify_and_sign()
   with further preprocessing.
 

@@ -3,7 +3,6 @@ dnl Configuration for trio
 dnl
 
 AC_INIT(triodef.h)
-AC_CANONICAL_HOST
 
 AC_PROG_CC
 ifdef([AC_PROG_CC_STDC], [AC_PROG_CC_STDC])
@@ -13,25 +12,34 @@ AC_PROG_INSTALL
 AC_PROG_RANLIB
 
 dnl
-dnl Alpha floating-point compiler option
+dnl Alpha floating-point compiler option.
 dnl
 
-if test "${GCC}" = "yes" ; then
-    case "${host}" in
-        alpha*-*-linux* | alpha*-*-osf* )
-            CFLAGS="${CFLAGS} -mieee"
-            ;;
-        *)
-            ;;
-    esac
-else
-    case "${host}" in
-        *-dec-osf* )
-            CFLAGS="${CFLAGS} -ieee"
-            ;;
-        *)
-            ;;
-    esac
+AC_MSG_CHECKING(for IEEE compilation options)
+AC_CACHE_VAL(ac_cv_ieee_option, [
+AC_TRY_COMPILE(,[
+#if !(defined(__alpha) && (defined(__DECC) || defined(__DECCXX) || (defined(__osf__) && defined(__LANGUAGE_C__))) && (defined(VMS) || defined(__VMS)))
+# error "Option needed"
+#endif
+],ac_cv_ieee_option="/IEEE_MODE=UNDERFLOW_TO_ZERO/FLOAT=IEEE",
+AC_TRY_COMPILE(,[
+#if !(defined(__alpha) && (defined(__DECC) || defined(__DECCXX) || (defined(__osf__) && defined(__LANGUAGE_C__))) && !(defined(VMS) || defined(__VMS)) && !defined(_CFE))
+# error "Option needed"
+#endif
+],ac_cv_ieee_option="-ieee",
+AC_TRY_COMPILE(,[
+#if !(defined(__alpha) && (defined(__GNUC__) && (defined(__osf__) || defined(__linux__))))
+# error "Option needed"
+#endif
+],ac_cv_ieee_option="-mieee",
+ac_cv_ieee_option="none"
+)
+)
+)
+])
+AC_MSG_RESULT($ac_cv_ieee_option)
+if test $ac_cv_ieee_option != none; then
+  CFLAGS="${CFLAGS} ${ac_cv_ieee_option}"
 fi
 
 AC_OUTPUT(Makefile)

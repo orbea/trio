@@ -17,8 +17,6 @@ example.c
 regression.c
 configure
 configure.in
-config.guess
-config.sub
 install-sh
 autogen.sh
 doc/doc.h
