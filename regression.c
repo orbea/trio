@@ -278,9 +278,11 @@ VerifyFormatting(TRIO_NOARGS)
   /* Integer zero-padding, width, and precision */
   nerrors += Verify(__FILE__, __LINE__, "  000012",
 		    "%08.6d", 12);
+#if TRIO_EXTENSION
   /* Integer thousand separator */
   nerrors += Verify(__FILE__, __LINE__, "Number 1,000,000",
 		    "Number %'d", 1000000);
+#endif
   /* Integer base */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		   "%u", 42);
@@ -335,14 +337,14 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%f", 1.0/3.0);
   nerrors += Verify(__FILE__, __LINE__, "0.666667",
 		    "%f", 2.0/3.0);
+#if TRIO_EXTENSION
   /* Double thousand separator */
   nerrors += Verify(__FILE__, __LINE__, "1,000,000.000000",
 		    "%'f", 1000000.0);
+#endif
   /* Beyond accuracy */
   nerrors += Verify(__FILE__, __LINE__, "123456789012345680868.000000",
 		    "%f", 1.234567890123456789e20);
-  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000",
-		    "%Rf", 1.234567890123456789e20);
   nerrors += Verify(__FILE__, __LINE__, "0.000000",
 		    "%f", 1.234567890123456789e-20);
   nerrors += Verify(__FILE__, __LINE__, "1.23456789012345677901e-20",
@@ -361,12 +363,16 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.14f", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "39413.800000000002910383045673370361",
 		    "%.30f", 39413.80);
+#if TRIO_EXTENSION
+  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000",
+		    "%Rf", 1.234567890123456789e20);
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%.32Rf", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%.17Rf", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "39413.8",
 		    "%.30Rf", 39413.80);
+#endif
   /* 2^-1 + 2^-15 */
   nerrors += Verify(__FILE__, __LINE__, "0.500030517578125",
 		    "%.*g", DBL_DIG + 10, 0.500030517578125);
@@ -418,6 +424,7 @@ VerifyFormatting(TRIO_NOARGS)
 #if !defined(TRIO_COMPILER_ANCIENT)
   nerrors += Verify(__FILE__, __LINE__, "1.400000",
 		    "%Lf", 1.4L);
+# if TRIO_EXTENSION
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%RLf", 1.4L);
   nerrors += Verify(__FILE__, __LINE__, "1.4",
@@ -426,10 +433,13 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%RLf", (2.0L/3.0L));
   nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
 		    "%.30RLf", (2.0L/3.0L));
+# endif
 #endif
+#if TRIO_EXTENSION
   /* Thousand separator */
   nerrors += Verify(__FILE__, __LINE__, "31,415.200000",
 		    "%'f", 31415.2);
+#endif
   /* Special cases */
   nerrors += Verify(__FILE__, __LINE__, "1.00",
 		    "%.2f", 0.999);
@@ -463,16 +473,21 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.4s", "testing");
   nerrors += Verify(__FILE__, __LINE__, "test",
 		    "%.*s", 4, "testing");
+#if TRIO_EXTENSION
   /* Quote flag */
   nerrors += Verify(__FILE__, __LINE__, "Another \"quoted\" string",
 		   "Another %'s string", "quoted");
+#endif
+  
+#if TRIO_UNIX98
   /* Positional */
   nerrors += Verify(__FILE__, __LINE__, "222 111",
 		    "%2$s %1$s", "111", "222");
   nerrors += Verify(__FILE__, __LINE__, "123456    12345 0001234  00123",
 		    "%4$d %3$*8$d %2$.*7$d %1$*6$.*5$d",
 		    123, 1234, 12345, 123456, 5, 6, 7, 8);
-
+#endif
+  
 #if TRIO_GNU
   nerrors += Verify(__FILE__, __LINE__, "256",
 		    "%Zd", sizeof(buffer));
@@ -567,45 +582,75 @@ VerifyErrors(TRIO_NOARGS)
   
   /* Error: Invalid argument 1 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%d %r", 42, "text");
+#if TRIO_ERRORS
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 5",
 		    "%s", buffer);
+#else
+  nerrors += (rc != -1);
+#endif
   /* Error: Invalid argument 2 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%#");
+#if TRIO_ERRORS
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 3",
 		    "%s", buffer);
+#else
+  nerrors += (rc != -1);
+#endif
   /* Error: Invalid argument 3 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%hhhd", 42);
+#if TRIO_ERRORS
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 4",
 		    "%s", buffer);
+#else
+  nerrors += (rc != -1);
+#endif
   /* Error: Double reference */
   rc = trio_snprintf(buffer, sizeof(buffer), "hello %1$d %1$d", 31, 32);
+#if TRIO_ERRORS
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
+# if TRIO_UNIX98
   nerrors += Verify(__FILE__, __LINE__, "Err = 4 (Double reference), Pos = 0",
 		    "%s", buffer);
+# else
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 9",
+		    "%s", buffer);
+# endif
+#else
+  nerrors += (rc != -1);
+#endif
   /* Error: Reference gap */
   rc = trio_snprintf(buffer, sizeof(buffer), "%3$d %1$d", 31, 32, 33);
+#if TRIO_ERRORS
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
+# if TRIO_UNIX98
   nerrors += Verify(__FILE__, __LINE__, "Err = 5 (Reference gap), Pos = 1",
 		    "%s", buffer);
-
+# else
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 3",
+		    "%s", buffer);
+# endif
+#else
+  nerrors += (rc != -1);
+#endif
+  
   return nerrors;
 }
 
@@ -711,12 +756,14 @@ VerifyScanningFloats(TRIO_NOARGS)
 				      "%.6g", 1234567.0);
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1234567",
 				      "%.10g", 1234567.0);
+#if TRIO_C99
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x2.a00000p+1",
 				      "%a", 42.0);
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x1.2d6870p+5",
 				      "%a", 1234567.0);
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0X1.2D6870P+5",
 				      "%A", 1234567.0);
+#endif
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.79769e+308",
 				      "%g", 1.79769e+308);
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "nan",
@@ -772,8 +819,10 @@ VerifyScanningStrings(TRIO_NOARGS)
 				     "%[abc]", "abcba");
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
 				     "%[a-c]", "abcba");
+#if TRIO_EXTENSION
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
 				     "%[[:alpha:]]", "abcba");
+#endif
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "ba",
 				     "%*[ab]c%[^\n]", "abcba");
 

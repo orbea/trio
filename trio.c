@@ -134,9 +134,11 @@
 # if defined(TRIO_COMPILER_SUPPORTS_ISO94)
 #  include <wchar.h>
 #  include <wctype.h>
+typedef wchar_t trio_wchar_t;
+typedef wint_t trio_wint_t;
 # else
-typedef char wchar_t;
-typedef int wint_t;
+typedef char trio_wchar_t;
+typedef int trio_wint_t;
 #  define WCONST(x) L ## x
 #  define WEOF EOF
 #  define iswalnum(x) isalnum(x)
@@ -622,7 +624,7 @@ typedef struct {
   union {
     char *string;
 #if TRIO_WIDECHAR
-    wchar_t *wstring;
+    trio_wchar_t *wstring;
 #endif
     trio_pointer_t pointer;
     union {
@@ -952,6 +954,7 @@ TRIO_ARGS2((format, indexPointer),
 	   TRIO_CONST char *format,
 	   int *indexPointer)
 {
+#if TRIO_UNIX98
   char *tmpformat;
   int number = 0;
   int index = *indexPointer;
@@ -967,6 +970,7 @@ TRIO_ARGS2((format, indexPointer),
        */
       return number - 1;
     }
+#endif
   return NO_POSITION;
 }
 
@@ -1114,10 +1118,8 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	   va_list arglist,
 	   trio_pointer_t *argarray)
 {
-#if TRIO_ERRORS
   /* Count the number of times a parameter is referenced */
   unsigned short usedEntries[MAX_PARAMETERS];
-#endif
   /* Parameter counters */
   int parameterPosition;
   int currentParam;
@@ -1131,7 +1133,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   int index;  /* Index into formatting string */
   int dots;  /* Count number of dots in modifier part */
   BOOLEAN_T positional;  /* Does the specifier have a positional? */
-  BOOLEAN_T got_sticky = FALSE;  /* Are there any sticky modifiers at all? */
+  BOOLEAN_T gotSticky = FALSE;  /* Are there any sticky modifiers at all? */
   /*
    * indices specifies the order in which the parameters must be
    * read from the va_args (this is necessary to handle positionals)
@@ -1148,13 +1150,11 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   int num;
   char *tmpformat;
 
-#if TRIO_ERRORS
   /*
    * The 'parameters' array is not initialized, but we need to
    * know which entries we have used.
    */
   memset(usedEntries, 0, sizeof(usedEntries));
-#endif
 
   index = 0;
   parameterPosition = 0;
@@ -1512,7 +1512,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 #if defined(QUALIFIER_STICKY)
 		case QUALIFIER_STICKY:
 		  flags |= FLAGS_STICKY;
-		  got_sticky = TRUE;
+		  gotSticky = TRUE;
 		  break;
 #endif
 		  
@@ -1550,9 +1550,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	   */
 	  if (flags & FLAGS_WIDTH_PARAMETER)
 	    {
-#if TRIO_ERRORS
 	      usedEntries[width] += 1;
-#endif
 	      parameters[pos].type = FORMAT_PARAMETER;
 	      parameters[pos].flags = 0;
 	      indices[width] = pos;
@@ -1560,9 +1558,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	    }
 	  if (flags & FLAGS_PRECISION_PARAMETER)
 	    {
-#if TRIO_ERRORS
 	      usedEntries[precision] += 1;
-#endif
 	      parameters[pos].type = FORMAT_PARAMETER;
 	      parameters[pos].flags = 0;
 	      indices[precision] = pos;
@@ -1570,9 +1566,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	    }
 	  if (flags & FLAGS_BASE_PARAMETER)
 	    {
-#if TRIO_ERRORS
 	      usedEntries[base] += 1;
-#endif
 	      parameters[pos].type = FORMAT_PARAMETER;
 	      parameters[pos].flags = 0;
 	      indices[base] = pos;
@@ -1580,9 +1574,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	    }
 	  if (flags & FLAGS_VARSIZE_PARAMETER)
 	    {
-#if TRIO_ERRORS
 	      usedEntries[varsize] += 1;
-#endif
 	      parameters[pos].type = FORMAT_PARAMETER;
 	      parameters[pos].flags = 0;
 	      indices[varsize] = pos;
@@ -1770,9 +1762,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 			    parameters[pos].flags = FLAGS_USER_DEFINED;
 			    /* Adjust parameters for insertion of new one */
 			    pos++;
-# if TRIO_ERRORS
 			    usedEntries[currentParam] += 1;
-# endif
 			    parameters[pos].type = FORMAT_USER_DEFINED;
 			    currentParam++;
 			    indices[currentParam] = pos;
@@ -1812,13 +1802,11 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
               return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
 	    }
 
-#if TRIO_ERRORS
 	  /*  Count the number of times this entry has been used */
 	  usedEntries[currentParam] += 1;
-#endif
 	  
 	  /* Find last sticky parameters */
-	  if (got_sticky && !(flags & FLAGS_STICKY))
+	  if (gotSticky && !(flags & FLAGS_STICKY))
 	    {
 	      for (i = pos - 1; i >= 0; i--)
 		{
@@ -1857,7 +1845,6 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 
   for (num = 0; num <= maxParam; num++)
     {
-#if TRIO_ERRORS
       if (usedEntries[num] != 1)
 	{
 	  if (usedEntries[num] == 0) /* gap detected */
@@ -1865,7 +1852,6 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	  else /* double references detected */
 	    return TRIO_ERROR_RETURN(TRIO_EDBLREF, num);
 	}
-#endif
       
       i = indices[num];
 
@@ -1906,8 +1892,8 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	  if (flags & FLAGS_WIDECHAR)
 	    {
 	      parameters[i].data.wstring = (argarray == NULL)
-		? va_arg(arglist, wchar_t *)
-		: (wchar_t *)(argarray[num]);
+		? va_arg(arglist, trio_wchar_t *)
+		: (trio_wchar_t *)(argarray[num]);
 	    }
 	  else
 #endif
@@ -2420,7 +2406,7 @@ TRIO_PRIVATE int
 TrioWriteWideStringCharacter
 TRIO_ARGS4((self, wch, flags, width),
 	   trio_class_t *self,
-	   wchar_t wch,
+	   trio_wchar_t wch,
 	   unsigned long flags,
 	   int width)
 {
@@ -2460,7 +2446,7 @@ TRIO_PRIVATE void
 TrioWriteWideString
 TRIO_ARGS5((self, wstring, flags, width, precision),
 	   trio_class_t *self,
-	   TRIO_CONST wchar_t *wstring,
+	   TRIO_CONST trio_wchar_t *wstring,
 	   unsigned long flags,
 	   int width,
 	   int precision)
@@ -3083,7 +3069,7 @@ TRIO_ARGS3((data, format, parameters),
 		  if (flags & FLAGS_WIDECHAR)
 		    {
 		      TrioWriteWideStringCharacter(data,
-						   (wchar_t)parameters[i].data.number.as_signed,
+						   (trio_wchar_t)parameters[i].data.number.as_signed,
 						   flags,
 						   NO_WIDTH);
 		    }
@@ -5452,7 +5438,7 @@ TRIO_PRIVATE int
 TrioReadWideChar
 TRIO_ARGS4((self, target, flags, width),
 	   trio_class_t *self,
-	   wchar_t *target,
+	   trio_wchar_t *target,
 	   unsigned long flags,
 	   int width)
 {
@@ -5460,7 +5446,7 @@ TRIO_ARGS4((self, target, flags, width),
   int j;
   int size;
   int amount = 0;
-  wchar_t wch;
+  trio_wchar_t wch;
   char buffer[MB_LEN_MAX + 1];
   
   assert(VALID(self));
@@ -5513,7 +5499,7 @@ TRIO_PRIVATE BOOLEAN_T
 TrioReadWideString
 TRIO_ARGS4((self, target, flags, width),
 	   trio_class_t *self,
-	   wchar_t *target,
+	   trio_wchar_t *target,
 	   unsigned long flags,
 	   int width)
 {
