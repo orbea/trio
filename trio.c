@@ -5443,7 +5443,7 @@ TrioScanProcess(trio_class_t *data,
 				       ? NULL
 				       : parameters[i].data.wstring,
 				       flags,
-				       (width == NO_WIDTH) ? 1 : width) > 0)
+				       (width == NO_WIDTH) ? 1 : width) == 0)
 		    return assignment;
 		}
 	      else
@@ -5454,7 +5454,7 @@ TrioScanProcess(trio_class_t *data,
 				   ? NULL
 				   : parameters[i].data.string,
 				   flags,
-				   (width == NO_WIDTH) ? 1 : width) > 0)
+				   (width == NO_WIDTH) ? 1 : width) == 0)
 		    return assignment;
 		}
 	      assignment++;

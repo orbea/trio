@@ -681,12 +681,16 @@ int VerifyScanningRegression(void)
   int nerrors = 0;
   int rc;
   int index;
-  double number;
+  double dnumber;
+  long lnumber;
+  char ch;
 
-  rc = trio_sscanf("1.5", "%lf%n", &number, &index);
-  nerrors += Verify(__FILE__, __LINE__, "1 3 1.500000" ,
-		    "%d %d %f", rc, index, number);
-  
+  rc = trio_sscanf("1.5", "%lf%n", &dnumber, &index);
+  nerrors += Verify(__FILE__, __LINE__, "1 3 1.500000",
+		    "%d %d %f", rc, index, dnumber);
+  rc = trio_sscanf("q 123", "%c%ld", &ch, &lnumber);
+  nerrors += Verify(__FILE__, __LINE__, "q 123",
+		    "%c %ld", ch, lnumber);
   return nerrors;
 }
 

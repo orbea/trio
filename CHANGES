@@ -12,6 +12,9 @@ Version 1.7 - 2002/03/03
 * Alexander Lukyanov
   Fixed scanning with EOF and count specifier.
 
+* Fixed incorrect handling of return code from TrioReadChar (reported by
+  Henrik Löf)
+
 * Fixed parsing of character class expressions.
 
 * Fixed trio_to_double which did not work with long fractions.
