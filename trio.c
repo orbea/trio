@@ -2845,7 +2845,7 @@ TrioOutStreamStringDynamic(trio_T *self,
       infop->allocated *= 2;
     }
   
-  infop->buffer[self->committed] = output;
+  infop->buffer[self->committed] = (char)output;
   self->committed++;
   self->processed++;
   
@@ -4206,7 +4206,7 @@ TrioReadChar(trio_T *self,
        i++)
     {
       if (target)
-	target[i] = self->current;
+	target[i] = (char)self->current;
       self->InStream(self, NULL);
     }
   return TRUE;
@@ -4239,7 +4239,7 @@ TrioReadString(trio_T *self,
        (! ((self->current == EOF) || isspace(self->current)));
        i++)
     {
-      ch = self->current;
+      ch = (char)self->current;
       if ((flags & FLAGS_ALTERNATIVE) && (ch == CHAR_BACKSLASH))
 	{
 	  self->InStream(self, NULL);
@@ -4271,7 +4271,7 @@ TrioReadString(trio_T *self,
 		}
 	      else
 		{
-		  ch = self->current;
+		  ch = (char)self->current;
 		}
 	      break;
 	    }
@@ -4352,7 +4352,7 @@ TrioReadDouble(trio_T *self,
   ch = self->current;
   if ((ch == '+') || (ch == '-'))
     {
-      doubleString[index++] = ch;
+      doubleString[index++] = (char)ch;
       self->InStream(self, &ch);
       width--;
     }
@@ -4372,7 +4372,7 @@ TrioReadDouble(trio_T *self,
       /* Infinity */
       while (isalpha(ch) && (index - start < width))
 	{
-	  doubleString[index++] = ch;
+	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
       doubleString[index] = NIL;
@@ -4404,7 +4404,7 @@ TrioReadDouble(trio_T *self,
       /* Integer part */
       if (isdigit(ch))
 	{
-	  doubleString[index++] = ch;
+	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
       else if (flags & FLAGS_QUOTE)
@@ -4428,26 +4428,26 @@ TrioReadDouble(trio_T *self,
   if (ch == '.')
     {
       /* Decimal part */
-      doubleString[index++] = ch;
+      doubleString[index++] = (char)ch;
       self->InStream(self, &ch);
       while (isdigit(ch) && (index - start < width))
 	{
-	  doubleString[index++] = ch;
+	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
       if ((ch == 'e') || (ch == 'E'))
 	{
 	  /* Exponent */
-	  doubleString[index++] = ch;
+	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	  if ((ch == '+') || (ch == '-'))
 	    {
-	      doubleString[index++] = ch;
+	      doubleString[index++] = (char)ch;
 	      self->InStream(self, &ch);
 	    }
 	  while (isdigit(ch) && (index - start < width))
 	    {
-	      doubleString[index++] = ch;
+	      doubleString[index++] = (char)ch;
 	      self->InStream(self, &ch);
 	    }
 	}
