@@ -39,6 +39,7 @@
  *    the C99 hex-float. This means that you cannot scan %as as a hex-float
  *    immediately followed by an 's'.
  *  - Scanning of collating symbols.
+ *  - Negative zero is not printed correctly.
  */
 
 /*************************************************************************
@@ -2341,22 +2342,21 @@ TrioWriteDouble(trio_class_t *self,
   assert(base == BASE_DECIMAL || base == BASE_HEX);
 
   number = (double)longdoubleNumber;
-  
-  if (! trio_isfinite(number))
-    {
-      /* Look for infinite numbers and non-a-number first */
-      switch (trio_isinf(number))
-	{
-	case 1:
-	  /* Positive infinity */
-	  TrioWriteString(self,
-			  (flags & FLAGS_UPPER)
-			  ? INFINITE_UPPER
-			  : INFINITE_LOWER,
-			  flags, width, precision);
-	  return;
 
-	case -1:
+  /* Determine sign and look for special quantities */
+  switch (trio_fpclassign(number, &isNegative))
+    {
+    case TRIO_FP_NAN:
+      TrioWriteString(self,
+		      (flags & FLAGS_UPPER)
+		      ? NAN_UPPER
+		      : NAN_LOWER,
+		      flags, width, precision);
+      return;
+      
+    case TRIO_FP_INFINITE:
+      if (isNegative)
+	{
 	  /* Negative infinity */
 	  TrioWriteString(self,
 			  (flags & FLAGS_UPPER)
@@ -2364,22 +2364,23 @@ TrioWriteDouble(trio_class_t *self,
 			  : "-" INFINITE_LOWER,
 			  flags, width, precision);
 	  return;
-
-	default:
-	  if (trio_isnan(number))
-	    {
-	      TrioWriteString(self,
-			      (flags & FLAGS_UPPER)
-			      ? NAN_UPPER
-			      : NAN_LOWER,
-			      flags, width, precision);
-	      return;
-	    }
-	  /* Finitude */
-	  break;
 	}
-    }
+      else
+	{
+	  /* Positive infinity */
+	  TrioWriteString(self,
+			  (flags & FLAGS_UPPER)
+			  ? INFINITE_UPPER
+			  : INFINITE_LOWER,
+			  flags, width, precision);
+	  return;
+	}
 
+    default:
+      /* Finitude */
+      break;
+    }
+  
   /* Normal numbers */
   digits = (flags & FLAGS_UPPER) ? internalDigitsUpper : internalDigitsLower;
   isHex = (base == BASE_HEX);
@@ -2388,7 +2389,6 @@ TrioWriteDouble(trio_class_t *self,
   if (precision == NO_PRECISION)
     precision = FLT_DIG;
   
-  isNegative = (number < 0.0);
   if (isNegative)
     number = -number;
 

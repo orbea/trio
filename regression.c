@@ -295,6 +295,8 @@ int VerifyFormatting(void)
 		    "%E", 3.141e-44);
   nerrors += Verify(__FILE__, __LINE__, "0",
 		    "%g", 0.0);
+  nerrors += Verify(__FILE__, __LINE__, "-0",
+		    "%g", trio_nzero());
   nerrors += Verify(__FILE__, __LINE__, "3141.5",
 		    "%g", 3141.5);
   nerrors += Verify(__FILE__, __LINE__, "3.1415E-06",

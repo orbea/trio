@@ -130,6 +130,7 @@ order sorted by surname)
 @li Markus Henke
 @li Ken Gibson
 @li Paul Janzen
+@li Richard Jinks
 @li Tero Jänkä
 @li Howard Kapustein
 @li Alexander Lukyanov

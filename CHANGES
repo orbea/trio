@@ -4,13 +4,16 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.7 - 2002/04/16
+Version 1.7 - 2002/03/28
 ------------------------
 * Joe Orton
   Added autoconf
 
 * Alexander Lukyanov
   Fixed a number of bugs in the scanning of EOF and the count specifier.
+
+* Richard Jinks
+  Added trio_nzero
 
 * Fixed incorrect handling of return code from TrioReadChar (reported by
   Henrik Löf)
@@ -23,7 +26,7 @@ Version 1.7 - 2002/04/16
 
 * Fixed %#s to handle whitespaces as non-printable characters.
 
-* Added trio_isfinite.
+* Added trio_isfinite, trio_signbit, and trio_fpclassify.
 
 * Added new test cases.
 

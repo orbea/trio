@@ -23,6 +23,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+enum {
+  TRIO_FP_INFINITE,
+  TRIO_FP_NAN,
+  TRIO_FP_NORMAL,
+  TRIO_FP_SUBNORMAL,
+  TRIO_FP_ZERO
+};
+
 /*
  * Return NaN (Not-a-Number).
  */
@@ -39,6 +48,11 @@ TRIO_PUBLIC double trio_pinf(void);
 TRIO_PUBLIC double trio_ninf(void);
   
 /*
+ * Return negative zero.
+ */
+TRIO_PUBLIC double trio_nzero(void);
+
+/*
  * If number is a NaN return non-zero, otherwise return zero.
  */
 TRIO_PUBLIC int trio_isnan(double number);
@@ -53,6 +67,12 @@ TRIO_PUBLIC int trio_isinf(double number);
  * If number is finite return non-zero, otherwise return zero.
  */
 TRIO_PUBLIC int trio_isfinite(double number);
+
+TRIO_PUBLIC int trio_signbit(double number);
+
+TRIO_PUBLIC int trio_fpclassify(double number);
+
+TRIO_PUBLIC int trio_fpclassign(double number, int *is_negative);
 
 #ifdef __cplusplus
 }
