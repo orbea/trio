@@ -107,11 +107,6 @@ The normal text can be any character except the nil character
 Conversion indicators consists of an indication character (\%), followed by
 zero or more conversion modifiers, and exactly one conversion specifier.
 
-NOTE: The examples below are missing the \Bs n character. This was omitted to
-improve readability. To make trio_printf actually print the formatted text,
-the \Bs n character must be added to the examples. Furthermore, the \Bar\
-character is used to clarify the output.
-
 \subsection{Modifiers}
 
 Some modifiers exhibit the same behaviour for all specifiers, other modifiers
@@ -132,7 +127,7 @@ most other printf implementations).\\
 \begin{description}
 \item[Mixing]\\
 Mixing normal and positional specifiers is allowed [TRIO]. For example,
-\texttt{trio_printf("\%d~\%3\$d~\%2\$d", 1, 2, 3);} results in "1~3~2".\\
+\texttt{trio_printf("\%d~\%3\$d~\%2\$d\Bs n", 1, 2, 3);} results in "1~3~2".\\
 Arguments for the printf family are passed on the stack. On most platforms it
 is not possible to determine the size of individual stack elements, so it is
 essential that the format string corresponds exactly to the passed arguments.
@@ -140,14 +135,14 @@ If this is not the case, incorrect values may be put into the result.
 \item[Reference Gap]\\
 For the same reason it is also essential that the format string does not
 contain any "gaps" in the positional arguments. For example,
-\texttt{trio_printf("\%1\$d~\%3\$d", 1, 2, 3);} is NOT allowed. The format
+\texttt{trio_printf("\%1\$d~\%3\$d\Bs n", 1, 2, 3);} is NOT allowed. The format
 string parser has no knowledge about whether the second argument is, say, an
 integer or a long double (which have different sizes).\\
 [UNIX98] describes this as unspecified behaviour. [TRIO] will detect reference
 gaps and return an error.
 \item[Double Reference]\\
 It is also not allowed to reference an argument twice or more. For example,
-\texttt{trio_printf("\%1\$d~\%1\$lf", 1);} is NOT allowed, because it
+\texttt{trio_printf("\%1\$d~\%1\$lf\Bs n", 1);} is NOT allowed, because it
 references the first argument as two differently sized objects.\\
 [UNIX98] describes this as unspecified behaviour. [TRIO] will detect double
 references and return an error.
@@ -155,9 +150,9 @@ references and return an error.
 
 The following two statements are equivalent
 \begin{enumerate}
-\item \texttt{trio_printf("|\%d~\%s|", 42, "meanings");}\\
+\item \texttt{trio_printf("|\%d~\%s|\Bs n", 42, "meanings");}\\
  |42 meanings|
-\item \texttt{trio_printf("|\%1\$d~\%2\$s|", 42, "meanings");}\\
+\item \texttt{trio_printf("|\%1\$d~\%2\$s|\Bs n", 42, "meanings");}\\
  |42 meanings|
 \end{enumerate}
 
@@ -170,7 +165,7 @@ The width is specified as a number. If an asterix (*) is used instead, the
 width will be read from the argument list.\\
 Prefixes, such as 0x for hexadecimal integers, are part of width.\\
 \begin{enumerate}
-\item \texttt{trio_printf("|\%10i|", 42);}\\
+\item \texttt{trio_printf("|\%10i|\Bs n", 42);}\\
  |~~~~~~~~42|
 \end{enumerate}
 
@@ -183,7 +178,7 @@ floating-point numbers,
 the minimum number of printed digits for integers.
 
 \begin{enumerate}
-\item \texttt{trio_printf("|\%10.8i|\%.8i|", 42, 42);}\\
+\item \texttt{trio_printf("|\%10.8i|\%.8i|\Bs n", 42, 42);}\\
  |~~00000042|00000042|
 \end{enumerate}
 
@@ -192,9 +187,9 @@ Sets the base that the associated integer must be converted to. The base can
 be between 2 and 36 (both included).
 
 \begin{enumerate}
-\item \texttt{trio_printf("|\%10.8.2i|\%10..2i|\%..2i|", 42, 42, 42);}\\
+\item \texttt{trio_printf("|\%10.8.2i|\%10..2i|\%..2i|\Bs n", 42, 42, 42);}\\
  |~~00101010|~~~~101010|101010|
-\item \texttt{trio_printf("|\%*.8.*i|", 10, 2, 42);}\\
+\item \texttt{trio_printf("|\%*.8.*i|\Bs n", 10, 2, 42);}\\
  |~~00101010|
 \end{enumerate}
 
@@ -279,7 +274,7 @@ or the end of the format string is reached.\\
 Local modifiers overrides sticky modifiers for the given specifier only.
 
 \begin{enumerate}
-\item \texttt{trio_printf("|\%!08#x|\%04x|\%x|", 42, 42, 42);}\\
+\item \texttt{trio_printf("|\%!08#x|\%04x|\%x|\Bs n", 42, 42, 42);}\\
  |0x00002a|0x2a|0x00002a|
 \end{enumerate}
 
@@ -293,7 +288,7 @@ Produce a percent (\%) character. This is used to quote the indication
 character. No modifiers are allowed. The full syntax is "\%\%".
 
 \begin{enumerate}
-\item \texttt{trio_printf("Percent~is~\%\%");}\\
+\item \texttt{trio_printf("Percent~is~\%\%\Bs n");}\\
  Percent is \%
 \end{enumerate}
 
@@ -302,7 +297,7 @@ Output a hexadecimal (base 16) representation of a floating point number. The
 number is automatically preceeded by 0x (or 0X). The exponent is 'p' (or 'P').
 
 \begin{enumerate}
-\item \texttt{trio_printf("|\%a|\%A|", 3.1415, 3.1415e20);}\\
+\item \texttt{trio_printf("|\%a|\%A|\Bs n", 3.1415, 3.1415e20);}\\
  |0x3.228bc|0X3.228BCP+14|
 \end{enumerate}
 
@@ -324,7 +319,7 @@ The number is separated by the locale thousand separator.
 \end{itemize}
 Assuming the thousand separator is comma and the grouping is set to 3
 \begin{enumerate}
-\item \texttt{trio_printf("|\%'ld|", 1234567);}\\
+\item \texttt{trio_printf("|\%'ld|\Bs n", 1234567);}\\
  |1,234,567|
 \end{enumerate}
 
@@ -406,11 +401,11 @@ C escapes are
 \end{itemize}
 
 \begin{enumerate}
-\item \texttt{trio_printf("|One~\%s~Three|One~\%'s~Three|", "Two", "Two");}\\
+\item \texttt{trio_printf("|One~\%s~Three|One~\%'s~Three|\Bs n", "Two", "Two");}\\
  |One Two Three|One "Two" Three|
-\item \texttt{trio_printf("|Argument~missing~\%s|", NULL);}\\
+\item \texttt{trio_printf("|Argument~missing~\%s|\Bs n", NULL);}\\
  |Argument missing (nil)|
-\item \texttt{trio_printf("|\%#s|", "\Bs 007 \Bs a.");}\\
+\item \texttt{trio_printf("|\%#s|\Bs n", "\Bs 007 \Bs a.");}\\
  |\Bs a \Bs a.|
 \end{enumerate}
 
@@ -454,7 +449,7 @@ Example:
 \begin{verbatim}
 int rc;
 
-rc = trio_printf("%%r", 42);
+rc = trio_printf("%%r\n", 42);
 if (rc < 0) {
   if (TRIO_ERROR_CODE(rc) != TRIO_EOF) {
     trio_printf("Error: %%s at position %%d\n",
@@ -466,6 +461,27 @@ if (rc < 0) {
 
 \section{See Also}
 \Cmd{trio_scanf}{3}, \Cmd{trio_register}{3}
+
+
+\section{Notes}
+The printfv family uses an array rather than the stack to pass arguments.
+This means that \texttt{short int} and \texttt{float} values will not be
+handled by the default argument promotion in C. Instead, these values must
+be explicitly converted with the Short (h) modifier in both cases.
+
+Example:
+
+\begin{verbatim}
+void *array[2];
+float float_number = 42.0;
+short short_number = 42;
+
+array[0] = &float_number;
+array[1] = &short_number;
+
+trio_printfv("%%hf %%hd\n", array); /* CORRECT */
+trio_printfv("%%f %%d\n", array); /* WRONG */
+\end{verbatim}
 
 
 \section{Conforming To}

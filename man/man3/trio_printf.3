@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Sat Dec  9 12:53:24 MET 2000
+.\" Manual page created with latex2man on Sat Feb 24 15:29:59 MET 2001
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "TRIO_PRINTF" "3" "09 December 2000" "libtrio "
+.TH "TRIO_PRINTF" "3" "24 February 2001" "libtrio "
 .SH NAME
 trio_printf, 
 trio_fprintf, 
@@ -159,11 +159,6 @@ The normal text can be any character except the nil character
 Conversion indicators consists of an indication character (%), followed by 
 zero or more conversion modifiers, and exactly one conversion specifier. 
 .PP
-NOTE: The examples below are missing the \\n character. This was omitted to 
-improve readability. To make trio_printf actually print the formatted text, 
-the \\n character must be added to the examples. Furthermore, the | 
-character is used to clarify the output. 
-.PP
 .SS MODIFIERS
 .PP
 Some modifiers exhibit the same behaviour for all specifiers, other modifiers 
@@ -189,7 +184,7 @@ most other printf implementations).
 Mixing
 .br
 Mixing normal and positional specifiers is allowed [TRIO]. For example, 
-trio_printf("%d %3$d %2$d", 1, 2, 3);
+trio_printf("%d %3$d %2$d\\n", 1, 2, 3);
 results in "1 3 2".
 .br
 Arguments for the printf family are passed on the stack. On most platforms it 
@@ -201,7 +196,7 @@ Reference Gap
 .br
 For the same reason it is also essential that the format string does not 
 contain any "gaps" in the positional arguments. For example, 
-trio_printf("%1$d %3$d", 1, 2, 3);
+trio_printf("%1$d %3$d\\n", 1, 2, 3);
 is NOT allowed. The format 
 string parser has no knowledge about whether the second argument is, say, an 
 integer or a long double (which have different sizes).
@@ -212,7 +207,7 @@ gaps and return an error.
 Double Reference
 .br
 It is also not allowed to reference an argument twice or more. For example, 
-trio_printf("%1$d %1$lf", 1);
+trio_printf("%1$d %1$lf\\n", 1);
 is NOT allowed, because it 
 references the first argument as two differently sized objects.
 .br
@@ -226,12 +221,12 @@ The following two statements are equivalent
 .RE
 .TP
 1.
-trio_printf("|%d %s|", 42, "meanings");
+trio_printf("|%d %s|\\n", 42, "meanings");
 .br
 |42 meanings| 
 .TP
 2.
-trio_printf("|%1$d %2$s|", 42, "meanings");
+trio_printf("|%1$d %2$s|\\n", 42, "meanings");
 .br
 |42 meanings| 
 .RE
@@ -254,7 +249,7 @@ Prefixes, such as 0x for hexadecimal integers, are part of width.
 .RS
 .TP
 1.
-trio_printf("|%10i|", 42);
+trio_printf("|%10i|\\n", 42);
 .br
 |        42| 
 .RE
@@ -274,7 +269,7 @@ the minimum number of printed digits for integers.
 .RS
 .TP
 1.
-trio_printf("|%10.8i|%.8i|", 42, 42);
+trio_printf("|%10.8i|%.8i|\\n", 42, 42);
 .br
 |  00000042|00000042| 
 .RE
@@ -290,12 +285,12 @@ be between 2 and 36 (both included).
 .RS
 .TP
 1.
-trio_printf("|%10.8.2i|%10..2i|%..2i|", 42, 42, 42);
+trio_printf("|%10.8.2i|%10..2i|%..2i|\\n", 42, 42, 42);
 .br
 |  00101010|    101010|101010| 
 .TP
 2.
-trio_printf("|%*.8.*i|", 10, 2, 42);
+trio_printf("|%*.8.*i|\\n", 10, 2, 42);
 .br
 |  00101010| 
 .RE
@@ -446,7 +441,7 @@ Local modifiers overrides sticky modifiers for the given specifier only.
 .RE
 .TP
 1.
-trio_printf("|%!08#x|%04x|%x|", 42, 42, 42);
+trio_printf("|%!08#x|%04x|%x|\\n", 42, 42, 42);
 .br
 |0x00002a|0x2a|0x00002a| 
 .RE
@@ -466,7 +461,7 @@ character. No modifiers are allowed. The full syntax is "%%".
 .RS
 .TP
 1.
-trio_printf("Percent is %%");
+trio_printf("Percent is %%\\n");
 .br
 Percent is % 
 .RE
@@ -482,7 +477,7 @@ number is automatically preceeded by 0x (or 0X). The exponent is 'p' (or 'P').
 .RS
 .TP
 1.
-trio_printf("|%a|%A|", 3.1415, 3.1415e20);
+trio_printf("|%a|%A|\\n", 3.1415, 3.1415e20);
 .br
 |0x3.228bc|0X3.228BCP+14| 
 .RE
@@ -526,7 +521,7 @@ Assuming the thousand separator is comma and the grouping is set to 3
 .RE
 .TP
 1.
-trio_printf("|%'ld|", 1234567);
+trio_printf("|%'ld|\\n", 1234567);
 .br
 |1,234,567| 
 .RE
@@ -681,17 +676,17 @@ C escapes are
 .RE
 .TP
 1.
-trio_printf("|One %s Three|One %'s Three|", "Two", "Two");
+trio_printf("|One %s Three|One %'s Three|\\n", "Two", "Two");
 .br
 |One Two Three|One "Two" Three| 
 .TP
 2.
-trio_printf("|Argument missing %s|", NULL);
+trio_printf("|Argument missing %s|\\n", NULL);
 .br
 |Argument missing (nil)| 
 .TP
 3.
-trio_printf("|%#s|", "\\007 \\a.");
+trio_printf("|%#s|\\n", "\\007 \\a.");
 .br
 |\\a \\a.| 
 .RE
@@ -758,7 +753,7 @@ Example:
 .Vb
 int rc;
 
-rc = trio_printf("%r", 42);
+rc = trio_printf("%r\\n", 42);
 if (rc < 0) {
   if (TRIO_ERROR_CODE(rc) != TRIO_EOF) {
     trio_printf("Error: %s at position %d\\n",
@@ -773,6 +768,28 @@ if (rc < 0) {
 (3),
 .I "trio_register"
 (3)
+.PP
+.SH NOTES
+The printfv family uses an array rather than the stack to pass arguments. 
+This means that short int
+and float
+values will not be 
+handled by the default argument promotion in C. Instead, these values must 
+be explicitly converted with the Short (h) modifier in both cases. 
+.PP
+Example: 
+.PP
+.Vb
+void *array[2];
+float float_number = 42.0;
+short short_number = 42;
+
+array[0] = &float_number;
+array[1] = &short_number;
+
+trio_printfv("%hf %hd\\n", array); /* CORRECT */
+trio_printfv("%f %d\\n", array); /* WRONG */
+.Ve
 .PP
 .SH CONFORMING TO
 Throughout this document the following abbreviations have been used to 

@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Sat Dec  9 12:53:25 MET 2000
+.\" Manual page created with latex2man on Sat Feb 24 14:53:21 MET 2001
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "TRIO_REGISTER" "3" "09 December 2000" "libtrio "
+.TH "TRIO_REGISTER" "3" "24 February 2001" "libtrio "
 .SH NAME
 trio_register, 
 trio_unregister 
@@ -88,14 +88,14 @@ function.
 If the namespace is used, then a user\-defined pointer must be passed as an 
 argument: 
 .PP
-trio_printf("<my_namespace:format>", my_data);
+trio_printf("<my_namespace:format>\\n", my_data);
 .br
 .PP
 If the handle is used, then the user\-defined specifier must not contain a 
 namespace. Instead the handle must be passed as an argument, followed by a 
 user\-defined pointer: 
 .PP
-trio_printf("<format>", my_handle, my_data);
+trio_printf("<format>\\n", my_handle, my_data);
 .br
 .PP
 The two examples above are equivalent. 
@@ -118,7 +118,7 @@ No namespace can be specified.
 .PP
 anon_handle = trio_register(callback, NULL);
 .br
-trio_printf("<format>", anon_handle, my_data);
+trio_printf("<format>\\n", anon_handle, my_data);
 .br
 .PP
 .SS RESTRICTIONS
@@ -187,9 +187,9 @@ and
 outputs a formatted string just like its printf 
 equivalents. 
 .PP
-trio_print_ref(ref, "There are %d towels", 42);
+trio_print_ref(ref, "There are %d towels\\n", 42);
 .br
-trio_print_ref(ref, "%<recursive>", recursive_writer, trio_get_argument());
+trio_print_ref(ref, "%<recursive>\\n", recursive_writer, trio_get_argument());
 .br
 .PP
 .SH GETTER AND SETTER FUNCTIONS
@@ -217,9 +217,9 @@ int width = trio_get_width(ref);
 Consider the following user\-defined specifier, in its two possible referencing 
 presentations. 
 .PP
-trio_printf("%<format>", namespace_writer, argument);
+trio_printf("%<format>\\n", namespace_writer, argument);
 .br
-trio_printf("%<namespace:format>", argument);
+trio_printf("%<namespace:format>\\n", argument);
 .br
 .PP
 .BR "trio_get_format"
@@ -267,8 +267,8 @@ int main(void)
 
   handle = trio_register(time_print, "my_time");
 
-  trio_printf("%<time>", handle, &now);
-  trio_printf("%<my_time:time>", &now);
+  trio_printf("%<time>\\n", handle, &now);
+  trio_printf("%<my_time:time>\\n", &now);
 
   trio_unregister(handle);
   return 0;
@@ -323,11 +323,11 @@ int main(void)
   handle = trio_register(complex_print, "complex");
 
   /* Normal format. With handle and the with namespace */
-  trio_printf("%<>", handle, &complex);
-  trio_printf("%<complex:>", &complex);
+  trio_printf("%<>\\n", handle, &complex);
+  trio_printf("%<complex:>\\n", &complex);
   /* In exponential notation */
-  trio_printf("%#<>", handle, &complex);
-  trio_printf("%#<complex:unused data>", &complex);
+  trio_printf("%#<>\\n", handle, &complex);
+  trio_printf("%#<complex:unused data>\\n", &complex);
 
   trio_unregister(handle);
   return 0;

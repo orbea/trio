@@ -386,9 +386,9 @@ char *StrSubstringMax(const char *string, size_t max, const char *find)
   assert(VALID(find));
   
   size = StrLength(find);
-  if (size >= max)
+  if (size <= max)
     {
-      for (count = 0; count > max - size; count++)
+      for (count = 0; count <= max - size; count++)
 	{
 	  if (StrEqualMax(find, size, &string[count]))
 	    {

@@ -86,13 +86,13 @@ function.
 If the namespace is used, then a user-defined pointer must be passed as an
 argument:
 
-\texttt{trio_printf("<my_namespace:format>", my_data);}\\
+\texttt{trio_printf("<my_namespace:format>\Bs n", my_data);}\\
 
 If the handle is used, then the user-defined specifier must not contain a
 namespace. Instead the handle must be passed as an argument, followed by a
 user-defined pointer:
 
-\texttt{trio_printf("<format>", my_handle, my_data);}\\
+\texttt{trio_printf("<format>\Bs n", my_handle, my_data);}\\
 
 The two examples above are equivalent.
 
@@ -110,7 +110,7 @@ The handle must be passed as an argument followed by a user-defined pointer.
 No namespace can be specified.
 
 \texttt{anon_handle = trio_register(callback, NULL);}\\
-\texttt{trio_printf("<format>", anon_handle, my_data);}\\
+\texttt{trio_printf("<format>\Bs n", anon_handle, my_data);}\\
 
 \subsection{Restrictions}
 \begin{itemize}
@@ -166,8 +166,8 @@ The functions \textbf{trio_print_ref}, \textbf{trio_vprint_ref}, and
 \textbf{trio_printv_ref} outputs a formatted string just like its printf
 equivalents.
 
-\texttt{trio_print_ref(ref, "There are \%d towels", 42);}\\
-\texttt{trio_print_ref(ref, "\%<recursive>", recursive_writer, trio_get_argument());}\\
+\texttt{trio_print_ref(ref, "There are \%d towels\Bs n", 42);}\\
+\texttt{trio_print_ref(ref, "\%<recursive>\Bs n", recursive_writer, trio_get_argument());}\\
 
 \section{Getter and Setter Functions}
 The following getter and setter functions must only be used inside a callback
@@ -190,8 +190,8 @@ the user-defined specifier use
 Consider the following user-defined specifier, in its two possible referencing
 presentations.
 
-\texttt{trio_printf("\%<format>", namespace_writer, argument);}\\
-\texttt{trio_printf("\%<namespace:format>", argument);}\\
+\texttt{trio_printf("\%<format>\Bs n", namespace_writer, argument);}\\
+\texttt{trio_printf("\%<namespace:format>\Bs n", argument);}\\
 
 \textbf{trio_get_format} will get the \textbf{format} string, and
 \textbf{trio_get_argument} will get the \textbf{argument} parameter.
@@ -233,8 +233,8 @@ int main(void)
 
   handle = trio_register(time_print, "my_time");
 
-  trio_printf("%%<time>", handle, &now);
-  trio_printf("%%<my_time:time>", &now);
+  trio_printf("%%<time>\n", handle, &now);
+  trio_printf("%%<my_time:time>\n", &now);
 
   trio_unregister(handle);
   return 0;
@@ -289,11 +289,11 @@ int main(void)
   handle = trio_register(complex_print, "complex");
 
   /* Normal format. With handle and the with namespace */
-  trio_printf("%%<>", handle, &complex);
-  trio_printf("%%<complex:>", &complex);
+  trio_printf("%%<>\n", handle, &complex);
+  trio_printf("%%<complex:>\n", &complex);
   /* In exponential notation */
-  trio_printf("%%#<>", handle, &complex);
-  trio_printf("%%#<complex:unused data>", &complex);
+  trio_printf("%%#<>\n", handle, &complex);
+  trio_printf("%%#<complex:unused data>\n", &complex);
 
   trio_unregister(handle);
   return 0;

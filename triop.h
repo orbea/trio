@@ -39,7 +39,7 @@
 
 typedef int (*trio_callback_t)(void *ref);
 
-void *trio_register(trio_callback_t callback, const char *namespace);
+void *trio_register(trio_callback_t callback, const char *name);
 void trio_unregister(void *handle);
 
 const char *trio_get_format(void *ref);

@@ -5,8 +5,25 @@ The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
 
-Version 1.00 - 2000/12/10
--------------------------
+Version 1.1 - 2001/02/25
+------------------------
+* Added explicit promotion for the printfv familiy. A float must be specified
+  by %hf.
+
+* Fixed positionals for printfv (reported by Gisli Ottarsson).
+
+* Fixed an integer to pointer conversion problem on the SGI MIPS C compiler
+  (reported by Gisli Ottarsson).
+
+* Fixed ANSI C++ warnings (type casting, and namespace is a reserved keyword).
+
+* Added \n to all examples in the documentation to prevent confusion.
+
+* Fixed StrSubstringMax
+
+
+Version 1.0 - 2000/12/10
+------------------------
 * Bumped Version number.
 
 
