@@ -102,7 +102,7 @@ static const char rcsid[] = "@(#)$Id$";
 # if defined(_XOPEN_SOURCE_EXTENDED)
 #  define TRIO_COMPILER_SUPPORTS_UNIX95
 # endif
-# if (_XOPEN_SOURCE >= 500)
+# if (_XOPEN_VERSION >= 500)
 #  define TRIO_COMPILER_SUPPORTS_UNIX98
 # endif
 #endif
@@ -176,6 +176,9 @@ static const char rcsid[] = "@(#)$Id$";
 #if defined(__FreeBSD__) || defined(__NetBSD__)
 # define WCONST(x) L ## x
 # include <stdlib.h>
+#elif defined(COMPILER_DECC)
+# define WCONST(x) L ## x
+# include <sys/types.h>
 #elif defined(TRIO_COMPILER_SUPPORTS_ISO94)
 # define WCONST(x) L ## x
 # include <wchar.h>
@@ -2423,7 +2426,7 @@ TrioWriteDouble(trio_class_t *self,
     {
       /* Scale the number */
       workNumber = guarded_log10(number);
-      if (workNumber == -HUGE_VAL)
+      if (trio_isinf(workNumber) == -1)
 	{
 	  exponent = 0;
 	  /* Undo setting */
@@ -4876,8 +4879,8 @@ TrioReadDouble(trio_class_t *self,
 	  StrEqual(&doubleString[start], LONG_INFINITE_UPPER))
 	{
 	  *target = ((start == 1 && doubleString[0] == '-'))
-	    ? -HUGE_VAL
-	    : HUGE_VAL;
+	    ? trio_ninf()
+	    : trio_pinf();
 	  return TRUE;
 	}
       if (StrEqual(doubleString, NAN_LOWER))
