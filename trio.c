@@ -81,6 +81,8 @@ static const char rcsid[] = "@(#)$Id$";
 # define PLATFORM_UNIX
 #elif defined(__QNX__)
 # define PLATFORM_UNIX
+#elif defined(__NetBSD__)
+# define PLATFORM_UNIX
 #elif defined(AMIGA) && defined(TRIO_COMPILER_GCC)
 # define PLATFORM_UNIX
 #elif defined(WIN32) || defined(_WIN32) || defined(TRIO_COMPILER_MSVC)
@@ -115,7 +117,7 @@ static const char rcsid[] = "@(#)$Id$";
 #endif
 #include <assert.h>
 #include <ctype.h>
-#if !defined(TRIO_COMPILER_SUPPORTS_C99)
+#if !(defined(isblank) || defined(TRIO_COMPILER_SUPPORTS_C99))
 # define isblank(x) (((x)==32) || ((x)==9))
 #endif
 #include <math.h>
@@ -171,7 +173,10 @@ static const char rcsid[] = "@(#)$Id$";
 
 /* Wide characters */
 #define iswascii(x) ((x) < 128)
-#if defined(TRIO_COMPILER_SUPPORTS_ISO94)
+#if defined(__FreeBSD__) || defined(__NetBSD__)
+# define WCONST(x) L ## x
+# include <stdlib.h>
+#elif defined(TRIO_COMPILER_SUPPORTS_ISO94)
 # define WCONST(x) L ## x
 # include <wchar.h>
 # include <wctype.h>

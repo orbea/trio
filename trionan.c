@@ -28,15 +28,23 @@ static const char rcsid[] = "@(#)$Id$";
 # define PLATFORM_UNIX
 #elif defined(__DECC) || defined(__osf__)
 # define PLATFORM_UNIX
+#elif defined(__NetBSD__)
+# define PLATFORM_UNIX
 #elif defined(__QNX__)
 # defined PLATFORM_UNIX
 #endif
 
+#if defined(__GNUC__)
+# define COMPILER_GCC
+#endif
 #if defined(_MSC_VER)
 # define COMPILER_MSVC
 #endif
 #if defined(__DECC)
 # define COMPILER_DECC
+#endif
+#if defined(__xlC__)
+# define COMPILER_XLC
 #endif
 
 #if defined(__STDC__) && defined(__STDC_VERSION__)
@@ -61,8 +69,17 @@ static const char rcsid[] = "@(#)$Id$";
 #endif
 
 /* Some IBM xlC compiler fu */
-#if defined(__xlC__)
+#if defined(COMPILER_XLC)
 # pragma options float=nans
+#endif
+
+/* We must enable IEEE floating-point on Alpha */
+#if defined(__osf__) && !defined(_IEEE_FP)
+# if defined(COMPILER_DECC)
+#  error "Must be compiled with option -ieee"
+# elif defined(COMPILER_GCC)
+#  error "Must be compiled with option -mieee"
+# endif
 #endif
 
 /*************************************************************************
@@ -188,6 +205,7 @@ trio_isinf(double number)
   return ((fp_class(number) == FP_POS_INF)
 	  ? 1
 	  : ((fp_class(number) == FP_NEG_INF) ? -1 : 0));
+  
 #elif defined(isinf)
   /*
    * C99 defines isinf() as a macro
