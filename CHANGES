@@ -9,6 +9,9 @@ Version 1.11 - 2004/07/11
 * David Byron
   Fixed several compiler warnings.
 
+* Fixed printing of out-of-range arguments for %hhd and %hd. These arguments
+  can be out of range because of default integer promotion.
+
 * Bob Friesenhahn
   Fixed installation of header files
 

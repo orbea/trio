@@ -99,6 +99,9 @@
 #endif
 
 #if defined(_XOPEN_SOURCE)
+# if (_XOPEN_VERSION >= 4)
+#  define TRIO_COMPILER_SUPPORTS_XPG4
+# endif
 # if defined(_XOPEN_SOURCE_EXTENDED)
 #  define TRIO_COMPILER_SUPPORTS_UNIX95
 # endif
@@ -212,7 +215,7 @@ typedef void * trio_pointer_t;
 /*
  * Not all preprocessors supports the LL token.
  */
-#if defined(TRIO_COMPILER_BCB)
+#if defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
 #else
 # define TRIO_COMPILER_SUPPORTS_LL
 #endif
