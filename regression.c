@@ -345,35 +345,33 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%Rf", 1.234567890123456789e20);
   nerrors += Verify(__FILE__, __LINE__, "0.000000",
 		    "%f", 1.234567890123456789e-20);
-#if 0 /* FIXME */
-  nerrors += Verify(__FILE__, __LINE__, "1.23456789012345700000e-20",
-		    "%.20e", 1.234567890123456789e-20);
-  nerrors += Verify(__FILE__, __LINE__, "1.3999999999999999266844242442",
+  nerrors += Verify(__FILE__, __LINE__, "1.23456789012345677901e-20",
+		    "%.20e", 1.2345678901234567e-20);
+  nerrors += Verify(__FILE__, __LINE__, "1.3999999999999999111821580299875",
 		    "%.32g", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "1.40000000000000000000000000000000",
+  nerrors += Verify(__FILE__, __LINE__, "1.39999999999999991118215802998748",
 		    "%.32f", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "1.4000000000000000000000000000",
+  nerrors += Verify(__FILE__, __LINE__, "1.3999999999999999111821580300",
 		    "%.28f", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "1.400000000000000000000000",
+  nerrors += Verify(__FILE__, __LINE__, "1.399999999999999911182158",
 		    "%.24f", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "1.40000000000000000",
+  nerrors += Verify(__FILE__, __LINE__, "1.39999999999999991",
 		    "%.17f", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "39413.800000000002910406860626224608",
+  nerrors += Verify(__FILE__, __LINE__, "1.40000000000000",
+		    "%.14f", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "39413.800000000002910383045673370361",
 		    "%.30f", 39413.80);
-#endif
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%.32Rf", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%.17Rf", 1.4);
-#if 0 /* FIXME */
   nerrors += Verify(__FILE__, __LINE__, "39413.8",
 		    "%.30Rf", 39413.80);
   /* 2^-1 + 2^-15 */
   nerrors += Verify(__FILE__, __LINE__, "0.500030517578125",
-		    "%.*g", DBL_DIG + 4, 0.500030517578125);
-  nerrors += Verify(__FILE__, __LINE__, "0.66666666666666662966",
-		    "%.*g", DBL_DIG + 4, 2.0/3.0);
-#endif
+		    "%.*g", DBL_DIG + 10, 0.500030517578125);
+  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666629659233",
+		    "%.*g", DBL_DIG + 10, 2.0/3.0);
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
@@ -424,16 +422,14 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%RLf", 1.4L);
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%.30RLf", 1.4L);
-  /* FIXME: gcc 2.7.2.3 does not calculate long double correctly */
-/*    nerrors += Verify(__FILE__, __LINE__, "0.666667", */
-/*  		    "%RLf", (2.0L/3.0L)); */
-/*    nerrors += Verify(__FILE__, __LINE__, "0.666666666666666666666666666667", */
-/*  		    "%.30RLf", (2.0L/3.0L)); */
+  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
+		    "%RLf", (2.0L/3.0L));
+  nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
+		    "%.30RLf", (2.0L/3.0L));
 #endif
-#if 0 /* The output depends on the locale settings */
+  /* Thousand separator */
   nerrors += Verify(__FILE__, __LINE__, "31,415.200000",
 		    "%'f", 31415.2);
-#endif
   /* Special cases */
   nerrors += Verify(__FILE__, __LINE__, "1.00",
 		    "%.2f", 0.999);
@@ -486,6 +482,7 @@ VerifyFormatting(TRIO_NOARGS)
 #endif
   
 #if TRIO_BSD || TRIO_GNU
+  /* This may fail if the preprocessor does not recognize LL */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		    "%qd", 42LL);
 #endif
@@ -810,14 +807,12 @@ VerifyScanningRegression(TRIO_NOARGS)
   rc = trio_sscanf("abc def", "%*s%n", &number);
   nerrors += Verify(__FILE__, __LINE__, "0 3",
 		    "%d %d", rc, number);
-#if 0 /* FIXME */
   rc = trio_sscanf("0.141882295971771490", "%lf", &dnumber);
-  nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971772000",
+  nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971771488",
 		    "%d %.18f", rc, dnumber);
   rc = trio_sscanf("0.141882295971771490", "%Lf", &ldnumber);
-  nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971772000",
+  nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971771490",
 		    "%d %.18Lf", rc, ldnumber);
-#endif
   number = 33;
   rc = trio_sscanf("total 1", "total %d", &number);
   nerrors += Verify(__FILE__, __LINE__, "1 1",

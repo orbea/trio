@@ -2533,9 +2533,6 @@ TRIO_ARGS5((self, wstring, flags, width, precision),
 /* FIXME: handle all instances of constant long-double number (L)
  *   and *l() math functions.
  */
-/* FIXME: provide high-accuracy (as close to the exact internal
- *   representation as possible)
- */
 TRIO_PRIVATE void
 TrioWriteDouble
 TRIO_ARGS6((self, number, flags, width, precision, base),
@@ -2565,6 +2562,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   trio_long_double_t fractionAdjust;
   BOOLEAN_T isNegative;
   BOOLEAN_T isExponentNegative = FALSE;
+  BOOLEAN_T requireTwoDigitExponent;
   BOOLEAN_T isHex;
   TRIO_CONST char *digits;
   char *groupingPointer;
@@ -2653,7 +2651,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 			    !(flags & FLAGS_ALTERNATIVE) ) );
 
   if (flags & FLAGS_ROUNDING)
-    precision = baseDigits + 1;
+    precision = baseDigits;
   
   if (precision == NO_PRECISION)
     precision = FLT_DIG;
@@ -2772,13 +2770,13 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  integerThreshold = integerDigits;
 	  fractionThreshold = fractionDigits - integerThreshold;
-	  integerAdjust = fractionAdjust = 1.0;
+	  fractionAdjust = 1.0;
 	}
     }
   else
     {
       integerThreshold = INT_MAX;
-      fractionThreshold = INT_MAX; /*baseDigits;*/
+      fractionThreshold = INT_MAX;
     }
   
   /*
@@ -2799,6 +2797,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
   else
     exponentDigits = 0;
+  requireTwoDigitExponent = ((base == BASE_DECIMAL) && (exponentDigits == 1));
 
   expectedWidth = integerDigits + fractionDigits
     + (keepDecimalPoint
@@ -2811,9 +2810,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     expectedWidth += sizeof("-") - 1;
   if (exponentDigits > 0)
     expectedWidth += exponentDigits +
-      (((base != BASE_DECIMAL) || (exponentDigits > 1))
-       ? sizeof("E+") - 1
-       : sizeof("E+0") - 1);
+      ((requireTwoDigitExponent ? sizeof("E+0") : sizeof("E+")) - 1);
   if (isHex)
     expectedWidth += sizeof("0X") - 1;
   
@@ -2891,7 +2888,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   
   /* Insert decimal point and build the fraction part */
   trailingZeroes = 0;
-  dblFractionBase = dblBase;
 
   if (keepDecimalPoint)
     {
@@ -2907,7 +2903,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	    }
 	}
     }
-  
+
   for (i = 0; i < fractionDigits; i++)
     {
       if ((integerDigits > integerThreshold) || (i > fractionThreshold))
@@ -2917,7 +2913,10 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
       else
 	{
-	  workNumber = floorl((fractionNumber + fractionAdjust) * dblFractionBase);
+	  fractionNumber *= dblBase;
+	  fractionAdjust *= dblBase;
+	  workNumber = floorl(fractionNumber + fractionAdjust);
+	  fractionNumber -= workNumber;
 	  index = (int)fmodl(workNumber, dblBase);
 	  if (index == 0)
 	    {
@@ -2934,7 +2933,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	      self->OutStream(self, digits[index]);
 	    }
 	}
-      dblFractionBase *= dblBase;
     }
   
   if (keepTrailingZeroes)
@@ -2956,7 +2954,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       self->OutStream(self, (isExponentNegative) ? '-' : '+');
 
       /* The exponent must contain at least two digits */
-      if ((base == BASE_DECIMAL) && (exponentDigits == 1))
+      if (requireTwoDigitExponent)
         self->OutStream(self, '0');
 
       exponentBase = (int)TrioPower(base, exponentDigits - 1);
