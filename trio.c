@@ -74,6 +74,9 @@ static const char rcsid[] = "@(#)$Id$";
 #endif
 
 #if defined(__STDC__) && defined(__STDC_VERSION__)
+# if (__STDC_VERSION__ >= 199409L)
+#  define TRIO_COMPILER_SUPPORTS_ISO94
+# endif
 # if (__STDC_VERSION__ >= 199901L)
 #  define TRIO_COMPILER_SUPPORTS_C99
 # endif
@@ -100,6 +103,9 @@ static const char rcsid[] = "@(#)$Id$";
 #endif
 #include <assert.h>
 #include <ctype.h>
+#if !defined(TRIO_COMPILER_SUPPORTS_C99)
+# define isblank(x) (((x)==32) || ((x)==9))
+#endif
 #include <math.h>
 #include <limits.h>
 #include <float.h>
@@ -141,7 +147,26 @@ static const char rcsid[] = "@(#)$Id$";
 #endif /* PLATFORM_WIN32 */
 
 #if TRIO_WIDECHAR
-# include <wchar.h>
+# if defined(TRIO_COMPILER_SUPPORTS_ISO94)
+#  include <wchar.h>
+#  include <wctype.h>
+# else
+typedef char wchar_t;
+typedef int wint_t;
+#  define WEOF EOF
+#  define iswalnum(x) isalnum(x)
+#  define iswalpha(x) isalpha(x)
+#  define iswblank(x) isblank(x)
+#  define iswcntrl(x) iscntrl(x)
+#  define iswdigit(x) isdigit(x)
+#  define iswgraph(x) isgraph(x)
+#  define iswlower(x) islower(x)
+#  define iswprint(x) isprint(x)
+#  define iswpunct(x) ispunct(x)
+#  define iswspace(x) isspace(x)
+#  define iswupper(x) isupper(x)
+#  define iswxdigit(x) isxdigit(x)
+# endif
 #endif
 
 
