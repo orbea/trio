@@ -242,9 +242,11 @@ typedef trio_longlong_t trio_int64_t;
 #ifdef LDBL_DIG
 # define MAX_MANTISSA_DIGITS LDBL_DIG
 # define MAX_EXPONENT_DIGITS 4
+# define MAX_DOUBLE_DIGITS LDBL_MAX_10_EXP
 #else
 # define MAX_MANTISSA_DIGITS DBL_DIG
 # define MAX_EXPONENT_DIGITS 3
+# define MAX_DOUBLE_DIGITS DBL_MAX_10_EXP
 #endif
 
 /* The maximal number of digits is for base 2 */
@@ -2323,7 +2325,7 @@ TrioWriteDouble(trio_class_t *self,
   BOOLEAN_T isExponentNegative = FALSE;
   BOOLEAN_T isHex;
   TRIO_CONST char *digits;
-  char numberBuffer[MAX_MANTISSA_DIGITS
+  char numberBuffer[MAX_DOUBLE_DIGITS
 		   * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *numberPointer;
   char exponentBuffer[MAX_EXPONENT_DIGITS + 1];
@@ -2333,6 +2335,7 @@ TrioWriteDouble(trio_class_t *self,
   int i;
   BOOLEAN_T onlyzero;
   int zeroes = 0;
+  BOOLEAN_T fakezero;
   
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -2448,8 +2451,12 @@ TrioWriteDouble(trio_class_t *self,
   fractionDigits = ((flags & FLAGS_FLOAT_G) && (zeroes == 0))
     ? precision - integerDigits
     : zeroes + precision;
-  
-  number = floor(0.5 + number * pow(dblBase, (double)fractionDigits));
+
+  fakezero = (integerDigits > DBL_DIG);
+  if (!fakezero)
+    {
+      number = floor(0.5 + number * pow(dblBase, (double)fractionDigits));
+    }
   workNumber = (isHex
 		? guarded_log16(0.5 + number)
 		: guarded_log10(0.5 + number));
@@ -2475,8 +2482,15 @@ TrioWriteDouble(trio_class_t *self,
   onlyzero = TRUE;
   for (i = 0; i < fractionDigits; i++)
     {
-      *(--numberPointer) = digits[(int)fmod(number, dblBase)];
-      number = floor(number / dblBase);
+      if (fakezero)
+	{
+	  *(--numberPointer) = digits[0];
+	}
+      else
+	{
+	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
+	  number = floor(number / dblBase);
+	}
 
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_ALTERNATIVE))
         {
@@ -2504,7 +2518,14 @@ TrioWriteDouble(trio_class_t *self,
   groupingIndex = 1;
   for (i = 1; i < integerDigits + 1; i++)
     {
-      *(--numberPointer) = digits[(int)fmod(number, dblBase)];
+      if (fakezero && (i < integerDigits - DBL_DIG))
+	{
+	  *(--numberPointer) = digits[0];
+	}
+      else
+	{
+	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
+	}
       number = floor(number / dblBase);
       if (number < DBL_EPSILON)
 	break;
@@ -5039,13 +5060,8 @@ TrioReadDouble(trio_class_t *self,
 	  return TRUE;
 	}
       return FALSE;
-      
-    default:
-      break;
-    }
-  
-  if (ch == '0')
-    {
+
+    case '0':
       doubleString[index++] = (char)ch;
       self->InStream(self, &ch);
       if (toupper(ch) == 'X')
@@ -5054,7 +5070,12 @@ TrioReadDouble(trio_class_t *self,
 	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
+      break;
+      
+    default:
+      break;
     }
+  
   while ((ch != EOF) && (index - start < width))
     {
       /* Integer part */
