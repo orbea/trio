@@ -66,8 +66,9 @@
 #endif
 
 #if defined(__STDC__)
-# define TRIO_COMPILER_SUPPORTS_C90
+# define TRIO_COMPILER_SUPPORTS_C89
 # if defined(__STDC_VERSION__)
+#  define TRIO_COMPILER_SUPPORTS_C90
 #  if (__STDC_VERSION__ >= 199409L)
 #   define TRIO_COMPILER_SUPPORTS_C94
 #  endif
@@ -101,7 +102,7 @@
 # define TRIO_PRIVATE static
 #endif
 
-#if !defined(TRIO_COMPILER_SUPPORTS_C90) && !defined(__cplusplus)
+#if !(defined(TRIO_COMPILER_SUPPORTS_C89) || defined(__cplusplus))
 # define TRIO_COMPILER_ANCIENT
 #endif
 
@@ -113,8 +114,6 @@ typedef double trio_long_double_t;
 typedef char * trio_pointer_t;
 # define TRIO_PROTO(x) ()
 # define TRIO_NOARGS
-# define TRIO_VA_ELLIPSIS va_alist
-# define TRIO_VA_DECL va_dcl
 # define TRIO_VA_START(x,y) va_start((x))
 # define TRIO_VA_END(x) va_end(x)
 #else
@@ -125,8 +124,6 @@ typedef long double trio_long_double_t;
 typedef void * trio_pointer_t;
 # define TRIO_PROTO(x) x
 # define TRIO_NOARGS void
-# define TRIO_VA_ELLIPSIS ...
-# define TRIO_VA_DECL
 # define TRIO_VA_START(x,y) va_start((x),(y))
 # define TRIO_VA_END(x) va_end(x)
 #endif
