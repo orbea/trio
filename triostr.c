@@ -331,8 +331,8 @@ trio_lower(char *target)
  * trio_match
  */
 TRIO_PUBLIC int
-trio_match(char *string,
-	   char *pattern)
+trio_match(const char *string,
+	   const char *pattern)
 {
   assert(string);
   assert(pattern);
@@ -369,8 +369,8 @@ trio_match(char *string,
  * trio_match_case
  */
 TRIO_PUBLIC int
-trio_match_case(char *string,
-		char *pattern)
+trio_match_case(const char *string,
+		const char *pattern)
 {
   assert(string);
   assert(pattern);
@@ -928,6 +928,30 @@ trio_xstring_equal(trio_string_t *self, const char *other)
 }
 
 /*************************************************************************
+ * trio_string_equal_case
+ */
+TRIO_PUBLIC int
+trio_string_equal_case(trio_string_t *self, trio_string_t *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_equal_case(self->buffer, other->buffer);
+}
+
+/*************************************************************************
+ * trio_xstring_equal_case
+ */
+TRIO_PUBLIC int
+trio_xstring_equal_case(trio_string_t *self, const char *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_equal_case(self->buffer, other);
+}
+
+/*************************************************************************
  * trio_string_length
  */
 TRIO_PUBLIC int
@@ -938,4 +962,52 @@ trio_string_length(trio_string_t *self)
   return (self->length == 0)
     ? trio_length(self->buffer)
     : self->length;
+}
+
+/*************************************************************************
+ * trio_string_match
+ */
+TRIO_PUBLIC int
+trio_string_match(trio_string_t *self, trio_string_t *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_match(self->buffer, other->buffer);
+}
+
+/*************************************************************************
+ * trio_xstring_match
+ */
+TRIO_PUBLIC int
+trio_xstring_match(trio_string_t *self, const char *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_match(self->buffer, other);
+}
+
+/*************************************************************************
+ * trio_string_match_case
+ */
+TRIO_PUBLIC int
+trio_string_match_case(trio_string_t *self, trio_string_t *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_match_case(self->buffer, other->buffer);
+}
+
+/*************************************************************************
+ * trio_xstring_match_case
+ */
+TRIO_PUBLIC int
+trio_xstring_match_case(trio_string_t *self, const char *other)
+{
+  assert(self);
+  assert(other);
+
+  return trio_match_case(self->buffer, other);
 }

@@ -117,8 +117,8 @@ const char *trio_error(int);
 size_t trio_format_date_max(char *target, size_t max, const char *format, const struct tm *datetime);
 unsigned long trio_hash(const char *string, int type);
 int trio_lower(char *target);
-int trio_match(char *string, char *pattern);
-int trio_match_case(char *string, char *pattern);
+int trio_match(const char *string, const char *pattern);
+int trio_match_case(const char *string, const char *pattern);
 size_t trio_span_function(char *target, const char *source, int (*Function)(int));
 char *trio_substring_max(const char *string, size_t max, const char *find);
 float trio_to_float(const char *source, const char **target);
@@ -148,6 +148,12 @@ trio_string_t *trio_string_duplicate(trio_string_t *other);
 trio_string_t *trio_xstring_duplicate(const char *other);
 int trio_string_equal(trio_string_t *self, trio_string_t *other);
 int trio_xstring_equal(trio_string_t *self, const char *other);
+int trio_string_equal_case(trio_string_t *self, trio_string_t *other);
+int trio_xstring_equal_case(trio_string_t *self, const char *other);
 int trio_string_length(trio_string_t *self);
+int trio_string_match(trio_string_t *self, trio_string_t *other);
+int trio_xstring_match(trio_string_t *self, const char *other);
+int trio_string_match_case(trio_string_t *self, trio_string_t *other);
+int trio_xstring_match_case(trio_string_t *self, const char *other);
 
 #endif /* TRIO_TRIOSTR_H */

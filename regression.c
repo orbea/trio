@@ -483,7 +483,11 @@ int VerifyDynamicStrings(void)
     nerrors++;
   if (!trio_xstring_contains(string, "me"))
     nerrors++;
-  if (!trio_xstring_contains(string, "ME"))
+  if (trio_xstring_contains(string, "ME"))
+    nerrors++;
+  if (!trio_xstring_match(string, "* me *"))
+    nerrors++;
+  if (trio_xstring_match_case(string, "* ME *"))
     nerrors++;
   
  error:
