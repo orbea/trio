@@ -72,6 +72,13 @@ static const char rcsid[] = "@(#)$Id$";
 # include <locale.h>
 # define USE_LOCALE
 #endif
+
+#if defined _MSC_VER
+#include <io.h>
+#define read _read
+#define write _write
+#endif /* _MSC_VER */
+
 #ifndef DEBUG
 # define NDEBUG
 #endif
