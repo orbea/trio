@@ -69,6 +69,12 @@
 # define TRIO_PLATFORM_MPEIX
 #endif
 
+#if defined(_AIX)
+# define TRIO_PLATFORM_AIX
+#elif defined(__hpux)
+# define TRIO_PLATFORM_HPUX
+#endif
+
 #if defined(__STDC__) || defined(TRIO_COMPILER_MSVC)
 # define TRIO_COMPILER_SUPPORTS_C89
 # if defined(__STDC_VERSION__)

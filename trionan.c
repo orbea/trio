@@ -643,12 +643,24 @@ TRIO_ARGS2((number, is_negative),
     return TRIO_FP_NORMAL;
   }
 
-#elif defined(FP_PLUS_NORM) || defined(__hpux)
+#elif defined(FP_PLUS_NORM)
 
   /*
    * HP-UX 9.x and 10.x have an fpclassify() function, that is different
    * from the C99 fpclassify() macro supported on HP-UX 11.x.
+   *
+   * AIX has class() for C, and _class() for C++, which returns the
+   * same values as the HP-UX fpclassify() function.
    */
+  
+# if defined(TRIO_PLATFORM_AIX)
+#  if defined(__cplusplus)
+#   define fpclassify(x) _class(x)
+#  else
+#   define fpclassify(x) class(x)
+#  endif
+# endif
+  
   switch (fpclassify(number)) {
   case FP_QNAN:
   case FP_SNAN:
