@@ -4,6 +4,15 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.7 - 2002/01/20
+------------------------
+* Fixed %#s to handle whitespaces as non-printable characters.
+
+* Added trio_isfinite.
+
+* Added new test cases.
+
+
 Version 1.6 - 2002/01/13
 ------------------------
 * Added dynamic string functions.
