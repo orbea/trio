@@ -349,6 +349,14 @@ The style is @c [-]9.99e[-]9, where
 @li @c e[-]9 is the exponent indicator (either @c e or @c E, depending on the
 floating-point specifier), followed by an optional sign and the exponent
 
+If the precision is wider than the maximum number of digits that can be
+represented by the floating-point unit, then the number will be adequately
+rounded. For example, assuming DBL_DIG is 15
+@verbatim
+  trio_printf("|%.18e|\n", (1.0 / 3.0));
+  |3.333333333333333000e-01|
+@endverbatim
+
 @em Floating-point ( @c f, @c F )
 
 Output a decimal floating-point number.
@@ -357,6 +365,14 @@ The style is @c [-]9.99, where
 @li @c 9 is the integer-part (possibly interspersed with thousand-separators),
 @li @c . is the decimal-point (depending on the locale), and
 @li @c 99 is the fractional-part.
+
+If more digits are needed to output the number, than can be represented with
+the accuracy of the floating-point unit, then the number will be adequately
+rounded. For example, assuming that DBL_DIG is 15
+@verbatim
+  trio_printf("|%f|\n", (2.0 / 3.0) * 1E18);
+  |666666666666666700.000000|
+@endverbatim
 
 The following modifiers holds a special meaning for this specifier
 @li Alternative ( @c # ) [C99].
