@@ -1192,7 +1192,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   index = 0;
   parameterPosition = 0;
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-  mblen(NULL, 0);
+  (void)mblen(NULL, 0);
 #endif
   
   while (format[index])
@@ -2487,7 +2487,7 @@ TRIO_ARGS5((self, wstring, flags, width, precision),
   assert(VALID(self->OutStream));
 
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-  mblen(NULL, 0);
+  (void)mblen(NULL, 0);
 #endif
   
   if (wstring == NULL)
@@ -3015,7 +3015,7 @@ TRIO_ARGS3((data, format, parameters),
   index = 0;
   i = 0;
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-  mblen(NULL, 0);
+  (void)mblen(NULL, 0);
 #endif
   
   while (format[index])
@@ -3024,11 +3024,19 @@ TRIO_ARGS3((data, format, parameters),
       if (! isascii(format[index]))
 	{
 	  charlen = mblen(&format[index], MB_LEN_MAX);
-	  while (charlen-- > 0)
+	  /*
+	   * Only valid multibyte characters are handled here. Invalid
+	   * multibyte characters (charlen == -1) are handled as normal
+	   * characters.
+	   */
+	  if (charlen != -1)
 	    {
-	      data->OutStream(data, format[index++]);
+	      while (charlen-- > 0)
+		{
+		  data->OutStream(data, format[index++]);
+		}
+	      continue; /* while characters left in formatting string */
 	    }
-	  continue; /* while */
 	}
 #endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
       if (CHAR_IDENTIFIER == format[index])
@@ -3360,7 +3368,7 @@ TRIO_ARGS2((self, output),
   FILE *file;
 
   assert(VALID(self));
-  assert(VALID(file));
+  assert(VALID(self->location));
 
   file = (FILE *)self->location;
   self->processed++;
@@ -3468,8 +3476,9 @@ TRIO_ARGS2((self, output),
   char **buffer;
 
   assert(VALID(self));
+  assert(VALID(self->location));
+  
   buffer = (char **)self->location;
-  assert(VALID(buffer));
 
   if (self->processed < self->max)
     {
@@ -4030,6 +4039,7 @@ TRIO_ARGS4((buffer, max, format, args),
 {
   int status;
   size_t buf_len;
+  
   assert(VALID(buffer));
   assert(VALID(format));
 
@@ -5634,7 +5644,7 @@ TRIO_ARGS4((self, target, flags, width),
   TrioSkipWhitespaces(self);
 
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-  mblen(NULL, 0);
+  (void)mblen(NULL, 0);
 #endif
   
   /*
@@ -5961,7 +5971,7 @@ TRIO_ARGS3((data, format, parameters),
   data->InStream(data, &ch);
 
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-  mblen(NULL, 0);
+  (void)mblen(NULL, 0);
 #endif
 
   while (format[index])
@@ -5970,16 +5980,19 @@ TRIO_ARGS3((data, format, parameters),
       if (! isascii(format[index]))
 	{
 	  charlen = mblen(&format[index], MB_LEN_MAX);
-	  /* Compare multibyte characters in format string */
-	  for (cnt = 0; cnt < charlen - 1; cnt++)
+	  if (charlen != -1)
 	    {
-	      if (ch != format[index + cnt])
+	      /* Compare multibyte characters in format string */
+	      for (cnt = 0; cnt < charlen - 1; cnt++)
 		{
-		  return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		  if (ch != format[index + cnt])
+		    {
+		      return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		    }
+		  data->InStream(data, &ch);
 		}
-	      data->InStream(data, &ch);
+	      continue; /* while characters left in formatting string */
 	    }
-	  continue; /* while */
 	}
 #endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
       

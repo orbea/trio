@@ -4,10 +4,16 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.8 - 2002/06/22
+Version 1.8 - 2002/07/10
 ------------------------
+* Fixed infinite loop in multibyte handling (reported by Gisli Ottarsson).
+
 * Added the customizable cprintf/cscanf family which enables to user to specify
   input and output stream functions (suggested by Florian Schulze).
+
+* Fixed trio_isinf by removing the HP-UX workaround, and instead making sure
+  that the C99 macro will adhere to the trio return values (reported by Luke
+  Dunstan)
 
 * Alexander Lukyanov
   Fixed boundary case for scanning and EOF.
