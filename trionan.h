@@ -49,6 +49,11 @@ TRIO_PUBLIC int trio_isnan(double number);
  */
 TRIO_PUBLIC int trio_isinf(double number);
 
+/*
+ * If number is finite return non-zero, otherwise return zero.
+ */
+TRIO_PUBLIC int trio_isfinite(double number);
+
 #ifdef __cplusplus
 }
 #endif

@@ -116,7 +116,7 @@ static const char rcsid[] = "@(#)$Id$";
  *     maximum exponent is 10 bits wide (2^10 == 1024).
  *   o DBL_MANT_DIG == 53: The mantissa is 52 bits wide, but because
  *     numbers are normalized the initial binary 1 is represented
- *     implictly (the so-called "hidden bit"), which leaves us with
+ *     implicitly (the so-called "hidden bit"), which leaves us with
  *     the ability to represent 53 bits wide mantissa.
  */
 #if (FLT_RADIX == 2) && (DBL_MAX_EXP == 1024) && (DBL_MANT_DIG == 53)
@@ -342,7 +342,7 @@ trio_isnan(TRIO_VOLATILE double number)
   
 #elif defined(TRIO_COMPILER_MSVC)
   /*
-   * MSC has an _isnan() function
+   * MSVC has an _isnan() function
    */
   return _isnan(number);
 
@@ -459,6 +459,47 @@ trio_isinf(TRIO_VOLATILE double number)
   
 #endif
 }
+
+
+/**
+   Check for finity.
+
+   @param number An arbitrary floating-point number.
+   @return Boolean value indicating whether or not the number is a finite.
+*/
+TRIO_PUBLIC int
+trio_isfinite(TRIO_VOLATILE double number)
+{
+#if defined(isfinite)
+  /*
+   * C99 defines isfinite() as a macro.
+   */
+  return isfinite(number);
+  
+#elif defined(TRIO_COMPILER_MSVC)
+  /*
+   * MSVC uses _finite().
+   */
+  return _finite(number);
+
+#elif defined(USE_IEEE_754)
+  /*
+   * Examine IEEE 754 bit-pattern. For finity we do not care about the
+   * mantissa.
+   */
+  int dummy;
+
+  return (! trio_is_special_quantity(number, &dummy));
+
+#else
+  /*
+   * Fallback solution.
+   */
+  return ((trio_isinf(number) == 0) && (trio_isnan(number) == 0));
+  
+#endif
+}
+
 
 /** @} SpecialQuantities */
 
