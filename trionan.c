@@ -50,6 +50,7 @@
  *   NetBSD 1.4      x86          gcc
  *   NetBSD 1.4      StrongARM    gcc
  *   NetBSD 1.5      Alpha        gcc
+ *   OpenVMS 7.1     Alpha        DEC C 6.0
  *   RISC OS 4       StrongARM    Norcroft C
  *   Solaris 2.5.1   x86          gcc
  *   Solaris 2.5.1   Sparc        gcc
@@ -77,6 +78,9 @@ static const char rcsid[] = "@(#)$Id$";
 #if defined(TRIO_PLATFORM_UNIX)
 # include <signal.h>
 #endif
+#if defined(TRIO_COMPILER_DECC)
+# include <fp_class.h>
+#endif
 #include <assert.h>
 
 /*************************************************************************
@@ -86,7 +90,11 @@ static const char rcsid[] = "@(#)$Id$";
 /* We must enable IEEE floating-point on Alpha */
 #if defined(__alpha) && !defined(_IEEE_FP)
 # if defined(TRIO_COMPILER_DECC)
-#  error "Must be compiled with option -ieee"
+#  if defined(TRIO_PLATFORM_VMS)
+#   error "Must be compiled with option /IEEE_MODE=UNDERFLOW_TO_ZERO/FLOAT=IEEE"
+#  else
+#   error "Must be compiled with option -ieee"
+#  endif
 # elif defined(TRIO_COMPILER_GCC) && (defined(__osf__) || defined(__linux__))
 #  error "Must be compiled with option -mieee"
 # endif
@@ -120,16 +128,16 @@ static const char rcsid[] = "@(#)$Id$";
  * Endian-agnostic indexing macro.
  *
  * The value of internalEndianMagic, when converted into a 64-bit
- * integer, becomes 0x0001020304050607 (we could have used a 64-bit
+ * integer, becomes 0x0706050403020100 (we could have used a 64-bit
  * integer value instead of a double, but not all platforms supports
  * that type). The value is automatically encoded with the correct
  * endianess by the compiler, which means that we can support any
  * kind of endianess. The individual bytes are then used as an index
  * for the IEEE 754 bit-patterns and masks.
  */
-#define TRIO_DOUBLE_INDEX(x) (((unsigned char *)&internalEndianMagic)[(x)])
+#define TRIO_DOUBLE_INDEX(x) (((unsigned char *)&internalEndianMagic)[7-(x)])
 
-static TRIO_CONST double internalEndianMagic = 1.4015997730788920e-309;
+static TRIO_CONST double internalEndianMagic = 7.949928895127363e-275;
 
 /* Mask for the exponent */
 static TRIO_CONST unsigned char ieee_754_exponent_mask[] = {
@@ -155,7 +163,7 @@ static TRIO_CONST unsigned char ieee_754_qnan_array[] = {
 /*************************************************************************
  * trio_make_double
  */
-static double
+TRIO_PRIVATE double
 trio_make_double(TRIO_CONST unsigned char *values)
 {
   TRIO_VOLATILE double result;
@@ -170,7 +178,7 @@ trio_make_double(TRIO_CONST unsigned char *values)
 /*************************************************************************
  * trio_examine_double
  */
-static int
+TRIO_PRIVATE int
 trio_is_special_quantity(double number,
 			 int *has_mantissa)
 {
@@ -431,6 +439,12 @@ trio_isinf(TRIO_VOLATILE double number)
 }
 
 /*************************************************************************
+ * For test purposes.
+ *
+ * Add the following compiler option to include this test code.
+ *
+ *  Unix : -DSTANDALONE
+ *  VMS  : /DEFINE=(STANDALONE)
  */
 #if defined(STANDALONE)
 # include <stdio.h>

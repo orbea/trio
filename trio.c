@@ -41,8 +41,6 @@
  *  - Scanning of collating symbols.
  */
 
-static const char rcsid[] = "@(#)$Id$";
-
 /*************************************************************************
  * Trio include files
  */
@@ -116,6 +114,9 @@ static const char rcsid[] = "@(#)$Id$";
 # include <locale.h>
 # define USE_LOCALE
 #endif /* TRIO_PLATFORM_UNIX */
+#if defined(TRIO_PLATFORM_VMS)
+# include <unistd.h>
+#endif
 #if defined(TRIO_PLATFORM_WIN32)
 # include <io.h>
 # define read _read
@@ -642,6 +643,10 @@ typedef struct _trio_class_t {
    * The upper limit of characters that may be written/read.
    */
   int max;
+  /*
+   * The last output error that was detected.
+   */
+  int error;
 } trio_class_t;
 
 /* References (for user-defined callbacks) */
@@ -662,7 +667,9 @@ typedef struct _trio_userdef_t {
  * Internal variables
  */
 
-static const char internalNullString[] = "(nil)";
+static TRIO_CONST char rcsid[] = "@(#)$Id$";
+
+static TRIO_CONST char internalNullString[] = "(nil)";
 
 #if defined(USE_LOCALE)
 static struct lconv *internalLocaleValues = NULL;
@@ -676,8 +683,8 @@ static char internalDecimalPoint[MAX_LOCALE_SEPARATOR_LENGTH + 1] = ".";
 static char internalThousandSeparator[MAX_LOCALE_SEPARATOR_LENGTH + 1] = ",";
 static char internalGrouping[MAX_LOCALE_GROUPS] = { (char)NO_GROUPING };
 
-static const char internalDigitsLower[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-static const char internalDigitsUpper[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static TRIO_CONST char internalDigitsLower[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+static TRIO_CONST char internalDigitsUpper[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static BOOLEAN_T internalDigitsUnconverted = TRUE;
 static int internalDigitArray[128];
 #if TRIO_EXTENSION
@@ -685,15 +692,16 @@ static BOOLEAN_T internalCollationUnconverted = TRUE;
 static char internalCollationArray[MAX_CHARACTER_CLASS][MAX_CHARACTER_CLASS];
 #endif
 
-static volatile trio_callback_t internalEnterCriticalRegion = NULL;
-static volatile trio_callback_t internalLeaveCriticalRegion = NULL;
+static TRIO_VOLATILE trio_callback_t internalEnterCriticalRegion = NULL;
+static TRIO_VOLATILE trio_callback_t internalLeaveCriticalRegion = NULL;
 static trio_userdef_t *internalUserDef = NULL;
 
 
 /*************************************************************************
- * trio_strerror [public]
+ * trio_strerror
  */
-const char *trio_strerror(int errorcode)
+TRIO_PUBLIC TRIO_CONST char *
+trio_strerror(int errorcode)
 {
   /* Textual versions of the error codes */
   switch (TRIO_ERROR_CODE(errorcode))
@@ -725,7 +733,7 @@ const char *trio_strerror(int errorcode)
  *  QUALIFIER_POSITION must not be added.
  */
 TRIO_PRIVATE BOOLEAN_T
-TrioIsQualifier(const char ch)
+TrioIsQualifier(TRIO_CONST char ch)
 {
   /* QUALIFIER_POSITION is not included */
   switch (ch)
@@ -822,7 +830,7 @@ TrioSetLocale(void)
  * Get the %n$ position.
  */
 TRIO_PRIVATE int
-TrioGetPosition(const char *format,
+TrioGetPosition(TRIO_CONST char *format,
 		int *indexPointer)
 {
   char *tmpformat;
@@ -850,7 +858,7 @@ TrioGetPosition(const char *format,
  * The prev argument is used for optimisation only.
  */
 TRIO_PRIVATE trio_userdef_t *
-TrioFindNamespace(const char *name, trio_userdef_t **prev)
+TrioFindNamespace(TRIO_CONST char *name, trio_userdef_t **prev)
 {
   trio_userdef_t *def;
   
@@ -881,7 +889,7 @@ TrioFindNamespace(const char *name, trio_userdef_t **prev)
  */
 TRIO_PRIVATE int
 TrioParse(int type,
-	  const char *format,
+	  TRIO_CONST char *format,
 	  trio_parameter_t *parameters,
 	  va_list arglist,
 	  void **argarray)
@@ -1874,7 +1882,7 @@ TrioWriteNumber(trio_class_t *self,
   char buffer[MAX_CHARS_IN(trio_uintmax_t) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *bufferend;
   char *pointer;
-  const char *digits;
+  TRIO_CONST char *digits;
   int i;
   int length;
   char *p;
@@ -2104,7 +2112,7 @@ TrioWriteStringCharacter(trio_class_t *self,
  */
 TRIO_PRIVATE void
 TrioWriteString(trio_class_t *self,
-		const char *string,
+		TRIO_CONST char *string,
 		unsigned long flags,
 		int width,
 		int precision)
@@ -2206,7 +2214,7 @@ TrioWriteWideStringCharacter(trio_class_t *self,
 #if TRIO_WIDECHAR
 TRIO_PRIVATE void
 TrioWriteWideString(trio_class_t *self,
-		    const wchar_t *wstring,
+		    TRIO_CONST wchar_t *wstring,
 		    unsigned long flags,
 		    int width,
 		    int precision)
@@ -2289,7 +2297,7 @@ TrioWriteDouble(trio_class_t *self,
   BOOLEAN_T isNegative;
   BOOLEAN_T isExponentNegative = FALSE;
   BOOLEAN_T isHex;
-  const char *digits;
+  TRIO_CONST char *digits;
   char numberBuffer[MAX_MANTISSA_DIGITS
 		   * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *numberPointer;
@@ -2616,7 +2624,7 @@ TrioWriteDouble(trio_class_t *self,
  */
 TRIO_PRIVATE int
 TrioFormatProcess(trio_class_t *data,
-		  const char *format,
+		  TRIO_CONST char *format,
 		  trio_parameter_t *parameters)
 
 {
@@ -2624,7 +2632,7 @@ TrioFormatProcess(trio_class_t *data,
   int charlen;
 #endif
   int i;
-  const char *string;
+  TRIO_CONST char *string;
   void *pointer;
   unsigned long flags;
   int width;
@@ -2905,7 +2913,7 @@ TrioFormatProcess(trio_class_t *data,
  */
 TRIO_PRIVATE int
 TrioFormatRef(trio_reference_t *reference,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      va_list arglist,
 	      void **argarray)
 {
@@ -2916,7 +2924,12 @@ TrioFormatRef(trio_reference_t *reference,
   if (status < 0)
     return status;
 
-  return TrioFormatProcess(reference->data, format, parameters);
+  status = TrioFormatProcess(reference->data, format, parameters);
+  if (reference->data->error != 0)
+    {
+      status = reference->data->error;
+    }
+  return status;
 }
 
 /*************************************************************************
@@ -2929,7 +2942,7 @@ TRIO_PRIVATE int
 TrioFormat(void *destination,
 	   size_t destinationSize,
 	   void (*OutStream)(trio_class_t *, int),
-	   const char *format,
+	   TRIO_CONST char *format,
 	   va_list arglist,
 	   void **argarray)
 {
@@ -2944,6 +2957,7 @@ TrioFormat(void *destination,
   data.OutStream = OutStream;
   data.location = destination;
   data.max = destinationSize;
+  data.error = 0;
 
 #if defined(USE_LOCALE)
   if (NULL == internalLocaleValues)
@@ -2956,7 +2970,12 @@ TrioFormat(void *destination,
   if (status < 0)
     return status;
 
-  return TrioFormatProcess(&data, format, parameters);
+  status = TrioFormatProcess(&data, format, parameters);
+  if (data.error != 0)
+    {
+      status = data.error;
+    }
+  return status;
 }
 
 /*************************************************************************
@@ -2972,8 +2991,14 @@ TrioOutStreamFile(trio_class_t *self,
   assert(VALID(file));
 
   self->processed++;
-  self->committed++;
-  (void)fputc(output, file);
+  if (fputc(output, file) == EOF)
+    {
+      self->error = TRIO_ERROR_RETURN(TRIO_EOF, 0);
+    }
+  else
+    {
+      self->committed++;
+    }
 }
 
 /*************************************************************************
@@ -2989,9 +3014,15 @@ TrioOutStreamFileDescriptor(trio_class_t *self,
   assert(VALID(self));
 
   ch = (char)output;
-  (void)write(fd, &ch, sizeof(char));
   self->processed++;
-  self->committed++;
+  if (write(fd, &ch, sizeof(char)) == -1)
+    {
+      self->error = TRIO_ERROR_RETURN(TRIO_ERRNO, 0);
+    }
+  else
+    {
+      self->committed++;
+    }
 }
 
 /*************************************************************************
@@ -3053,45 +3084,54 @@ TrioOutStreamStringDynamic(trio_class_t *self,
   assert(VALID(self));
   assert(VALID(self->location));
 
-  infop = (struct dynamicBuffer *)self->location;
-
-  if (infop->buffer == NULL)
+  if (self->error != 0)
     {
-      /* Start with a reasonable size */
-      infop->buffer = (char *)TRIO_MALLOC(DYNAMIC_START_SIZE);
+      infop = (struct dynamicBuffer *)self->location;
+
       if (infop->buffer == NULL)
-	return; /* fail */
-      
-      infop->allocated = DYNAMIC_START_SIZE;
-      self->processed = 0;
-      self->committed = 0;
-    }
-  else if (self->committed + sizeof(NIL) >= infop->allocated)
-    {
-      char *newptr;
-      
-      /* Allocate increasing chunks */
-      newptr = (char *)TRIO_REALLOC(infop->buffer, infop->allocated * 2);
-      
-      if (newptr == NULL)
-	return;
+	{
+	  /* Start with a reasonable size */
+	  infop->buffer = (char *)TRIO_MALLOC(DYNAMIC_START_SIZE);
+	  if (infop->buffer == NULL)
+	    {
+	      self->error = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
+	      return; /* fail */
+	    }
+	  infop->allocated = DYNAMIC_START_SIZE;
+	  self->processed = 0;
+	  self->committed = 0;
+	}
+      else if (infop->length + sizeof(NIL) >= infop->allocated)
+	{
+	  char *newptr;
+	  size_t newsize;
 
-      infop->buffer = newptr;
-      infop->allocated *= 2;
+	  /* Allocate increasing chunks */
+	  newsize = infop->allocated * 2;
+	  newptr = (char *)TRIO_REALLOC(infop->buffer, newsize);
+      
+	  if (newptr == NULL)
+	    {
+	      self->error = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
+	      return;
+	    }
+
+	  infop->buffer = newptr;
+	  infop->allocated = newsize;
+	}
+  
+      infop->buffer[infop->length] = (char)output;
+      infop->length++;
+      self->committed++;
     }
-  
-  infop->buffer[self->committed] = (char)output;
-  self->committed++;
   self->processed++;
-  
-  infop->length = self->committed;
 }
 
 /*************************************************************************
  * printf
  */
 int
-trio_printf(const char *format,
+trio_printf(TRIO_CONST char *format,
 	    ...)
 {
   int status;
@@ -3106,7 +3146,7 @@ trio_printf(const char *format,
 }
 
 int
-trio_vprintf(const char *format,
+trio_vprintf(TRIO_CONST char *format,
 	     va_list args)
 {
   assert(VALID(format));
@@ -3115,7 +3155,7 @@ trio_vprintf(const char *format,
 }
 
 int
-trio_printfv(const char *format,
+trio_printfv(TRIO_CONST char *format,
 	     void ** args)
 {
   va_list dummy;
@@ -3130,7 +3170,7 @@ trio_printfv(const char *format,
  */
 int
 trio_fprintf(FILE *file,
-	     const char *format,
+	     TRIO_CONST char *format,
 	     ...)
 {
   int status;
@@ -3147,7 +3187,7 @@ trio_fprintf(FILE *file,
 
 int
 trio_vfprintf(FILE *file,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      va_list args)
 {
   assert(VALID(file));
@@ -3158,7 +3198,7 @@ trio_vfprintf(FILE *file,
 
 int
 trio_fprintfv(FILE *file,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      void ** args)
 {
   va_list dummy;
@@ -3174,7 +3214,7 @@ trio_fprintfv(FILE *file,
  */
 int
 trio_dprintf(int fd,
-	     const char *format,
+	     TRIO_CONST char *format,
 	     ...)
 {
   int status;
@@ -3190,7 +3230,7 @@ trio_dprintf(int fd,
 
 int
 trio_vdprintf(int fd,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      va_list args)
 {
   assert(VALID(format));
@@ -3200,7 +3240,7 @@ trio_vdprintf(int fd,
 
 int
 trio_dprintfv(int fd,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      void **args)
 {
   va_list dummy;
@@ -3215,7 +3255,7 @@ trio_dprintfv(int fd,
  */
 int
 trio_sprintf(char *buffer,
-	     const char *format,
+	     TRIO_CONST char *format,
 	     ...)
 {
   int status;
@@ -3233,7 +3273,7 @@ trio_sprintf(char *buffer,
 
 int
 trio_vsprintf(char *buffer,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      va_list args)
 {
   int status;
@@ -3248,7 +3288,7 @@ trio_vsprintf(char *buffer,
 
 int
 trio_sprintfv(char *buffer,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      void **args)
 {
   int status;
@@ -3268,7 +3308,7 @@ trio_sprintfv(char *buffer,
 int
 trio_snprintf(char *buffer,
 	      size_t bufferSize,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      ...)
 {
   int status;
@@ -3289,7 +3329,7 @@ trio_snprintf(char *buffer,
 int
 trio_vsnprintf(char *buffer,
 	       size_t bufferSize,
-	       const char *format,
+	       TRIO_CONST char *format,
 	       va_list args)
 {
   int status;
@@ -3307,7 +3347,7 @@ trio_vsnprintf(char *buffer,
 int
 trio_snprintfv(char *buffer,
 	       size_t bufferSize,
-	       const char *format,
+	       TRIO_CONST char *format,
 	       void **args)
 {
   int status;
@@ -3331,7 +3371,7 @@ trio_snprintfv(char *buffer,
 int
 trio_snprintfcat(char *buffer,
 		 size_t bufferSize,
-		 const char *format,
+		 TRIO_CONST char *format,
 		 ...)
 {
   int status;
@@ -3356,7 +3396,7 @@ trio_snprintfcat(char *buffer,
 int
 trio_vsnprintfcat(char *buffer,
 		  size_t bufferSize,
-		  const char *format,
+		  TRIO_CONST char *format,
 		  va_list args)
 {
   int status;
@@ -3378,7 +3418,7 @@ trio_vsnprintfcat(char *buffer,
 
 /* Deprecated */
 char *
-trio_aprintf(const char *format,
+trio_aprintf(TRIO_CONST char *format,
 	     ...)
 {
   va_list args;
@@ -3403,7 +3443,7 @@ trio_aprintf(const char *format,
 
 /* Deprecated */
 char *
-trio_vaprintf(const char *format,
+trio_vaprintf(TRIO_CONST char *format,
 	      va_list args)
 {
   struct dynamicBuffer info;
@@ -3425,7 +3465,7 @@ trio_vaprintf(const char *format,
 
 int
 trio_asprintf(char **result,
-	      const char *format,
+	      TRIO_CONST char *format,
 	      ...)
 {
   va_list args;
@@ -3465,7 +3505,7 @@ trio_asprintf(char **result,
 
 int
 trio_vasprintf(char **result,
-	       const char *format,
+	       TRIO_CONST char *format,
 	       va_list args)
 {
   int status;
@@ -3508,7 +3548,7 @@ trio_vasprintf(char **result,
  */
 void *
 trio_register(trio_callback_t callback,
-	      const char *name)
+	      TRIO_CONST char *name)
 {
   trio_userdef_t *def;
   trio_userdef_t *prev = NULL;
@@ -3605,7 +3645,7 @@ trio_unregister(void *handle)
 /*************************************************************************
  * trio_get_format [public]
  */
-const char *
+TRIO_CONST char *
 trio_get_format(void *ref)
 {
   assert(((trio_reference_t *)ref)->parameter->type == FORMAT_USER_DEFINED);
@@ -4041,7 +4081,7 @@ trio_print_pointer(void *ref,
 
   if (NULL == pointer)
     {
-      const char *string = internalNullString;
+      TRIO_CONST char *string = internalNullString;
       while (*string)
 	self->data->OutStream(self->data, *string++);
     }
@@ -4074,7 +4114,7 @@ trio_print_pointer(void *ref,
  */
 int
 trio_print_ref(void *ref,
-	       const char *format,
+	       TRIO_CONST char *format,
 	       ...)
 {
   int status;
@@ -4093,7 +4133,7 @@ trio_print_ref(void *ref,
  */
 int
 trio_vprint_ref(void *ref,
-		const char *format,
+		TRIO_CONST char *format,
 		va_list arglist)
 {
   assert(VALID(format));
@@ -4106,7 +4146,7 @@ trio_vprint_ref(void *ref,
  */
 int
 trio_printv_ref(void *ref,
-		const char *format,
+		TRIO_CONST char *format,
 		void **argarray)
 {
   va_list dummy;
@@ -4145,7 +4185,7 @@ TrioSkipWhitespaces(trio_class_t *self)
  */
 #if TRIO_EXTENSION
 TRIO_PRIVATE void
-TrioGetCollation()
+TrioGetCollation(void)
 {
   int i;
   int j;
@@ -4178,7 +4218,7 @@ TrioGetCollation()
  *  multibyte
  */
 TRIO_PRIVATE int
-TrioGetCharacterClass(const char *format,
+TrioGetCharacterClass(TRIO_CONST char *format,
 		      int *indexPointer,
 		      unsigned long *flagsPointer,
 		      int *characterclass)
@@ -4993,25 +5033,18 @@ TrioReadPointer(trio_class_t *self,
 }
 
 /*************************************************************************
- * TrioScan
+ * TrioScanProcess
  */
 TRIO_PRIVATE int
-TrioScan(const void *source,
-	 size_t sourceSize,
-	 void (*InStream)(trio_class_t *, int *),
-	 const char *format,
-	 va_list arglist,
-	 void **argarray)
+TrioScanProcess(trio_class_t *data,
+		TRIO_CONST char *format,
+		trio_parameter_t *parameters)
 {
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   int charlen;
   int cnt;
 #endif
-  int status;
   int assignment;
-  trio_parameter_t parameters[MAX_PARAMETERS];
-  trio_class_t internalData;
-  trio_class_t *data;
   int ch;
   int index; /* Index of format string */
   int i; /* Index of current parameter */
@@ -5019,26 +5052,6 @@ TrioScan(const void *source,
   int width;
   int base;
   void *pointer;
-
-  assert(VALID(InStream));
-  assert(VALID(format));
-
-  memset(&internalData, 0, sizeof(internalData));
-  data = &internalData;
-  data->InStream = InStream;
-  data->location = (void *)source;
-  data->max = sourceSize;
-
-#if defined(USE_LOCALE)
-  if (NULL == internalLocaleValues)
-    {
-      TrioSetLocale();
-    }
-#endif
-  
-  status = TrioParse(TYPE_SCAN, format, parameters, arglist, argarray);
-  if (status < 0)
-    return status;
 
   assignment = 0;
   i = 0;
@@ -5327,6 +5340,49 @@ TrioScan(const void *source,
 }
 
 /*************************************************************************
+ * TrioScan
+ */
+TRIO_PRIVATE int
+TrioScan(TRIO_CONST void *source,
+	 size_t sourceSize,
+	 void (*InStream)(trio_class_t *, int *),
+	 TRIO_CONST char *format,
+	 va_list arglist,
+	 void **argarray)
+{
+  int status;
+  trio_parameter_t parameters[MAX_PARAMETERS];
+  trio_class_t data;
+
+  assert(VALID(InStream));
+  assert(VALID(format));
+
+  memset(&data, 0, sizeof(data));
+  data.InStream = InStream;
+  data.location = (void *)source;
+  data.max = sourceSize;
+  data.error = 0;
+
+#if defined(USE_LOCALE)
+  if (NULL == internalLocaleValues)
+    {
+      TrioSetLocale();
+    }
+#endif
+  
+  status = TrioParse(TYPE_SCAN, format, parameters, arglist, argarray);
+  if (status < 0)
+    return status;
+
+  status = TrioScanProcess(&data, format, parameters);
+  if (data.error != 0)
+    {
+      status = data.error;
+    }
+  return status;
+}
+
+/*************************************************************************
  * TrioInStreamFile
  */
 TRIO_PRIVATE void
@@ -5339,6 +5395,12 @@ TrioInStreamFile(trio_class_t *self,
   assert(VALID(file));
 
   self->current = fgetc(file);
+  if (self->current == EOF)
+    {
+      self->error = (ferror(file))
+	? TRIO_ERROR_RETURN(TRIO_ERRNO, 0)
+	: TRIO_ERROR_RETURN(TRIO_EOF, 0);
+    }
   self->processed++;
   self->committed++;
   
@@ -5362,9 +5424,17 @@ TrioInStreamFileDescriptor(trio_class_t *self,
   assert(VALID(self));
 
   size = read(fd, &input, sizeof(char));
-  self->current = (size == 0) ? EOF : input;
-  self->processed++;
+  if (size == -1)
+    {
+      self->error = TRIO_ERROR_RETURN(TRIO_ERRNO, 0);
+      self->current = EOF;
+    }
+  else
+    {
+      self->current = (size == 0) ? EOF : input;
+    }
   self->committed++;
+  self->processed++;
   
   if (VALID(intPointer))
     {
@@ -5403,7 +5473,7 @@ TrioInStreamString(trio_class_t *self,
  * scanf
  */
 int
-trio_scanf(const char *format,
+trio_scanf(TRIO_CONST char *format,
 	   ...)
 {
   int status;
@@ -5418,7 +5488,7 @@ trio_scanf(const char *format,
 }
 
 int
-trio_vscanf(const char *format,
+trio_vscanf(TRIO_CONST char *format,
 	    va_list args)
 {
   assert(VALID(format));
@@ -5427,7 +5497,7 @@ trio_vscanf(const char *format,
 }
 
 int
-trio_scanfv(const char *format,
+trio_scanfv(TRIO_CONST char *format,
 	    void **args)
 {
   va_list dummy;
@@ -5442,7 +5512,7 @@ trio_scanfv(const char *format,
  */
 int
 trio_fscanf(FILE *file,
-	    const char *format,
+	    TRIO_CONST char *format,
 	    ...)
 {
   int status;
@@ -5459,7 +5529,7 @@ trio_fscanf(FILE *file,
 
 int
 trio_vfscanf(FILE *file,
-	     const char *format,
+	     TRIO_CONST char *format,
 	     va_list args)
 {
   assert(VALID(file));
@@ -5470,7 +5540,7 @@ trio_vfscanf(FILE *file,
 
 int
 trio_fscanfv(FILE *file,
-	     const char *format,
+	     TRIO_CONST char *format,
 	     void **args)
 {
   va_list dummy;
@@ -5486,7 +5556,7 @@ trio_fscanfv(FILE *file,
  */
 int
 trio_dscanf(int fd,
-	    const char *format,
+	    TRIO_CONST char *format,
 	    ...)
 {
   int status;
@@ -5502,7 +5572,7 @@ trio_dscanf(int fd,
 
 int
 trio_vdscanf(int fd,
-	     const char *format,
+	     TRIO_CONST char *format,
 	     va_list args)
 {
   assert(VALID(format));
@@ -5512,7 +5582,7 @@ trio_vdscanf(int fd,
 
 int
 trio_dscanfv(int fd,
-             const char *format,
+             TRIO_CONST char *format,
              void **args)
 {
   va_list dummy;
@@ -5526,8 +5596,8 @@ trio_dscanfv(int fd,
  * sscanf
  */
 int
-trio_sscanf(const char *buffer,
-	    const char *format,
+trio_sscanf(TRIO_CONST char *buffer,
+	    TRIO_CONST char *format,
 	    ...)
 {
   int status;
@@ -5543,8 +5613,8 @@ trio_sscanf(const char *buffer,
 }
 
 int
-trio_vsscanf(const char *buffer,
-	     const char *format,
+trio_vsscanf(TRIO_CONST char *buffer,
+	     TRIO_CONST char *format,
 	     va_list args)
 {
   assert(VALID(buffer));
@@ -5554,8 +5624,8 @@ trio_vsscanf(const char *buffer,
 }
 
 int
-trio_sscanfv(const char *buffer,
-	     const char *format,
+trio_sscanfv(TRIO_CONST char *buffer,
+	     TRIO_CONST char *format,
 	     void **args)
 {
   va_list dummy;

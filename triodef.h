@@ -52,6 +52,8 @@
 # define TRIO_PLATFORM_UNIX
 #elif defined(TRIO_COMPILER_MSVC) || defined(WIN32) || defined(_WIN32)
 # define TRIO_PLATFORM_WIN32
+#elif defined(VMS) || defined(__VMS)
+# define TRIO_PLATFORM_VMS
 #endif
 
 #if defined(__STDC__)

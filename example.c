@@ -254,18 +254,18 @@ int main(void)
 /*    rc = trio_sprintf(buffer, "*%5f*", 3.3); */
 /*    Dump(buffer, rc); */
   
-  {
-    wchar_t *wstring = L"some data";
-    wchar_t wbuffer[512];
+/*    { */
+/*      wchar_t *wstring = L"some data"; */
+/*      wchar_t wbuffer[512]; */
     
-    rc = trio_sprintf(buffer, "%ls", wstring);
-    Dump(buffer, rc);
+/*      rc = trio_sprintf(buffer, "%ls", wstring); */
+/*      Dump(buffer, rc); */
 
-    rc = trio_sscanf(buffer, "%ls", wbuffer);
-    Dump(buffer, rc);
-    rc = trio_sprintf(buffer, "%ls", wbuffer);
-    Dump(buffer, rc);
-  }
+/*      rc = trio_sscanf(buffer, "%ls", wbuffer); */
+/*      Dump(buffer, rc); */
+/*      rc = trio_sprintf(buffer, "%ls", wbuffer); */
+/*      Dump(buffer, rc); */
+/*    } */
   
   /* rc = StrFormat(buffer, "\040-\040\040-\n"); */
 
@@ -336,25 +336,25 @@ int main(void)
 /*      printf("number = %f  small_number = \"%f\"\n", number, small_number); */
 /*    } */
   
-/*    rc = trio_sprintf(buffer, "abcba"); */
-/*    Dump(buffer, rc); */
-/*    trio_sscanf(buffer, "%[ab]", text); */
-/*    printf("text = \"%s\"\n", text); */
-/*    trio_sscanf(buffer, "%*[ab]c%[^\n]", text); */
-/*    printf("text = \"%s\"\n", text); */
+  rc = trio_sprintf(buffer, "abcba");
+  Dump(buffer, rc);
+  trio_sscanf(buffer, "%[ab]", text);
+  printf("text = \"%s\"\n", text);
+  trio_sscanf(buffer, "%*[ab]c%[^\n]", text);
+  printf("text = \"%s\"\n", text);
 
-/*    trio_sprintf(buffer, "aabcdba aaa"); */
-/*    rc = trio_sscanf(buffer, "%s", text); */
-/*    Dump(buffer, rc); */
-/*    printf("text = \"%s\"\n", text); */
-/*    rc = trio_sscanf(buffer, "%*1[aA]%[a-c]", text); */
-/*    Dump(buffer, rc); */
-/*    printf("text = \"%s\"\n", text); */
+  trio_sprintf(buffer, "aabcdba aaa");
+  rc = trio_sscanf(buffer, "%s", text);
+  Dump(buffer, rc);
+  printf("text = \"%s\"\n", text);
+  rc = trio_sscanf(buffer, "%*1[aA]%[a-c]", text);
+  Dump(buffer, rc);
+  printf("text = \"%s\"\n", text);
 
-/*    rc = trio_sprintf(buffer, "10021"); */
-/*    rc = trio_sscanf(buffer, "%b%n%d", &num, &count, &num2); */
-/*    Dump(buffer, rc); */
-/*    printf("num = %d %d %d\n", num, num2, count); */
+  rc = trio_sprintf(buffer, "10021");
+  rc = trio_sscanf(buffer, "%b%n%d", &num, &count, &num2);
+  Dump(buffer, rc);
+  printf("num = %d %d %d\n", num, num2, count);
 
 /*    rc = trio_sprintf(buffer, "%'d", 10000); */
 /*    rc = trio_sscanf(buffer, "%'d", &num); */

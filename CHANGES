@@ -4,9 +4,18 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.6 - 2001/10/19
+------------------------
+* Marc Verwerft
+  Improved error handling for dynamically allocated strings.
+
+* John Fotheringham
+  Made trionan compile on OpenVMS.
+
+
 Version 1.5 - 2001/09/08
 ------------------------
-* Merged with libxml changes
+* Merged with libxml changes.
 
 * Moved NaN and Inf handling to separate file to enable reuse in other
   projects.

@@ -57,7 +57,8 @@ enum {
   TRIO_EDBLREF  = 4,
   TRIO_EGAP     = 5,
   TRIO_ENOMEM   = 6,
-  TRIO_ERANGE   = 7
+  TRIO_ERANGE   = 7,
+  TRIO_ERRNO    = 8
 };
 
 /* Error macros */
