@@ -65,7 +65,7 @@
 # define TRIO_PLATFORM_MPEIX
 #endif
 
-#if defined(__STDC__)
+#if defined(__STDC__) || defined(TRIO_COMPILER_MSVC)
 # define TRIO_COMPILER_SUPPORTS_C89
 # if defined(__STDC_VERSION__)
 #  define TRIO_COMPILER_SUPPORTS_C90
