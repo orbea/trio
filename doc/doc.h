@@ -147,6 +147,7 @@ order sorted by surname)
 @li Markus Henke
 @li Ken Gibson
 @li Paul Janzen
+@li Patrick Jessee
 @li Richard Jinks
 @li Tero Jänkä
 @li Howard Kapustein

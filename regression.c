@@ -380,7 +380,7 @@ VerifyFormatting(TRIO_NOARGS)
   /* Beyond accuracy */
   nerrors += Verify(__FILE__, __LINE__, "0.000000",
 		    "%f", 1.234567890123456789e-20);
-#if defined(TRIO_BREESE)
+# if defined(TRIO_BREESE)
   nerrors += Verify(__FILE__, __LINE__, "1.3999999999999999111821580299875",
 		    "%.32g", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.39999999999999991118215802998748",
@@ -395,7 +395,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.14f", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "39413.800000000002910383045673370361",
 		    "%.30f", 39413.80);
-#endif
+# endif
   /* 2^-1 + 2^-15 */
   nerrors += Verify(__FILE__, __LINE__, "0.500030517578125",
 		    "%.*g", DBL_DIG + 10, 0.500030517578125);
@@ -416,6 +416,8 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%#.4f", 0.0);
   nerrors += Verify(__FILE__, __LINE__, "0.000",
 		    "%#.4g", 0.0);
+  nerrors += Verify(__FILE__, __LINE__, "0.001000",
+		    "%#.4g", 1e-3);
   nerrors += Verify(__FILE__, __LINE__, "3141.0000",
 		    "%#.4f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.",
@@ -430,9 +432,11 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.e", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3.e+03",
 		    "%#.e", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "100",
+  nerrors += Verify(__FILE__, __LINE__, "1.23457e+06",
+		    "%g", 1234567.0);
+  nerrors += Verify(__FILE__, __LINE__, "1e+02",
 		    "%.2g", 99.9999);
-  nerrors += Verify(__FILE__, __LINE__, "100.",
+  nerrors += Verify(__FILE__, __LINE__, "1.0e+02",
 		    "%#.2g", 99.9999);
   nerrors += Verify(__FILE__, __LINE__, "0.123",
 		    "%0g", 0.123);
@@ -441,11 +445,61 @@ VerifyFormatting(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "1",
 		    "%.2g", 0.9999);
   nerrors += Verify(__FILE__, __LINE__, "2",
+		    "%.0g", 1.5);
+  nerrors += Verify(__FILE__, __LINE__, "2",
 		    "%.g", 1.5);
   nerrors += Verify(__FILE__, __LINE__, "0.01",
 		    "%.2g", 0.01);
   nerrors += Verify(__FILE__, __LINE__, "0.010",
 		    "%#.2g", 0.01);
+  /* Double width and precision */
+  nerrors += Verify(__FILE__, __LINE__, "      1e-05",
+		    "%11.5g", 1e-5);
+  nerrors += Verify(__FILE__, __LINE__, "     0.0001",
+		    "%11.5g", 1e-4);
+  nerrors += Verify(__FILE__, __LINE__, "      0.001",
+		    "%11.5g", 1e-3);
+  nerrors += Verify(__FILE__, __LINE__, "       0.01",
+		    "%11.5g", 1e-2);
+  nerrors += Verify(__FILE__, __LINE__, "        0.1",
+		    "%11.5g", 1e-1);
+  nerrors += Verify(__FILE__, __LINE__, "          1",
+		    "%11.5g", 1e0);
+  nerrors += Verify(__FILE__, __LINE__, "         10",
+		    "%11.5g", 1e1);
+  nerrors += Verify(__FILE__, __LINE__, "        100",
+		    "%11.5g", 1e2);
+  nerrors += Verify(__FILE__, __LINE__, "       1000",
+		    "%11.5g", 1e3);
+  nerrors += Verify(__FILE__, __LINE__, "      10000",
+		    "%11.5g", 1e4);
+  nerrors += Verify(__FILE__, __LINE__, "      1e+05",
+		    "%11.5g", 1e5);
+  /* Double width, precision, and alternative */
+  nerrors += Verify(__FILE__, __LINE__, " 1.0000e-05",
+		    "%#11.5g", 1e-5);
+  nerrors += Verify(__FILE__, __LINE__, " 0.00010000",
+		    "%#11.5g", 1e-4);
+  nerrors += Verify(__FILE__, __LINE__, "  0.0010000",
+		    "%#11.5g", 1e-3);
+  nerrors += Verify(__FILE__, __LINE__, "   0.010000",
+		    "%#11.5g", 1e-2);
+  nerrors += Verify(__FILE__, __LINE__, "    0.10000",
+		    "%#11.5g", 1e-1);
+  nerrors += Verify(__FILE__, __LINE__, "     1.0000",
+		    "%#11.5g", 1e0);
+  nerrors += Verify(__FILE__, __LINE__, "     10.000",
+		    "%#11.5g", 1e1);
+  nerrors += Verify(__FILE__, __LINE__, "     100.00",
+		    "%#11.5g", 1e2);
+  nerrors += Verify(__FILE__, __LINE__, "     1000.0",
+		    "%#11.5g", 1e3);
+  nerrors += Verify(__FILE__, __LINE__, "     10000.",
+		    "%#11.5g", 1e4);
+  nerrors += Verify(__FILE__, __LINE__, " 1.0000e+05",
+		    "%#11.5g", 1e5);
+/*   nerrors += Verify(__FILE__, __LINE__, "", */
+/* 		    ""); */
   /* Double width, precision, and zero padding */
   nerrors += Verify(__FILE__, __LINE__, "00003.141500e+03",
 		    "%016e", 3141.5);

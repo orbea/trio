@@ -2710,6 +2710,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   trio_long_double_t dblFractionBase;
   trio_long_double_t integerAdjust;
   trio_long_double_t fractionAdjust;
+  trio_long_double_t workFractionNumber;
+  trio_long_double_t workFractionAdjust;
+  int fractionDigitsInspect;
   BOOLEAN_T isNegative;
   BOOLEAN_T isExponentNegative = FALSE;
   BOOLEAN_T requireTwoDigitExponent;
@@ -2803,9 +2806,11 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 
 # if TRIO_FEATURE_ROUNDING
   if (flags & FLAGS_ROUNDING)
-    precision = baseDigits;
+    {
+      precision = baseDigits;
+    }
 # endif
-  
+
   if (precision == NO_PRECISION)
     {
       if (isHex)
@@ -2820,18 +2825,24 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
   
   if (isNegative)
-    number = -number;
+    {
+      number = -number;
+    }
 
   if (isHex)
-    flags |= FLAGS_FLOAT_E;
+    {
+      flags |= FLAGS_FLOAT_E;
+    }
+
+ reprocess:
   
   if (flags & FLAGS_FLOAT_G)
     {
       if (precision == 0)
 	precision = 1;
 
-      if ((number < 1.0E-4) || (number > powl(base,
-					      (trio_long_double_t)precision)))
+      if ( (number < 1.0E-4) ||
+	   (number >= powl(base, (trio_long_double_t)precision)) )
 	{
 	  /* Use scientific notation */
 	  flags |= FLAGS_FLOAT_E;
@@ -2845,8 +2856,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	   */
 	  workNumber = TrioLogarithm(number, base);
 	  workNumber = TRIO_FABS(workNumber);
-	  if (workNumber - floorl(workNumber) < 0.001)
-	    workNumber--;
 	  zeroes = (int)floorl(workNumber);
 	}
     }
@@ -2883,21 +2892,42 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   /*
    * Truncated number.
    *
-   * Precision is number of significant digits for FLOAT_G
-   * and number of fractional digits for others.
+   * Precision is number of significant digits for FLOAT_G and number of
+   * fractional digits for others.
    */
-  integerDigits = (integerNumber > epsilon)
-    ? 1 + (int)TrioLogarithm(integerNumber, base)
-    : 1;
-  fractionDigits = ((flags & FLAGS_FLOAT_G) && (zeroes == 0))
-    ? precision - integerDigits
-    : zeroes + precision;
+  integerDigits = 1;
+  if (integerNumber > epsilon)
+    {
+      integerDigits += (int)TrioLogarithm(integerNumber, base);
+    }
+
+  fractionDigits = precision;
+  if (flags & FLAGS_FLOAT_G)
+    {
+      fractionDigits -= integerDigits;
+      if (zeroes > 0)
+	{
+	  fractionDigits += zeroes;
+	}
+    }
 
   dblFractionBase = TrioPower(base, fractionDigits);
   
   workNumber = number + 0.5 / dblFractionBase;
   if (floorl(number) != floorl(workNumber))
     {
+      if (flags & FLAGS_FLOAT_G)
+	{
+	  /* The adjustment may require a change to scientific notation */
+	  if ( (workNumber < 1.0E-4) ||
+	       (workNumber >= powl(base, (trio_long_double_t)precision)) )
+	    {
+	      /* Use scientific notation */
+	      flags |= FLAGS_FLOAT_E;
+	      goto reprocess;
+	    }
+	}
+      
       if (flags & FLAGS_FLOAT_E)
 	{
 	  /* Adjust if number was rounded up one digit (ie. 0.99 to 1.00) */
@@ -2918,6 +2948,10 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  integerDigits = (integerNumber > epsilon)
 	    ? 1 + (int)TrioLogarithm(integerNumber, base)
 	    : 1;
+	  if (flags & FLAGS_FLOAT_G)
+	    {
+	      fractionDigits = 0;
+	    }
 	}
     }
 
@@ -2960,6 +2994,63 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   keepDecimalPoint = ( (flags & FLAGS_ALTERNATIVE) ||
 		       !((precision == 0) ||
 			 (!keepTrailingZeroes && hasOnlyZeroes)) );
+
+  expectedWidth = integerDigits + fractionDigits;
+
+  if (!keepTrailingZeroes)
+    {
+      trailingZeroes = 0;
+      workFractionNumber = fractionNumber;
+      workFractionAdjust = fractionAdjust;
+      fractionDigitsInspect = fractionDigits;
+
+      if (integerDigits > integerThreshold)
+	{
+	  fractionDigitsInspect = 0;
+	}
+      else if (fractionThreshold  <= fractionDigits)
+	{
+	  fractionDigitsInspect = fractionThreshold + 1;
+	}
+
+      trailingZeroes = fractionDigits - fractionDigitsInspect;
+      for (i = 0; i < fractionDigitsInspect; i++)
+	{
+	  workFractionNumber *= dblBase;
+	  workFractionAdjust *= dblBase;
+	  workNumber = floorl(workFractionNumber + workFractionAdjust);
+	  workFractionNumber -= workNumber;
+	  index = (int)fmodl(workNumber, dblBase);
+	  if (index == 0)
+	    {
+	      trailingZeroes++;
+	    }
+	  else
+	    {
+	      trailingZeroes = 0;
+	    }
+	}
+      expectedWidth -= trailingZeroes;
+    }
+  
+  if (keepDecimalPoint)
+    {
+      expectedWidth += internalDecimalPointLength;
+    }
+  
+#if TRIO_FEATURE_QUOTE
+  if (flags & FLAGS_QUOTE)
+    {
+      expectedWidth += TrioCalcThousandSeparatorLength(integerDigits);
+    }
+#endif
+  
+  if (isNegative || (flags & FLAGS_SHOWSIGN) || (flags & FLAGS_SPACE))
+    {
+      expectedWidth += sizeof("-") - 1;
+    }
+  
+  exponentDigits = 0;
   if (flags & FLAGS_FLOAT_E)
     {
       exponentDigits = (uExponent == 0)
@@ -2967,26 +3058,19 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	: (int)ceil(TrioLogarithm((double)(uExponent + 1),
 				  (isHex) ? 10 : base));
     }
-  else
-    exponentDigits = 0;
   requireTwoDigitExponent = ((base == BASE_DECIMAL) && (exponentDigits == 1));
-
-  expectedWidth = integerDigits + fractionDigits
-    + (keepDecimalPoint
-       ? internalDecimalPointLength
-       : 0);
-#if TRIO_FEATURE_QUOTE
-    expectedWidth += ((flags & FLAGS_QUOTE)
-		      ? TrioCalcThousandSeparatorLength(integerDigits)
-		      : 0);
-#endif
-  if (isNegative || (flags & FLAGS_SHOWSIGN) || (flags & FLAGS_SPACE))
-    expectedWidth += sizeof("-") - 1;
   if (exponentDigits > 0)
-    expectedWidth += exponentDigits +
-      ((requireTwoDigitExponent ? sizeof("E+0") : sizeof("E+")) - 1);
+    {
+      expectedWidth += exponentDigits;
+      expectedWidth += (requireTwoDigitExponent
+			? sizeof("E+0") - 1
+			: sizeof("E+") - 1);
+    }
+  
   if (isHex)
-    expectedWidth += sizeof("0X") - 1;
+    {
+      expectedWidth += sizeof("0X") - 1;
+    }
   
   /* Output prefixing */
   if (flags & FLAGS_NILPADDING)
