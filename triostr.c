@@ -42,6 +42,13 @@ static const char rcsid[] = "@(#)$Id$";
 #endif
 #define BOOLEAN_T int
 
+#if defined(TRIO_COMPILER_SUPPORTS_C99)
+# define USE_STRTOD
+# define USE_STRTOF
+#elif defined(TRIO_COMPILER_MSVC)
+# define USE_STRTOD
+#endif
+
 #if defined(TRIO_PLATFORM_UNIX)
 # define USE_STRCASECMP
 # define USE_STRNCASECMP
@@ -820,7 +827,7 @@ TRIO_PUBLIC double
 trio_to_double(const char *source,
 	       const char **endp)
 {
-#if defined(TRIO_COMPILER_SUPPORTS_C99)
+#if defined(USE_STRTOD)
   return strtod(source, (char **)endp);
 #else
   /* Preliminary code */
@@ -899,7 +906,13 @@ trio_to_double(const char *source,
 	      source++;
 	    }
 	}
-      if ((*source == 'e') || (*source == 'E'))
+      if ((*source == 'e')
+	  || (*source == 'E')
+#if TRIO_MICROSOFT
+	  || (*source == 'd')
+	  || (*source == 'D')
+#endif
+	  )
 	{
 	  source++; /* Skip exponential indicator */
 	  isExponentNegative = (*source == '-');
@@ -949,7 +962,7 @@ TRIO_PUBLIC TRIO_INLINE float
 trio_to_float(const char *source,
 	      const char **endp)
 {
-#if defined(TRIO_COMPILER_SUPPORTS_C99)
+#if defined(USE_STRTOF)
   return strtof(source, (char **)endp);
 #else
   return (float)trio_to_double(source, endp);
