@@ -3,6 +3,7 @@ dnl Configuration for trio
 dnl
 
 AC_INIT(triodef.h)
+AC_CANONICAL_HOST
 
 AC_PROG_CC
 ifdef([AC_PROG_CC_STDC], [AC_PROG_CC_STDC])
@@ -10,5 +11,27 @@ AC_LANG_C
 
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+
+dnl
+dnl Alpha floating-point compiler option
+dnl
+
+if test "${GCC}" = "yes" ; then
+    case "${host}" in
+        alpha*-*-linux* | alpha*-*-osf* )
+            CFLAGS="${CFLAGS} -mieee"
+            ;;
+        *)
+            ;;
+    esac
+else
+    case "${host}" in
+        *-dec-osf* )
+            CFLAGS="${CFLAGS} -ieee"
+            ;;
+        *)
+            ;;
+    esac
+fi
 
 AC_OUTPUT(Makefile)
