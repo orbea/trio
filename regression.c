@@ -22,6 +22,9 @@
 # define TRIO_FUNC_NAN
 # define TRIO_FUNC_ISINF
 # define TRIO_FUNC_ISNAN
+# if TRIO_FEATURE_FLOAT
+#  define TRIO_FUNC_NZERO
+# endif
 #endif
 #include "trionan.h"
 #if defined(TRIO_EMBED_STRING)
