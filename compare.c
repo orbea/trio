@@ -3,7 +3,7 @@
 #define compare(format, value) printf("FORMAT: %s\n", format); printf("TRIO: "); trio_printf(format,value); printf("\nLIBC: "); \
 printf(format,value); printf("\n\n"); 
 
-main()
+int main()
 {
    compare("\"%e\"",2.342E+02);
    compare("\"%10.4e\"",-2.342E-02);
@@ -20,4 +20,12 @@ main()
    compare("%16e", 3141.5);
    compare("%-16e", 3141.5);
    compare("%010.3e", 3141.5);
+
+   compare("*%5f*", 3.3);
+   compare("*%5f*", 3.0);
+   compare("*%5f*", .999999E-4);
+   compare("*%5f*", .99E-3);
+   compare("*%5f*", 3333.0);
+
+   return 0;
 }

@@ -305,6 +305,10 @@ int main(void)
 \textbf{trio_register} returns a handle, or NULL if an error occured.
 
 
+\section{Notes}
+\texttt{trio_register} and \texttt{trio_unregister} are not thread-safe.
+In multi-threaded applications they must be guarded by mutexes.
+
 \section{See Also}
 \Cmd{trio_printf}{3}
 

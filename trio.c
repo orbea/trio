@@ -2147,12 +2147,11 @@ TrioWriteDouble(trio_T *self,
   if (isNegative)
     number = -number;
 
-  if((flags & FLAGS_FLOAT_E) && (NO_PRECISION == set_precision))
+  if ((!(flags & FLAGS_FLOAT_G)) && (NO_PRECISION == set_precision))
     {
-      /* The %e convertions are different, they should get the
-       * default precision width no matter what. Note that we do
-       * this check prior to the G-check as the G-check may set
-       * the FLAGS_FLOAT_E bit.
+      /* The %f, %F, %e, %E, %a, and %A conversions must use the default
+       * precision if none is provided. Note that we do this check prior
+       * to the G-check as the G-check may set the FLAGS_FLOAT_E bit.
        */
       set_precision = FLT_DIG;
     }

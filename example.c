@@ -245,9 +245,12 @@ int main(void)
 /*    trio_printf("%!'i %f %i\n", 12345, 12345.0, 12345); */
 /*    trio_printf("%!<base=2>i %i\n", 23, 23); */
 
-  rc = trio_sprintf(buffer, "%I32d", 12345);
-  Dump(buffer, rc);
-  rc = trio_sprintf(buffer, "%I32I8d", 12345);
+/*    rc = trio_sprintf(buffer, "%I32d", 12345); */
+/*    Dump(buffer, rc); */
+/*    rc = trio_sprintf(buffer, "%I32I8d", 12345); */
+/*    Dump(buffer, rc); */
+
+  rc = trio_sprintf(buffer, "*%5f*", 3.3);
   Dump(buffer, rc);
   
   /* rc = StrFormat(buffer, "\040-\040\040-\n"); */

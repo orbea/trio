@@ -247,9 +247,9 @@ int VerifyFormatting(void)
   nerrors += Verify(__FILE__, __LINE__, "ffffffff",
 		    "%x", -1);
   /* Double */
-  nerrors += Verify(__FILE__, __LINE__, "3141",
+  nerrors += Verify(__FILE__, __LINE__, "3141.000000",
 		    "%f", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "3141.5",
+  nerrors += Verify(__FILE__, __LINE__, "3141.500000",
 		    "%f", 3141.5);
   nerrors += Verify(__FILE__, __LINE__, "3.141000e+03",
 		    "%e", 3141.0);

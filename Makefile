@@ -31,6 +31,9 @@ regression: regression.o $(TARGETLIB)
 example: example.o $(TARGETLIB)
 	$(CC) -o example example.o $(LDFLAGS)
 
+compare: compare.o $(TARGETLIB)
+	$(CC) -o compare compare.o $(LDFLAGS)
+
 userdef: userdef.o $(TARGETLIB)
 	$(CC) -o userdef userdef.o $(LDFLAGS)
 

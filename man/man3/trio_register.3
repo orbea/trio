@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Sat Feb 24 14:53:21 MET 2001
+.\" Manual page created with latex2man on Sat May 19 15:01:56 DST 2001
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "TRIO_REGISTER" "3" "24 February 2001" "libtrio "
+.TH "TRIO_REGISTER" "3" "19 May 2001" "libtrio "
 .SH NAME
 trio_register, 
 trio_unregister 
@@ -337,6 +337,12 @@ int main(void)
 .SH RETURN VALUES
 .BR "trio_register"
 returns a handle, or NULL if an error occured. 
+.PP
+.SH NOTES
+trio_register
+and trio_unregister
+are not thread\-safe. 
+In multi\-threaded applications they must be guarded by mutexes. 
 .PP
 .SH SEE ALSO
 .I "trio_printf"

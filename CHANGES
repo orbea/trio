@@ -6,6 +6,8 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.x - 2001/05/19
 ------------------------
+* Fixed default precision for %f (reported by Jose Ortiz)
+
 * Howard Kapustein
   Added the I8, I16, I32, and I64 modifiers.
 
