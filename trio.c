@@ -2267,7 +2267,11 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  break;
 
 	case BASE_OCTAL:
-	  self->OutStream(self, '0');
+	  /* Only a single zero must be printed if the value is zero */
+	  if (number != 0)
+	    {
+	      self->OutStream(self, '0');
+	    }
 	  break;
 
 	case BASE_HEX:
@@ -5024,7 +5028,7 @@ TrioGetCollation(TRIO_NOARGS)
   char first[2];
   char second[2];
 
-  /* This is computational expensive */
+  /* This is computationally expensive */
   first[1] = NIL;
   second[1] = NIL;
   for (i = 0; i < MAX_CHARACTER_CLASS; i++)

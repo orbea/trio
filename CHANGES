@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.10 - 2002/10/25
+Version 1.10 - 2002/11/17
 -------------------------
+* Fixed %#.o to only print one zero if the value is zero (reported by James
+  Antill).
+
 * Rewrote check for IEEE compilation option to remove dependency on additional
   scripts.
 
