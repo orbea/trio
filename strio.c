@@ -22,7 +22,7 @@
  
 static const char rcsid[] = "@(#)$Id$";
 
-#if defined(unix) || defined(__xlC__)
+#if defined(unix) || defined(__xlC__) || defined(__QNX__)
 # define PLATFORM_UNIX
 #elif defined(WIN32) || defined(_WIN32)
 # define PLATFORM_WIN32
@@ -61,8 +61,13 @@ static const char rcsid[] = "@(#)$Id$";
 # define USE_STRCASECMP
 # define USE_STRNCASECMP
 # define USE_STRERROR
+# if defined(__QNX__)
+#  define strcasecmp(x,y) stricmp(x,y)
+#  define strncasecmp(x,y,n) strnicmp(x,y,n)
+# endif
 #elif defined(PLATFORM_WIN32)
-# define USE_STRCMPI
+# define USE_STRCASECMP
+# define strcasecmp(x,y) strcmpi(x,y)
 #endif
 
 /*************************************************************************
@@ -101,7 +106,7 @@ char *StrDuplicate(const char *source)
 
   assert(VALID(source));
 
-  target = (char *)malloc(StrLength(source) + 1);
+  target = StrAlloc(StrLength(source) + 1);
   if (target)
     {
       StrCopy(target, source);
@@ -126,7 +131,7 @@ char *StrDuplicateMax(const char *source, size_t max)
     {
       len = max;
     }
-  target = (char *)malloc(len);
+  target = StrAlloc(len);
   if (target)
     {
       StrCopyMax(target, len, source);
@@ -146,8 +151,6 @@ int StrEqual(const char *first, const char *second)
     {
 #if defined(USE_STRCASECMP)
       return (0 == strcasecmp(first, second));
-#elif defined(USE_STRCMPI)
-      return (0 == strcmpi(first, second));
 #else
       while ((*first != NIL) && (*second != NIL))
 	{
@@ -435,9 +438,9 @@ double StrToDouble(const char *source, const char **endp)
       while (isxdigit((int)*source))
 	{
 	  integer *= 16;
-	  integer += (isdigit((int)*source) ? (*source - '0') :
-	    (isupper((int)*source) ? (*source - 'A') :
-	     (*source - 'a')));
+	  integer += (isdigit((int)*source)
+		      ? (*source - '0')
+		      : 10 + (toupper((int)*source) - 'A'));
 	  source++;
 	}
       if (*source == '.')
@@ -446,9 +449,9 @@ double StrToDouble(const char *source, const char **endp)
 	  while (isxdigit((int)*source))
 	    {
 	      fraction *= 16;
-	      fraction += (isdigit((int)*source) ? (*source - '0') :
-			   (isupper((int)*source) ? (*source - 'A') :
-			    (*source - 'a')));
+	      fraction += (isdigit((int)*source)
+			   ? (*source - '0')
+			   : 10 + (toupper((int)*source) - 'A'));
 	      fracdiv *= 16;
 	      source++;
 	    }

@@ -4,7 +4,7 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.x - 2001/05/24
+Version 1.x - 2001/05/26
 ------------------------
 * Added wide character arguments (%ls, %ws, %S, %lc, %wc, and %C) for both
   printf and scanf.
@@ -16,6 +16,16 @@ Version 1.x - 2001/05/24
 
 * Added the possibility to specify standard support (TRIO_C99 etc.) as compiler
   options.
+
+* Added hex-float (%a and %A) for scanning.
+
+* Fixed conversion of hex-float in StrToDouble.
+
+* Fixed formatting of hex-float numbers.
+
+* Stan Boehm
+  Fixed crash on QNX, which happend because some buffers on the stack were too
+  big.
 
 * Fixed default precision for %f and %g (reported by Jose Ortiz)
 

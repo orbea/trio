@@ -27,7 +27,6 @@
 /*
  * TODO:
  *  - Scan is probably too permissive about its modifiers.
- *  - Add hex-float to TrioReadDouble.
  *  - C escapes in %#[] ?
  *  - C99 support has not been properly tested.
  *  - Multibyte characters (done for format parsing, except scan groups)
@@ -39,13 +38,11 @@
  *    %as or %a[ it is interpreted as the alloc modifier, otherwise as
  *    the C99 hex-float. This means that you cannot scan %as as a hex-float
  *    immediately followed by an 's'.
- *  - Use h modifier for strings and characters to explictly specify
- *    non-wide char.
  */
 
 static const char rcsid[] = "@(#)$Id$";
 
-#if defined(unix) || defined(__xlC__) /* AIX xlC workaround */
+#if defined(unix) || defined(__xlC__) || defined(__QNX__)
 # define PLATFORM_UNIX
 #elif defined(AMIGA) && defined(__GNUC__)
 # define PLATFORM_UNIX
@@ -149,8 +146,8 @@ static const char rcsid[] = "@(#)$Id$";
 #endif
 
 /* xlC crashes on log10(0) */
-#define guarded_log10(x) ((x) == 0.0 ? -HUGE_VAL : log10(x))
-
+#define guarded_log10(x) (((x) == 0.0) ? -HUGE_VAL : log10(x))
+#define guarded_log16(x) (guarded_log10(x) / log10(16))
 
 /*************************************************************************
  * Internal definitions
@@ -158,6 +155,9 @@ static const char rcsid[] = "@(#)$Id$";
 
 #if defined(__STDC_ISO_10646__) || defined(MB_LEN_MAX) || TRIO_WIDECHAR
 # define USE_MULTIBYTE 1
+# if !defined(MB_LEN_MAX)
+#  define MB_LEN_MAX 6
+# endif
 #else
 # define USE_MULTIBYTE 0
 #endif
@@ -196,8 +196,16 @@ static const char rcsid[] = "@(#)$Id$";
 # define SLONGEST LONGLONG
 #endif
 
-/* The maximal number of digits are for base 2 */
-#define MAX_CHARS_IN(x) (sizeof(x) * CHAR_BIT + 1)
+#ifdef LDBL_DIG
+# define MAX_MANTISSA_DIGITS LDBL_DIG
+# define MAX_EXPONENT_DIGITS 4
+#else
+# define MAX_MANTISSA_DIGITS DBL_DIG
+# define MAX_EXPONENT_DIGITS 3
+#endif
+
+/* The maximal number of digits is for base 2 */
+#define MAX_CHARS_IN(x) (sizeof(x) * CHAR_BIT)
 /* The width of a pointer. The number of bits in a hex digit is 4 */
 #define POINTER_WIDTH ((sizeof("0x") - 1) + sizeof(void *) * CHAR_BIT / 4)
 
@@ -285,7 +293,7 @@ enum {
   MAX_USER_DATA = 256,
   
   /* Maximal length of locale separator strings */
-  MAX_LOCALE_SEPARATOR_LENGTH = 64,
+  MAX_LOCALE_SEPARATOR_LENGTH = MB_LEN_MAX,
   /* Maximal number of integers in grouping */
   MAX_LOCALE_GROUPS = 64
 };
@@ -608,8 +616,8 @@ static struct lconv *internalLocaleValues = NULL;
  * UNIX98 says "in a locale where the radix character is not defined,
  * the radix character defaults to a period (.)"
  */
-static char internalDecimalPoint[MAX_LOCALE_SEPARATOR_LENGTH] = ".";
-static char internalThousandSeparator[MAX_LOCALE_SEPARATOR_LENGTH] = ",";
+static char internalDecimalPoint[MAX_LOCALE_SEPARATOR_LENGTH + 1] = ".";
+static char internalThousandSeparator[MAX_LOCALE_SEPARATOR_LENGTH + 1] = ",";
 static char internalGrouping[MAX_LOCALE_GROUPS] = { (char)NO_GROUPING };
 
 static const char internalDigitsLower[] = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -1817,9 +1825,7 @@ TrioWriteNumber(trio_T *self,
 		int base)
 {
   BOOLEAN_T isNegative;
-  char buffer[MAX_CHARS_IN(LONGEST)
-	     * MAX_LOCALE_SEPARATOR_LENGTH
-	     * MAX_LOCALE_GROUPS];
+  char buffer[MAX_CHARS_IN(LONGEST) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *bufferend;
   char *pointer;
   const char *digits;
@@ -2123,7 +2129,7 @@ TrioWriteWideStringCharacter(trio_T *self,
   int i;
   int ch;
   char *string;
-  char buffer[64];
+  char buffer[MB_LEN_MAX + 1];
 
   if (width == NO_WIDTH)
     width = sizeof(buffer);
@@ -2238,11 +2244,10 @@ TrioWriteDouble(trio_T *self,
   BOOLEAN_T isExponentNegative = FALSE;
   BOOLEAN_T isHex;
   const char *digits;
-  char numberBuffer[MAX_CHARS_IN(double)
-		   * MAX_LOCALE_SEPARATOR_LENGTH
-		   * MAX_LOCALE_GROUPS];
+  char numberBuffer[MAX_MANTISSA_DIGITS
+		   * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *numberPointer;
-  char exponentBuffer[MAX_CHARS_IN(double)];
+  char exponentBuffer[MAX_EXPONENT_DIGITS + 1];
   char *exponentPointer = NULL;
   int groupingIndex;
   char *work;
@@ -2364,8 +2369,8 @@ TrioWriteDouble(trio_T *self,
     ? precision - integerDigits
     : zeroes + precision;
   
-  number = floor(0.5 + number * pow(10.0, (double)fractionDigits));
-  workNumber = guarded_log10(number);
+  number = floor(0.5 + number * pow(dblBase, (double)fractionDigits));
+  workNumber = (isHex ? guarded_log16(number) : guarded_log10(number));
   if ((int)workNumber + 1 > integerDigits + fractionDigits)
     {
       if (flags & FLAGS_FLOAT_E)
@@ -2373,7 +2378,7 @@ TrioWriteDouble(trio_T *self,
 	  /* Adjust if number was rounded up one digit (ie. 0.99 to 1.00) */
 	  exponent--;
 	  uExponent -= (isExponentNegative) ? 1 : -1;
-	  number /= 10.0;
+	  number /= dblBase;
 	}
       else
 	{
@@ -3005,7 +3010,7 @@ TrioOutStreamStringDynamic(trio_T *self,
   if (infop->buffer == NULL)
     {
       /* Start with a reasonable size */
-      infop->buffer = (char *)malloc(DYNAMIC_START_SIZE);
+      infop->buffer = (char *)TRIO_MALLOC(DYNAMIC_START_SIZE);
       if (infop->buffer == NULL)
 	return; /* fail */
       
@@ -3018,7 +3023,7 @@ TrioOutStreamStringDynamic(trio_T *self,
       char *newptr;
       
       /* Allocate increasing chunks */
-      newptr = (char *)realloc(infop->buffer, infop->allocated * 2);
+      newptr = (char *)TRIO_REALLOC(infop->buffer, infop->allocated * 2);
       
       if (newptr == NULL)
 	return;
@@ -3398,7 +3403,7 @@ trio_asprintf(char **result,
      * no memory has been allocated, but we must to allocate and return an
      * empty string.
      */
-    info.buffer = (char *)malloc(sizeof(char));
+    info.buffer = (char *)TRIO_MALLOC(sizeof(char));
     if (info.buffer == NULL) {
       *result = NULL;
       return TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
@@ -3430,7 +3435,7 @@ trio_vasprintf(char **result,
      return status;
   }
   if (info.length == 0) {
-    info.buffer = (char *)malloc(sizeof(char));
+    info.buffer = (char *)TRIO_MALLOC(sizeof(char));
     if (info.buffer == NULL) {
       *result = NULL;
       return TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
@@ -3489,7 +3494,7 @@ trio_register(trio_callback_t callback,
 	return NULL;
     }
   
-  def = (userdef_T *)malloc(sizeof(userdef_T));
+  def = (userdef_T *)TRIO_MALLOC(sizeof(userdef_T));
   if (def)
     {
       if (internalEnterCriticalRegion)
@@ -3546,7 +3551,7 @@ trio_unregister(void *handle)
 	}
       StrFree(self->name);
     }
-  free(self);
+  TRIO_FREE(self);
 }
 
 /*************************************************************************
@@ -4443,7 +4448,7 @@ TrioReadChar(trio_T *self,
 		  /* Read hexadecimal number */
 		  self->InStream(self, NULL);
 		  if (!TrioReadNumber(self, &number, 0, 2, BASE_HEX))
-		    return FALSE;
+		    return 0;
 		  ch = (char)number;
 		}
 	      else
@@ -4456,7 +4461,7 @@ TrioReadChar(trio_T *self,
       if (target)
 	target[i] = ch;
     }
-  return 1;
+  return i + 1;
 }
 
 /*************************************************************************
@@ -4505,9 +4510,9 @@ TrioReadWideChar(trio_T *self,
   int i;
   int j;
   int size;
-  int rc = 0;
+  int amount = 0;
   wchar_t wch;
-  char buffer[64];
+  char buffer[MB_LEN_MAX + 1];
   
   assert(VALID(self));
   assert(VALID(self->InStream));
@@ -4524,13 +4529,19 @@ TrioReadWideChar(trio_T *self,
 	}
       else
 	{
-	  /* Collect multi-byte characters */
-	  for (j = 0; !isascii(self->current); j++)
+	  /*
+	   * Collect a multibyte character, by enlarging buffer until
+	   * it contains a fully legal multibyte character, or the
+	   * buffer is full.
+	   */
+	  j = 0;
+	  do
 	    {
-	      buffer[j] = (char)self->current;
+	      buffer[j++] = (char)self->current;
+	      buffer[j] = NIL;
 	      self->InStream(self, NULL);
 	    }
-	  buffer[j] = NIL;
+	  while ((j < sizeof(buffer)) && (mblen(buffer, j) != j));
 	}
       if (target)
 	{
@@ -4538,10 +4549,10 @@ TrioReadWideChar(trio_T *self,
 	  if (size > 0)
 	    target[i] = wch;
 	}
-      rc += size;
+      amount += size;
       self->InStream(self, NULL);
     }
-  return rc;
+  return amount;
 }
 #endif /* TRIO_WIDECHAR */
 
@@ -4627,7 +4638,6 @@ TrioReadGroup(trio_T *self,
  * TrioReadDouble [private]
  *
  * FIXME:
- *  add hex-float format
  *  add long double
  */
 static BOOLEAN_T
@@ -4641,6 +4651,7 @@ TrioReadDouble(trio_T *self,
   int index = 0;
   int start;
   int j;
+  BOOLEAN_T isHex = FALSE;
 
   if ((width == NO_WIDTH) || (width > (int)sizeof(doubleString) - 1))
     width = sizeof(doubleString) - 1;
@@ -4702,10 +4713,21 @@ TrioReadDouble(trio_T *self,
     }
 #endif /* defined(USE_NON_NUMBERS) */
   
+  if (ch == '0')
+    {
+      doubleString[index++] = (char)ch;
+      self->InStream(self, &ch);
+      if (toupper(ch) == 'X')
+	{
+	  isHex = TRUE;
+	  doubleString[index++] = (char)ch;
+	  self->InStream(self, &ch);
+	}
+    }
   while ((ch != EOF) && (index - start < width))
     {
       /* Integer part */
-      if (isdigit(ch))
+      if (isHex ? isxdigit(ch) : isdigit(ch))
 	{
 	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
@@ -4733,12 +4755,13 @@ TrioReadDouble(trio_T *self,
       /* Decimal part */
       doubleString[index++] = (char)ch;
       self->InStream(self, &ch);
-      while (isdigit(ch) && (index - start < width))
+      while ((isHex ? isxdigit(ch) : isdigit(ch)) &&
+	     (index - start < width))
 	{
 	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
-      if ((ch == 'e') || (ch == 'E'))
+      if (isHex ? (toupper(ch) == 'P') : (toupper(ch) == 'E'))
 	{
 	  /* Exponent */
 	  doubleString[index++] = (char)ch;
@@ -4748,7 +4771,8 @@ TrioReadDouble(trio_T *self,
 	      doubleString[index++] = (char)ch;
 	      self->InStream(self, &ch);
 	    }
-	  while (isdigit(ch) && (index - start < width))
+	  while ((isHex ? isxdigit(ch) : isdigit(ch)) &&
+		 (index - start < width))
 	    {
 	      doubleString[index++] = (char)ch;
 	      self->InStream(self, &ch);
@@ -4760,7 +4784,8 @@ TrioReadDouble(trio_T *self,
     return FALSE;
   
   if (flags & FLAGS_LONGDOUBLE)
-/*     *longdoublePointer = StrToLongDouble()*/;
+/*     *longdoublePointer = StrToLongDouble()*/
+    return FALSE; /* FIXME: Remove when long double is implemented */
   else
     {
       *target = StrToDouble(doubleString, NULL);

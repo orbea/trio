@@ -26,6 +26,8 @@
 #ifndef TRIO_TRIOP_H
 #define TRIO_TRIOP_H
 
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -56,12 +58,21 @@ extern "C" {
 # define TRIO_EXTENSION 1
 #endif
 #ifndef TRIO_WIDECHAR
-# define TRIO_WIDECHAR 1
+# define TRIO_WIDECHAR 0
 #endif
 #ifndef TRIO_ERRORS
 # define TRIO_ERRORS 1
 #endif
 
+#ifndef TRIO_MALLOC
+# define TRIO_MALLOC(n) malloc(n)
+#endif
+#ifndef TRIO_REALLOC
+# define TRIO_REALLOC(x,n) realloc((x),(n))
+#endif
+#ifndef TRIO_FREE
+# define TRIO_FREE(x) free(x)
+#endif
 
 typedef int (*trio_callback_t)(void *ref);
 
