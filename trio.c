@@ -2152,6 +2152,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	   int base)
 {
   BOOLEAN_T isNegative;
+  BOOLEAN_T isZero;
   char buffer[MAX_CHARS_IN(trio_uintmax_t) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *bufferend;
   char *pointer;
@@ -2181,6 +2182,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     number &= (unsigned long)-1;
   else
     number &= (unsigned int)-1;
+  
+  isZero = (number == 0);
   
   /* Build number */
   pointer = bufferend = &buffer[sizeof(buffer) - 1];
@@ -2268,7 +2271,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 
 	case BASE_OCTAL:
 	  /* Only a single zero must be printed if the value is zero */
-	  if (number != 0)
+	  if (!isZero)
 	    {
 	      self->OutStream(self, '0');
 	    }
