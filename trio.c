@@ -70,6 +70,7 @@ static const char rcsid[] = "@(#)$Id$";
 # define PLATFORM_UNIX
 #elif defined(WIN32) || defined(_WIN32) || defined(_MSC_VER)
 # define PLATFORM_WIN32
+# define TRIO_MSVC_5 1100
 #endif
 
 #if defined(__STDC__) && defined(__STDC_VERSION__)
@@ -103,6 +104,7 @@ static const char rcsid[] = "@(#)$Id$";
 #include <limits.h>
 #include <float.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <errno.h>
 
 #ifndef NULL
@@ -128,6 +130,7 @@ static const char rcsid[] = "@(#)$Id$";
  */
 #if defined(PLATFORM_UNIX)
 # include <unistd.h>
+# include <signal.h>
 # include <locale.h>
 # define USE_LOCALE
 #endif /* PLATFORM_UNIX */
@@ -164,69 +167,64 @@ static const char rcsid[] = "@(#)$Id$";
 typedef signed long long int trio_longlong_t;
 typedef unsigned long long int trio_ulonglong_t;
 #elif defined(_MSC_VER)
-# define USE_LONGLONG
+# if (_MSC_VER >= TRIO_MSVC_5)
 typedef signed __int64 trio_longlong_t;
 typedef unsigned __int64 trio_ulonglong_t;
+# else
+typedef signed long int trio_longlong_t;
+typedef unsigned long int trio_ulonglong_t;
+# endif
 #else
 typedef signed long int trio_longlong_t;
 typedef unsigned long int trio_ulonglong_t;
 #endif
 
-/* C99 types */
+/* Maximal and fixed integer types */
 #if defined(TRIO_COMPILER_SUPPORTS_C99)
 # include <stdint.h>
-typedef ptrdiff_t trio_ptrdiff_t;
 typedef intmax_t trio_intmax_t;
 typedef uintmax_t trio_uintmax_t;
-#else
-typedef trio_longlong_t trio_ptrdiff_t;
+typedef int8_t trio_int8_t;
+typedef int16_t trio_int16_t;
+typedef int32_t trio_int32_t;
+typedef int64_t trio_int64_t;
+#elif defined(TRIO_COMPILER_SUPPORTS_UNIX98)
+# include <inttypes.h>
+typedef intmax_t trio_intmax_t;
+typedef uintmax_t trio_uintmax_t;
+typedef int8_t trio_int8_t;
+typedef int16_t trio_int16_t;
+typedef int32_t trio_int32_t;
+typedef int64_t trio_int64_t;
+#elif defined(_MSC_VER) && (_MSC_VER >= TRIO_MSVC_5)
 typedef trio_longlong_t trio_intmax_t;
 typedef trio_ulonglong_t trio_uintmax_t;
-#endif
-
-/* Determine fixed sized integers */
-#if TRIO_MICROSOFT
-# if defined(PLATFORM_WIN32)
-#  define TRIO_INT8 __int8
-#  define TRIO_INT16 __int16
-#  define TRIO_INT32 __int32
-#  define TRIO_INT64 __int64
+typedef __int8 trio_int8_t;
+typedef __int16 trio_int16_t;
+typedef __int32 trio_int32_t;
+typedef __int64 trio_int64_t;
+#else
+typedef trio_longlong_t trio_intmax_t;
+typedef trio_ulonglong_t trio_uintmax_t;
+# if defined(TRIO_INT8_T)
+typedef TRIO_INT8_T trio_int8_t;
 # else
-#  if defined(TRIO_COMPILER_SUPPORTS_C99)
-#   include <stdint.h>
-#  elif defined(TRIO_COMPILER_SUPPORTS_UNIX98)
-#   include <inttypes.h>
-#  elif defined(PLATFORM_UNIX)
-#   include <sys/types.h>
-#  endif
-#  if !defined(TRIO_INT8)
-#   if defined(INT8_MIN)
-#    define TRIO_INT8 int8_t
-#   else
-#    define TRIO_INT8 signed char
-#   endif
-#  endif /* ! TRIO_INT8 */
-#  if !defined(TRIO_INT16)
-#   if defined(INT16_MIN)
-#    define TRIO_INT16 int16_t
-#   else
-#    define TRIO_INT16 signed short
-#   endif
-#  endif /* ! TRIO_INT16 */
-#  if !defined(TRIO_INT32)
-#   if defined(INT32_MIN)
-#    define TRIO_INT32 int32_t
-#   else
-#    define TRIO_INT32 unsigned int
-#   endif
-#  endif /* ! TRIO_INT32 */
-#  if !defined(TRIO_INT64)
-#   if defined(INT64_MIN)
-#    define TRIO_INT64 int64_t
-#   else
-#    define TRIO_INT64 trio_longlong_t
-#   endif
-#  endif /* ! TRIO_INT64 */
+typedef signed char trio_int8_t;
+# endif
+# if defined(TRIO_INT16_T)
+typedef TRIO_INT16_T trio_int16_t;
+# else
+typedef signed short trio_int16_t;
+# endif
+# if defined(TRIO_INT32_T)
+typedef TRIO_INT32_T trio_int32_t;
+# else
+typedef signed int trio_int32_t;
+# endif
+# if defined(TRIO_INT64_T)
+typedef TRIO_INT64_T trio_int64_t;
+# else
+typedef trio_longlong_t trio_int64_t;
 # endif
 #endif
 
@@ -250,14 +248,6 @@ typedef trio_ulonglong_t trio_uintmax_t;
 #define POINTER_WIDTH ((sizeof("0x") - 1) + sizeof(void *) * CHAR_BIT / 4)
 
 /* Infinite and Not-A-Number for floating-point */
-#define USE_NON_NUMBERS
-#ifndef NAN
-# ifdef DBL_QNAN
-#  define NAN DBL_QNAN
-# else
-#  define NAN (cos(HUGE_VAL))
-# endif
-#endif
 #define INFINITE_LOWER "inf"
 #define INFINITE_UPPER "INF"
 #define LONG_INFINITE_LOWER "infinite"
@@ -767,6 +757,33 @@ TrioIsQualifier(const char ch)
 }
 
 /*************************************************************************
+ * TrioGenerateNan [private]
+ *
+ * Calculating NaN portably is difficult. Some compilers will emit
+ * warnings about divide by zero, and others will simply fail to
+ * generate a NaN.
+ */
+static double
+TrioGenerateNaN(void)
+{
+#if defined(TRIO_COMPILER_SUPPORTS_C99)
+  return nan(NULL);
+#elif defined(DBL_QNAN)
+  return DBL_QNAN;
+#elif defined(PLATFORM_UNIX)
+  double value;
+  void (*signal_handler)(int);
+  
+  signal_handler = signal(SIGFPE, SIG_IGN);
+  value = 0.0 / 0.0;
+  signal(SIGFPE, signal_handler);
+  return value;
+#else
+  return 0.0 / 0.0;
+#endif
+}
+
+/*************************************************************************
  * TrioIsNan [private]
  */
 static int
@@ -1202,9 +1219,9 @@ TrioPreprocess(int type,
 #if defined(QUALIFIER_PTRDIFF_T)
 		case QUALIFIER_PTRDIFF_T:
 		  flags |= FLAGS_PTRDIFF_T;
-		  if (sizeof(trio_ptrdiff_t) == sizeof(trio_ulonglong_t))
+		  if (sizeof(ptrdiff_t) == sizeof(trio_ulonglong_t))
 		    flags |= FLAGS_QUAD;
-		  else if (sizeof(trio_ptrdiff_t) == sizeof(long))
+		  else if (sizeof(ptrdiff_t) == sizeof(long))
 		    flags |= FLAGS_LONG;
 		  break;
 #endif
@@ -1237,24 +1254,24 @@ TrioPreprocess(int type,
 		  if ((format[index] == '6') &&
 		      (format[index + 1] == '4'))
 		    {
-		      varsize = sizeof(TRIO_INT64);
+		      varsize = sizeof(trio_int64_t);
 		      index += 2;
 		    }
 		  else if ((format[index] == '3') &&
 			   (format[index + 1] == '2'))
 		    {
-		      varsize = sizeof(TRIO_INT32);
+		      varsize = sizeof(trio_int32_t);
 		      index += 2;
 		    }
 		  else if ((format[index] == '1') &&
 			   (format[index + 1] == '6'))
 		    {
-		      varsize = sizeof(TRIO_INT16);
+		      varsize = sizeof(trio_int16_t);
 		      index += 2;
 		    }
 		  else if (format[index] == '8')
 		    {
-		      varsize = sizeof(TRIO_INT8);
+		      varsize = sizeof(trio_int8_t);
 		      index++;
 		    }
 		  else
@@ -1756,8 +1773,8 @@ TrioPreprocess(int type,
 #if defined(QUALIFIER_PTRDIFF_T)
 	      if (parameters[i].flags & FLAGS_PTRDIFF_T)
 		parameters[i].data.number.as_unsigned = (argarray == NULL)
-		  ? (trio_uintmax_t)va_arg(arglist, trio_ptrdiff_t)
-		  : (trio_uintmax_t)(*((trio_ptrdiff_t *)argarray[num]));
+		  ? (trio_uintmax_t)va_arg(arglist, ptrdiff_t)
+		  : (trio_uintmax_t)(*((ptrdiff_t *)argarray[num]));
 	      else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
@@ -1882,14 +1899,14 @@ TrioPreprocess(int type,
  */
 static void
 TrioWriteNumber(trio_T *self,
-		trio_intmax_t number,
+		trio_uintmax_t number,
 		unsigned long flags,
 		int width,
 		int precision,
 		int base)
 {
   BOOLEAN_T isNegative;
-  char buffer[MAX_CHARS_IN(trio_intmax_t) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
+  char buffer[MAX_CHARS_IN(trio_uintmax_t) * (1 + MAX_LOCALE_SEPARATOR_LENGTH) + 1];
   char *bufferend;
   char *pointer;
   const char *digits;
@@ -1906,9 +1923,10 @@ TrioWriteNumber(trio_T *self,
 
   digits = (flags & FLAGS_UPPER) ? internalDigitsUpper : internalDigitsLower;
 
-  if (flags & FLAGS_UNSIGNED)
-    isNegative = FALSE;
-  else if ((isNegative = (((trio_intmax_t)number) < 0)))
+  isNegative = (flags & FLAGS_UNSIGNED)
+    ? FALSE
+    : ((trio_intmax_t)number < 0);
+  if (isNegative)
     number = -number;
 
   if (flags & FLAGS_QUAD)
@@ -2324,7 +2342,6 @@ TrioWriteDouble(trio_T *self,
 
   number = (double)longdoubleNumber;
   
-#if defined(USE_NON_NUMBERS)
   /* Look for infinite numbers and non-a-number first */
   switch (TrioIsInfinite(number))
     {
@@ -2359,7 +2376,6 @@ TrioWriteDouble(trio_T *self,
 		      flags, width, precision);
       return;
     }
-#endif /* defined(USE_NON_NUMBERS) */
 
   /* Normal numbers */
   digits = (flags & FLAGS_UPPER) ? internalDigitsUpper : internalDigitsLower;
@@ -2819,7 +2835,7 @@ TrioFormatProcess(trio_T *data,
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 		      if (flags & FLAGS_PTRDIFF_T)
-			*(trio_ptrdiff_t *)pointer = (trio_ptrdiff_t)data->committed;
+			*(ptrdiff_t *)pointer = (ptrdiff_t)data->committed;
 		      else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
@@ -3941,7 +3957,6 @@ trio_set_largest(void *ref,
 /*************************************************************************
  * trio_get_ptrdiff / trio_set_ptrdiff [public]
  */
-#if TRIO_C99
 int
 trio_get_ptrdiff(void *ref)
 {
@@ -3957,7 +3972,6 @@ trio_set_ptrdiff(void *ref,
   else
     ((reference_T *)ref)->parameter->flags &= ~FLAGS_PTRDIFF_T;
 }
-#endif
 
 /*************************************************************************
  * trio_get_size / trio_set_size [public]
@@ -4848,7 +4862,6 @@ TrioReadDouble(trio_T *self,
     }
 
   start = index;
-#if defined(USE_NON_NUMBERS)
   switch (ch)
     {
     case 'n':
@@ -4879,7 +4892,7 @@ TrioReadDouble(trio_T *self,
       if (StrEqual(doubleString, NAN_LOWER))
 	{
 	  /* NaN must not have a preceeding + nor - */
-	  *target = NAN;
+	  *target = TrioGenerateNaN();
 	  return TRUE;
 	}
       return FALSE;
@@ -4887,7 +4900,6 @@ TrioReadDouble(trio_T *self,
     default:
       break;
     }
-#endif /* defined(USE_NON_NUMBERS) */
   
   if (ch == '0')
     {
@@ -5153,7 +5165,7 @@ TrioScan(const void *source,
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 		    if (flags & FLAGS_PTRDIFF_T)
-		      *(trio_ptrdiff_t *)pointer = (trio_ptrdiff_t)number;
+		      *(ptrdiff_t *)pointer = (ptrdiff_t)number;
 		    else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
@@ -5254,7 +5266,7 @@ TrioScan(const void *source,
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 		  if (flags & FLAGS_PTRDIFF_T)
-		    *(trio_ptrdiff_t *)pointer = (trio_ptrdiff_t)data->committed;
+		    *(ptrdiff_t *)pointer = (ptrdiff_t)data->committed;
 		  else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
