@@ -465,7 +465,7 @@ typedef struct {
   int type;
   unsigned long flags;
   int width;
-  size_t precision;
+  int precision;
   int base;
   int varsize;
   int indexAfterSpecifier;
@@ -489,7 +489,7 @@ typedef struct {
 
 /* General trio "class" */
 typedef struct _trio_T {
-  void *location;
+  const void *location;
   void (*OutStream)(struct _trio_T *, int);
   void (*InStream)(struct _trio_T *, int *);
   /*
@@ -678,7 +678,7 @@ TrioIsInfinite(double number)
  */
 #if defined(USE_LOCALE)
 static void
-TrioSetLocale()
+TrioSetLocale(void)
 {
   internalLocaleValues = (struct lconv *)localeconv();
   if (StrLength(internalLocaleValues->decimal_point) > 0)
@@ -774,7 +774,7 @@ TrioPreprocess(int type,
   int currentParam;
   int maxParam = -1;
   /* Utility variables */
-  int flags;
+  unsigned long flags;
   int width;
   int precision;
   int varsize;
@@ -1301,7 +1301,7 @@ TrioPreprocess(int type,
 #if defined(SPECIFIER_USER_DEFINED_BEGIN)
 	    case SPECIFIER_USER_DEFINED_BEGIN:
 	      {
-		int max;
+		unsigned int max;
 		int without_namespace = TRUE;
 		
 		parameters[pos].type = FORMAT_USER_DEFINED;
@@ -1331,7 +1331,7 @@ TrioPreprocess(int type,
 			      maxParam = currentParam;
 			  }
 			/* Copy the user data */
-			max = (int)(&format[index] - tmpformat);
+			max = (unsigned int)(&format[index] - tmpformat);
 			if (max > MAX_USER_DATA)
 			  max = MAX_USER_DATA;
 			StrCopyMax(parameters[pos].user_data,
@@ -1379,7 +1379,7 @@ TrioPreprocess(int type,
 		      (parameters[i].type == parameters[pos].type))
 		    {
 		      /* Do not overwrite current qualifiers */
-		      flags |= (parameters[i].flags & ~FLAGS_STICKY);
+		      flags |= (parameters[i].flags & (unsigned long)~FLAGS_STICKY);
 		      if (width == NO_WIDTH)
 			width = parameters[i].width;
 		      if (precision == NO_PRECISION)
@@ -1471,9 +1471,21 @@ TrioPreprocess(int type,
 	case FORMAT_INT:
 	  if (TYPE_SCAN == type)
 	    {
-	      parameters[i].data.pointer = (arglist != NULL)
-		? (LONGEST *)va_arg(arglist, void *)
-		: (LONGEST *)argarray[num];
+              if (arglist != NULL)
+                parameters[i].data.pointer = 
+                  (LONGEST *)va_arg(arglist, void *);
+              else
+                {
+                  if (parameters[i].type == FORMAT_CHAR)
+                    parameters[i].data.pointer =
+                      (LONGEST *)(*((char **)argarray[num]));
+                  else if (parameters[i].flags & FLAGS_SHORT)
+                    parameters[i].data.pointer =
+                      (LONGEST *)(*((short **)argarray[num]));
+                  else
+                    parameters[i].data.pointer =
+                      (LONGEST *)(*((int **)argarray[num]));
+                }
 	    }
 	  else
 	    {
@@ -1575,9 +1587,20 @@ TrioPreprocess(int type,
 		  ? va_arg(arglist, long double *)
 		  : (long double *)(*((long double **)argarray[num]));
 	      else
-		parameters[i].data.doublePointer = (arglist != NULL)
-		  ? va_arg(arglist, double *)
-		  : (double *)(*((double **)argarray[num]));
+                {
+                  if (arglist != NULL)
+                    parameters[i].data.doublePointer =
+                      va_arg(arglist, double *);
+                 else
+                   {
+                     if (parameters[i].flags & FLAGS_SHORT)
+                       parameters[i].data.doublePointer =
+                         (double *)(*((float **)argarray[num]));
+                     else
+                       parameters[i].data.doublePointer =
+                         (double *)(*((double**)argarray[num]));
+                   }
+                }
 	    }
 	  else
 	    {
@@ -1631,8 +1654,8 @@ TrioPreprocess(int type,
  */
 static void
 TrioWriteNumber(trio_T *self,
-		LONGEST number,
-		int flags,
+		SLONGEST number,
+		unsigned long flags,
 		int width,
 		int precision,
 		int base)
@@ -1819,7 +1842,7 @@ TrioWriteNumber(trio_T *self,
 static void
 TrioWriteString(trio_T *self,
 		const char *string,
-		int flags,
+		unsigned long flags,
 		int width,
 		int precision)
 {
@@ -1882,7 +1905,7 @@ TrioWriteString(trio_T *self,
 		case '\\': self->OutStream(self, '\\'); break;
 		default:
 		  self->OutStream(self, 'x');
-		  TrioWriteNumber(self, (ULONGLONG)ch,
+		  TrioWriteNumber(self, (SLONGEST)ch,
 				  FLAGS_UNSIGNED | FLAGS_NILPADDING,
 				  2, 2, BASE_HEX);
 		  break;
@@ -1919,7 +1942,7 @@ TrioWriteString(trio_T *self,
 static void
 TrioWriteDouble(trio_T *self,
 		long double longdoubleNumber,
-		int flags,
+		unsigned long flags,
 		int width,
 		int precision,
 		int base)
@@ -1950,6 +1973,8 @@ TrioWriteDouble(trio_T *self,
   char *work;
   int i;
   BOOLEAN_T onlyzero;
+
+  int set_precision = precision;
   
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -2066,12 +2091,16 @@ TrioWriteDouble(trio_T *self,
     {
       *(--numberPointer) = digits[(int)fmod(number, dblBase)];
       number = floor(number / dblBase);
-      
-      /* Prune trailing zeroes */
-      if (numberPointer[0] != digits[0])
-	onlyzero = FALSE;
-      else if (onlyzero && (numberPointer[0] == digits[0]))
-	numberPointer++;
+
+      if((set_precision == NO_PRECISION) || (flags & FLAGS_ALTERNATIVE)) {
+        /* Prune trailing zeroes */
+        if (numberPointer[0] != digits[0])
+          onlyzero = FALSE;
+        else if (onlyzero && (numberPointer[0] == digits[0]))
+          numberPointer++;
+      }
+      else
+        onlyzero = FALSE;
     }
   
   /* Insert decimal point */
@@ -2242,7 +2271,7 @@ TrioFormatProcess(trio_T *data,
   int i;
   const char *string;
   void *pointer;
-  int flags;
+  unsigned long flags;
   int width;
   int precision;
   int base;
@@ -2342,7 +2371,7 @@ TrioFormatProcess(trio_T *data,
 		    base = BASE_DECIMAL;
 
 		  TrioWriteNumber(data,
-				  parameters[i].data.number.as_unsigned,
+				  parameters[i].data.number.as_signed,
 				  flags,
 				  width,
 				  precision,
@@ -2438,7 +2467,7 @@ TrioFormatProcess(trio_T *data,
 		    {
 		      data->OutStream(data, '#');
 		      TrioWriteNumber(data,
-				      (LONGEST)parameters[i].data.errorNumber,
+				      (SLONGEST)parameters[i].data.errorNumber,
 				      flags,
 				      width,
 				      precision,
@@ -3544,7 +3573,7 @@ trio_print_int(void *ref,
   reference_T *self = (reference_T *)ref;
 
   TrioWriteNumber(self->data,
-		  (LONGEST)number,
+		  (SLONGEST)number,
 		  self->parameter->flags,
 		  self->parameter->width,
 		  self->parameter->precision,
@@ -3561,7 +3590,7 @@ trio_print_uint(void *ref,
   reference_T *self = (reference_T *)ref;
 
   TrioWriteNumber(self->data,
-		  (LONGEST)number,
+		  (SLONGEST)number,
 		  self->parameter->flags | FLAGS_UNSIGNED,
 		  self->parameter->width,
 		  self->parameter->precision,
@@ -3609,8 +3638,8 @@ trio_print_pointer(void *ref,
 		   void *pointer)
 {
   reference_T *self = (reference_T *)ref;
-  int flags;
-  ULONGLONG number;
+  unsigned long flags;
+  LONGLONG number;
 
   if (NULL == pointer)
     {
@@ -4343,7 +4372,7 @@ TrioReadPointer(trio_T *self,
  * TrioScan [private]
  */
 static int
-TrioScan(void *source,
+TrioScan(const void *source,
 	 size_t sourceSize,
 	 void (*InStream)(trio_T *, int *),
 	 const char *format,
@@ -4830,9 +4859,9 @@ trio_vdscanf(int fd,
 }
 
 int
-trio_vdscanfv(int fd,
-	      const char *format,
-	      void **args)
+trio_dscanfv(int fd,
+             const char *format,
+             void **args)
 {
   assert(VALID(format));
   assert(VALID(args));
