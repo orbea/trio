@@ -111,6 +111,8 @@
 
 #if defined(TRIO_COMPILER_SUPPORTS_C99) || defined(__cplusplus)
 # define TRIO_INLINE inline
+#elif defined(TRIO_COMPILER_GCC)
+# define TRIO_INLINE __inline__
 #else
 # define TRIO_INLINE
 #endif
