@@ -4,8 +4,10 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.x - 2001/06/23
+Version 1.x - 2001/09/08
 ------------------------
+* Merged with libxml changes
+
 * Moved NaN and Inf handling to separate file to enable reuse in other
   projects.
 
