@@ -360,7 +360,7 @@ trio_nan(TRIO_NOARGS)
 TRIO_PUBLIC int
 trio_isnan
 TRIO_ARGS1((number),
-	   TRIO_VOLATILE double number)
+	   double number)
 {
 #if (defined(TRIO_COMPILER_SUPPORTS_C99) && defined(isnan)) \
  || defined(TRIO_COMPILER_SUPPORTS_UNIX95)
@@ -404,7 +404,7 @@ TRIO_ARGS1((number),
   status = (/*
 	     * NaN is the only number which does not compare to itself
 	     */
-	    (number != number) ||
+	    ((TRIO_VOLATILE double)number != (TRIO_VOLATILE double)number) ||
 	    /*
 	     * Fallback solution if NaN compares to NaN
 	     */
@@ -430,7 +430,7 @@ TRIO_ARGS1((number),
 TRIO_PUBLIC int
 trio_isinf
 TRIO_ARGS1((number),
-	   TRIO_VOLATILE double number)
+	   double number)
 {
 #if defined(TRIO_COMPILER_DECC)
   /*
@@ -514,7 +514,7 @@ TRIO_ARGS1((number),
 TRIO_PUBLIC int
 trio_isfinite
 TRIO_ARGS1((number),
-	   TRIO_VOLATILE double number)
+	   double number)
 {
 #if defined(TRIO_COMPILER_SUPPORTS_C99) && defined(isfinite)
   /*
@@ -552,7 +552,7 @@ TRIO_ARGS1((number),
 TRIO_PUBLIC int
 trio_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
-	   TRIO_VOLATILE double number,
+	   double number,
 	   int *is_negative)
 {
 #if defined(fpclassify) && defined(signbit)
@@ -741,7 +741,7 @@ TRIO_ARGS2((number, is_negative),
 TRIO_PUBLIC int
 trio_signbit
 TRIO_ARGS1((number),
-	   TRIO_VOLATILE double number)
+	   double number)
 {
   int is_negative;
   
@@ -758,7 +758,7 @@ TRIO_ARGS1((number),
 TRIO_PUBLIC int
 trio_fpclassify
 TRIO_ARGS1((number),
-	   TRIO_VOLATILE double number)
+	   double number)
 {
   int dummy;
   
@@ -780,8 +780,9 @@ TRIO_ARGS1((number),
 # include <stdio.h>
 
 static TRIO_CONST char *
-getClassification(type)
-     int type;
+getClassification
+TRIO_ARGS1((type)
+	   int type)
 {
   switch (type) {
   case TRIO_FP_INFINITE:
@@ -800,9 +801,10 @@ getClassification(type)
 }
 
 static void
-print_class(prefix, number)
-     TRIO_CONST char *prefix;
-     double number;
+print_class
+TRIO_ARGS2((prefix, number)
+	   TRIO_CONST char *prefix,
+	   double number)
 {
   printf("%-6s: %s %-15s %g\n",
 	 prefix,

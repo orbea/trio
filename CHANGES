@@ -4,6 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.8 - 2002/05/08
+------------------------
+* Fixed WIN32 compilation (reported by Emmanuel Mogenet)
+
+
 Version 1.7 - 2002/05/07
 ------------------------
 * Fixed trio_to_double to handle hex-floats properly.

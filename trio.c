@@ -39,8 +39,6 @@
  *    the C99 hex-float. This means that you cannot scan %as as a hex-float
  *    immediately followed by an 's'.
  *  - Scanning of collating symbols.
- *  - Hex-float formatting/scanning does not seem to work correctly (or I
- *    may simply have gotten the regression data wrong)
  */
 
 /*************************************************************************
@@ -2022,7 +2020,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     ? FALSE
     : ((trio_intmax_t)number < 0);
   if (isNegative)
-    number = -number;
+    number = -((trio_intmax_t)number);
 
   if (flags & FLAGS_QUAD)
     number &= (trio_ulonglong_t)-1;
@@ -3294,6 +3292,11 @@ TRIO_ARGS2((self, output),
     @{
 */
 
+#if defined(TRIO_COMPILER_MSVC)
+# pragma warning(push)
+# pragma warning(disable : 4700)
+#endif
+
 /*************************************************************************
  * printf
  */
@@ -3862,6 +3865,10 @@ TRIO_ARGS3((result, format, args),
     }
   return status;
 }
+
+#if defined(TRIO_COMPILER_MSVC)
+# pragma warning(pop)
+#endif
 
 /** @} End of Printf documentation module */
 
@@ -5043,7 +5050,7 @@ TRIO_ARGS5((self, target, flags, width, base),
     return FALSE;
   
   if (target)
-    *target = (isNegative) ? -number : number;
+    *target = (isNegative) ? -((trio_intmax_t)number) : number;
   return TRUE;
 }
 
@@ -5827,7 +5834,7 @@ TRIO_ARGS3((data, format, parameters),
 TRIO_PRIVATE int
 TrioScan
 TRIO_ARGS6((source, sourceSize, InStream, format, arglist, argarray),
-	   TRIO_CONST trio_pointer_t source,
+	   trio_pointer_t source,
 	   size_t sourceSize,
 	   void (*InStream) TRIO_PROTO((trio_class_t *, int *)),
 	   TRIO_CONST char *format,
@@ -5843,7 +5850,7 @@ TRIO_ARGS6((source, sourceSize, InStream, format, arglist, argarray),
 
   memset(&data, 0, sizeof(data));
   data.InStream = InStream;
-  data.location = (trio_pointer_t )source;
+  data.location = (trio_pointer_t)source;
   data.max = sourceSize;
   data.error = 0;
 
@@ -5983,6 +5990,11 @@ TRIO_ARGS2((self, intPointer),
     @{
 */
 
+#if defined(TRIO_COMPILER_MSVC)
+# pragma warning(push)
+# pragma warning(disable : 4700)
+#endif
+
 /*************************************************************************
  * scanf
  */
@@ -6006,7 +6018,9 @@ TRIO_VARGS2((format, va_alist),
   assert(VALID(format));
   
   TRIO_VA_START(args, format);
-  status = TrioScan(stdin, 0, TrioInStreamFile, format, args, NULL);
+  status = TrioScan((trio_pointer_t)stdin, 0,
+		    TrioInStreamFile,
+		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
 }
@@ -6019,7 +6033,9 @@ TRIO_ARGS2((format, args),
 {
   assert(VALID(format));
   
-  return TrioScan(stdin, 0, TrioInStreamFile, format, args, NULL);
+  return TrioScan((trio_pointer_t)stdin, 0,
+		  TrioInStreamFile,
+		  format, args, NULL);
 }
 
 TRIO_PUBLIC int
@@ -6032,7 +6048,9 @@ TRIO_ARGS2((format, args),
   
   assert(VALID(format));
   
-  return TrioScan(stdin, 0, TrioInStreamFile, format, dummy, args);
+  return TrioScan((trio_pointer_t)stdin, 0,
+		  TrioInStreamFile,
+		  format, dummy, args);
 }
 
 /*************************************************************************
@@ -6052,7 +6070,9 @@ TRIO_VARGS3((file, format, va_alist),
   assert(VALID(format));
   
   TRIO_VA_START(args, format);
-  status = TrioScan(file, 0, TrioInStreamFile, format, args, NULL);
+  status = TrioScan((trio_pointer_t)file, 0,
+		    TrioInStreamFile,
+		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
 }
@@ -6067,7 +6087,9 @@ TRIO_ARGS3((file, format, args),
   assert(VALID(file));
   assert(VALID(format));
   
-  return TrioScan(file, 0, TrioInStreamFile, format, args, NULL);
+  return TrioScan((trio_pointer_t)file, 0,
+		  TrioInStreamFile,
+		  format, args, NULL);
 }
 
 TRIO_PUBLIC int
@@ -6082,7 +6104,9 @@ TRIO_ARGS3((file, format, args),
   assert(VALID(file));
   assert(VALID(format));
   
-  return TrioScan(file, 0, TrioInStreamFile, format, dummy, args);
+  return TrioScan((trio_pointer_t)file, 0,
+		  TrioInStreamFile,
+		  format, dummy, args);
 }
 
 /*************************************************************************
@@ -6101,7 +6125,9 @@ TRIO_VARGS3((fd, format, va_alist),
   assert(VALID(format));
   
   TRIO_VA_START(args, format);
-  status = TrioScan(&fd, 0, TrioInStreamFileDescriptor, format, args, NULL);
+  status = TrioScan((trio_pointer_t)&fd, 0,
+		    TrioInStreamFileDescriptor,
+		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
 }
@@ -6115,7 +6141,9 @@ TRIO_ARGS3((fd, format, args),
 {
   assert(VALID(format));
   
-  return TrioScan(&fd, 0, TrioInStreamFileDescriptor, format, args, NULL);
+  return TrioScan((trio_pointer_t)&fd, 0,
+		  TrioInStreamFileDescriptor,
+		  format, args, NULL);
 }
 
 TRIO_PUBLIC int
@@ -6129,7 +6157,9 @@ TRIO_ARGS3((fd, format, args),
   
   assert(VALID(format));
   
-  return TrioScan(&fd, 0, TrioInStreamFileDescriptor, format, dummy, args);
+  return TrioScan((trio_pointer_t)&fd, 0,
+		  TrioInStreamFileDescriptor,
+		  format, dummy, args);
 }
 
 /*************************************************************************
@@ -6149,7 +6179,9 @@ TRIO_VARGS3((buffer, format, va_alist),
   assert(VALID(format));
   
   TRIO_VA_START(args, format);
-  status = TrioScan(&buffer, 0, TrioInStreamString, format, args, NULL);
+  status = TrioScan((trio_pointer_t)&buffer, 0,
+		    TrioInStreamString,
+		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
 }
@@ -6164,7 +6196,9 @@ TRIO_ARGS3((buffer, format, args),
   assert(VALID(buffer));
   assert(VALID(format));
   
-  return TrioScan(&buffer, 0, TrioInStreamString, format, args, NULL);
+  return TrioScan((trio_pointer_t)&buffer, 0,
+		  TrioInStreamString,
+		  format, args, NULL);
 }
 
 TRIO_PUBLIC int
@@ -6179,7 +6213,13 @@ TRIO_ARGS3((buffer, format, args),
   assert(VALID(buffer));
   assert(VALID(format));
   
-  return TrioScan(&buffer, 0, TrioInStreamString, format, dummy, args);
+  return TrioScan((trio_pointer_t)&buffer, 0,
+		  TrioInStreamString,
+		  format, dummy, args);
 }
+
+#if defined(TRIO_COMPILER_MSVC)
+# pragma warning(pop)
+#endif
 
 /** @} End of Scanf documentation module */

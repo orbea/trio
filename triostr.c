@@ -94,7 +94,7 @@ static TRIO_CONST char rcsid[] = "@(#)$Id$";
    @param size Size of new string.
    @return Pointer to string, or NULL if allocation failed.
 */
-TRIO_PUBLIC TRIO_INLINE char *
+TRIO_PUBLIC char *
 trio_create
 TRIO_ARGS1((size),
 	   size_t size)
@@ -108,7 +108,7 @@ TRIO_ARGS1((size),
 
    @param string String to be freed.
 */
-TRIO_PUBLIC TRIO_INLINE void
+TRIO_PUBLIC void
 trio_destroy
 TRIO_ARGS1((string),
 	   char *string)
@@ -126,7 +126,7 @@ TRIO_ARGS1((string),
    @param string String to measure.
    @return Number of characters in @string.
 */
-TRIO_PUBLIC TRIO_INLINE size_t
+TRIO_PUBLIC size_t
 trio_length
 TRIO_ARGS1((string),
 	   TRIO_CONST char *string)
@@ -229,7 +229,7 @@ TRIO_ARGS3((target, max, source),
    @param substring String to be found.
    @return Boolean value indicating success or failure.
 */
-TRIO_PUBLIC TRIO_INLINE int
+TRIO_PUBLIC int
 trio_contains
 TRIO_ARGS2((string, substring),
 	   TRIO_CONST char *string,
@@ -601,7 +601,7 @@ TRIO_ARGS2((string, type),
    @param character Character to be found.
    @param A pointer to the found character, or NULL if character was not found.
  */
-TRIO_PUBLIC TRIO_INLINE char *
+TRIO_PUBLIC char *
 trio_index
 TRIO_ARGS2((string, character),
 	   TRIO_CONST char *string,
@@ -620,7 +620,7 @@ TRIO_ARGS2((string, character),
    @param character Character to be found.
    @param A pointer to the found character, or NULL if character was not found.
  */
-TRIO_PUBLIC TRIO_INLINE char *
+TRIO_PUBLIC char *
 trio_index_last
 TRIO_ARGS2((string, character),
 	   TRIO_CONST char *string,
@@ -638,7 +638,7 @@ TRIO_ARGS2((string, character),
    @param target String to be converted.
    @return Number of processed characters (converted or not).
 */
-TRIO_PUBLIC TRIO_INLINE int
+TRIO_PUBLIC int
 trio_lower
 TRIO_ARGS1((target),
 	   char *target)
@@ -789,7 +789,7 @@ TRIO_ARGS3((target, source, Function),
    @return Pointer to first occurrence of @p substring in @p string, or NULL
    if no match was found.
 */
-TRIO_PUBLIC TRIO_INLINE char *
+TRIO_PUBLIC char *
 trio_substring
 TRIO_ARGS2((string, substring),
 	   TRIO_CONST char *string,
@@ -850,7 +850,7 @@ TRIO_ARGS3((string, max, substring),
 
    @warning @p string will be destroyed.
 */
-TRIO_PUBLIC TRIO_INLINE char *
+TRIO_PUBLIC char *
 trio_tokenize
 TRIO_ARGS2((string, delimiters),
 	   char *string,
@@ -1024,7 +1024,7 @@ TRIO_ARGS2((source, endp),
 
    See @ref trio_to_double.
 */
-TRIO_PUBLIC TRIO_INLINE float
+TRIO_PUBLIC float
 trio_to_float
 TRIO_ARGS2((source, endp),
 	   TRIO_CONST char *source,
@@ -1045,7 +1045,7 @@ TRIO_ARGS2((source, endp),
    @param endp Pointer to end of converted string.
    @param base Radix number of number.
 */
-TRIO_PUBLIC TRIO_INLINE long
+TRIO_PUBLIC long
 trio_to_long
 TRIO_ARGS3((string, endp, base),
 	   TRIO_CONST char *string,
@@ -1066,7 +1066,7 @@ TRIO_ARGS3((string, endp, base),
    @param endp Pointer to end of converted string.
    @param base Radix number of number.
 */
-TRIO_PUBLIC TRIO_INLINE unsigned long
+TRIO_PUBLIC unsigned long
 trio_to_unsigned_long
 TRIO_ARGS3((string, endp, base),
 	   TRIO_CONST char *string,
@@ -1086,7 +1086,7 @@ TRIO_ARGS3((string, endp, base),
    @param target The string to be converted.
    @return The number of processed characters (converted or not).
 */
-TRIO_PUBLIC TRIO_INLINE int
+TRIO_PUBLIC int
 trio_upper
 TRIO_ARGS1((target),
 	   char *target)
@@ -1265,7 +1265,7 @@ TRIO_ARGS2((self, offset),
 	}
       if (offset >= 0)
 	{
-	  if (offset > self->length)
+	  if (offset > (int)self->length)
 	    {
 	      offset = self->length;
 	    }
@@ -1429,7 +1429,7 @@ TRIO_ARGS2((self, character),
 {
   assert(self);
 
-  if (self->length >= trio_string_size(self))
+  if ((int)self->length >= trio_string_size(self))
     {
       if (!TrioStringGrow(self, 0))
 	goto error;
