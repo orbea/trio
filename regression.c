@@ -39,7 +39,7 @@ static TRIO_CONST char rcsid[] = "@(#)$Id$";
 /*************************************************************************
  *
  */
-void
+static void
 Dump
 TRIO_ARGS2((buffer, rc),
 	   char *buffer,
@@ -59,7 +59,19 @@ TRIO_ARGS2((buffer, rc),
 /*************************************************************************
  *
  */
-void
+static void
+Report0
+TRIO_ARGS2((file, line),
+          TRIO_CONST char *file,
+          int line)
+{
+  printf("Verification failed in %s:%d.\n", file, line);
+}
+
+/*************************************************************************
+ *
+ */
+static void
 Report
 TRIO_ARGS4((file, line, expected, got),
 	   TRIO_CONST char *file,
@@ -67,7 +79,7 @@ TRIO_ARGS4((file, line, expected, got),
 	   TRIO_CONST char *expected,
 	   TRIO_CONST char *got)
 {
-  printf("Verification failed in %s:%d.\n", file, line);
+  Report0(file, line);
   printf("  Expected \"%s\"\n", expected);
   printf("  Got      \"%s\"\n", got);
 }
@@ -108,7 +120,7 @@ TRIO_VARGS5((file, line, result, fmt, va_alist),
 int
 VerifyReturnValues(TRIO_NOARGS)
 {
-  int nerr = 0;
+  int nerrors = 0;
   int rc;
   int count;
   char *expected;
@@ -120,7 +132,7 @@ VerifyReturnValues(TRIO_NOARGS)
   expected = "10 10 0123456789";
   if (!trio_equal_case(result, expected))
     {
-      nerr++;
+      nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
   
@@ -129,7 +141,7 @@ VerifyReturnValues(TRIO_NOARGS)
   expected = "10 10 0123456789";
   if (!trio_equal_case(result, expected))
     {
-      nerr++;
+      nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
   
@@ -138,7 +150,7 @@ VerifyReturnValues(TRIO_NOARGS)
   expected = "10 3 012";
   if (!trio_equal_case(result, expected))
     {
-      nerr++;
+      nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
 
@@ -148,7 +160,7 @@ VerifyReturnValues(TRIO_NOARGS)
   expected = "10 0 ";
   if (!trio_equal_case(result, expected))
     {
-      nerr++;
+      nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
 
@@ -159,11 +171,11 @@ VerifyReturnValues(TRIO_NOARGS)
   expected = "10 0 DO NOT TOUCH";
   if (!trio_equal_case(result, expected))
     {
-      nerr++;
+      nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
   
-  return nerr;
+  return nerrors;
 }
 
 /*************************************************************************
@@ -174,7 +186,7 @@ VerifyReturnValues(TRIO_NOARGS)
 int
 VerifyAllocate(TRIO_NOARGS)
 {
-  int nerr = 0;
+  int nerrors = 0;
   int rc;
   char *string;
   int count;
@@ -184,25 +196,25 @@ VerifyAllocate(TRIO_NOARGS)
   rc = trio_asprintf(&string, "%s%n", TEST_STRING, &count);
   if (rc < 0)
     {
-      nerr++;
+      nerrors++;
       Dump(string, rc);
     }
   else if (count != test_size)
     {
-      nerr++;
+      nerrors++;
       printf("Validation failed in %s:%d\n", __FILE__, __LINE__);
       printf("  Expected %%n = %d\n", test_size);
       printf("  Got      %%n = %d\n", count);
     }
   else if (!trio_equal_case(string, TEST_STRING))
     {
-      nerr++;
+      nerrors++;
       Report(__FILE__, __LINE__, TEST_STRING, string);
     }
   if (string)
     free(string);
 
-  return nerr;
+  return nerrors;
 }
 
 
@@ -535,8 +547,6 @@ VerifyFormatting(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "1,000,000.000000",
 		    "%'f", 1000000.0);
   /* Rounding modifier */
-  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000",
-		    "%Rf", 1.234567890123456789e20);
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%.32Rf", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.4",
@@ -568,6 +578,8 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.20e", 1.2345678901234567e-20);
   nerrors += Verify(__FILE__, __LINE__, "0.666666666666666629659233",
 		    "%.*g", DBL_DIG + 10, 2.0/3.0);
+  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000",
+		    "%Rf", 1.234567890123456789e20);
 # if !defined(TRIO_COMPILER_ANCIENT)
   nerrors += Verify(__FILE__, __LINE__, "0.666666666666666667",
 		    "%RLf", (2.0L/3.0L));
@@ -911,73 +923,123 @@ VerifyStrings(TRIO_NOARGS)
 
   /* Comparison */
   trio_copy(buffer, "Find me now");
-  if (trio_length(buffer) != sizeof("Find me now") - 1)
+  if (trio_length(buffer) != sizeof("Find me now") - 1) {
     nerrors++;
-  if (!trio_equal(buffer, "Find me now"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_equal(buffer, "Find me now")) {
     nerrors++;
-  if (!trio_equal_case(buffer, "Find me now"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_equal_case(buffer, "Find me now")) {
     nerrors++;
-  if (trio_equal_case(buffer, "FIND ME NOW"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_equal_case(buffer, "FIND ME NOW")) {
     nerrors++;
-  if (!trio_equal_max(buffer, sizeof("Find me") - 1, "Find ME"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_equal_max(buffer, sizeof("Find me") - 1, "Find ME")) {
     nerrors++;
-  if (!trio_contains(buffer, "me"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_contains(buffer, "me")) {
     nerrors++;
-  if (trio_contains(buffer, "and me"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_contains(buffer, "and me")) {
     nerrors++;
-  if (trio_substring(buffer, "me") == NULL)
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_substring(buffer, "me") == NULL) {
     nerrors++;
-  if (trio_substring_max(buffer, 4, "me") != NULL)
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_substring_max(buffer, 4, "me") != NULL) {
     nerrors++;
-  if (!trio_match(buffer, "* me *"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_match(buffer, "* me *")) {
     nerrors++;
-  if (trio_match_case(buffer, "* ME *"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_match_case(buffer, "* ME *")) {
     nerrors++;
-  if (trio_index(buffer, 'n') == NULL)
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_index(buffer, 'n') == NULL) {
     nerrors++;
-  if (trio_index(buffer, '_') != NULL)
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_index(buffer, '_') != NULL) {
     nerrors++;
-  if (trio_index_last(buffer, 'n') == NULL)
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_index_last(buffer, 'n') == NULL) {
     nerrors++;
+    Report0(__FILE__, __LINE__);
+  }
 
   /* Append */
   trio_copy(buffer, "Find me now");
-  if (!trio_append(buffer, " and again"))
+  if (!trio_append(buffer, " and again")) {
     nerrors++;
-  if (!trio_equal(buffer, "Find me now and again"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_equal(buffer, "Find me now and again")) {
     nerrors++;
-  if (!trio_append_max(buffer, 0, "should not appear"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_append_max(buffer, 0, "should not appear")) {
     nerrors++;
-  if (!trio_equal(buffer, "Find me now and again"))
+    Report0(__FILE__, __LINE__);
+  }
+  if (!trio_equal(buffer, "Find me now and again")) {
     nerrors++;
-
+    Report0(__FILE__, __LINE__);
+  }
+  
   /* To upper/lower */
   trio_copy(buffer, "Find me now");
   trio_upper(buffer);
-  if (!trio_equal_case(buffer, "FIND ME NOW"))
+  if (!trio_equal_case(buffer, "FIND ME NOW")) {
     nerrors++;
+    Report0(__FILE__, __LINE__);
+  }
   trio_lower(buffer);
-  if (!trio_equal_case(buffer, "find me now"))
+  if (!trio_equal_case(buffer, "find me now")) {
     nerrors++;
+    Report0(__FILE__, __LINE__);
+  }
 
   /* Double conversion */
   trio_copy(buffer, "3.1415");
   dnumber = trio_to_double(buffer, NULL);
-  if (!DOUBLE_EQUAL(dnumber, 3.1415))
+  if (!DOUBLE_EQUAL(dnumber, 3.1415)) {
     nerrors++;
+    Report0(__FILE__, __LINE__);
+  }
   fnumber = trio_to_float(buffer, NULL);
-  if (!FLOAT_EQUAL(fnumber, 3.1415))
+  if (!FLOAT_EQUAL(fnumber, 3.1415)) {
     nerrors++;
+    Report0(__FILE__, __LINE__);
+  }
 
   /* Long conversion */
   trio_copy(buffer, "3.1415");
-  if (trio_to_long(buffer, NULL, 10) != 3L)
+  if (trio_to_long(buffer, NULL, 10) != 3L) {
     nerrors++;
-  if (trio_to_long(buffer, NULL, 4) != 3L)
+    Report0(__FILE__, __LINE__);
+  }
+  if (trio_to_long(buffer, NULL, 4) != 3L) {
     nerrors++;
+    Report0(__FILE__, __LINE__);
+  }
   trio_to_long(buffer, &end, 2);
-  if (end != buffer)
+  if (end != buffer) {
     nerrors++;
+    Report0(__FILE__, __LINE__);
+  }
   
 #endif /* !defined(TRIO_MINIMAL) */
   return nerrors;
