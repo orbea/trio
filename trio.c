@@ -1821,7 +1821,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		parameters[pos].user_name[0] = NIL;
 		tmpformat = (char *)&format[index];
 	      
-		while ((ch = format[index]))
+		while ((ch = format[index]) != NIL)
 		  {
 		    index++;
 		    if (ch == SPECIFIER_USER_DEFINED_END)
@@ -2203,6 +2203,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   int length;
   char *p;
   int count;
+  int digitIndex;
 
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -2242,7 +2243,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   *pointer-- = NIL;
   for (i = 1; i < (int)sizeof(buffer); i++)
     {
-      *pointer-- = digits[number % base];
+      digitIndex = number % base;
+      *pointer-- = digits[digitIndex];
       number /= base;
       if (number == 0)
 	break;

@@ -6,8 +6,11 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.11 - 2005/01/15
 -------------------------
+* Karl Bochert
+  Fixed compilation warnings on Borland C++.
+
 * Removed any occurrence of #elif because Borland C++ reports wrong line
-  numbers when they are present (reported by Karl Bochert)
+  numbers when they are present (reported by Karl Bochert).
 
 * David Byron
   Added trio_asprintfv.
