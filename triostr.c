@@ -77,6 +77,47 @@ struct _trio_string_t
     @{
 */
 
+/**
+   Create new string.
+
+   @param size Size of new string.
+   @return Pointer to string, or NULL if allocation failed.
+*/
+TRIO_PUBLIC TRIO_INLINE char *
+trio_create(size_t size)
+{
+  return (char *)TRIO_MALLOC(size);
+}
+
+
+/**
+   Destroy string.
+
+   @param string String to be freed.
+*/
+TRIO_PUBLIC TRIO_INLINE void
+trio_destroy(char *string)
+{
+  if (string)
+    {
+      TRIO_FREE(string);
+    }
+}
+
+
+/**
+   Count the number of characters in a string.
+
+   @param string String to measure.
+   @return Number of characters in @string.
+*/
+TRIO_PUBLIC TRIO_INLINE size_t
+trio_length(const char *string)
+{
+  return strlen(string);
+}
+
+
 /*
  * TrioDuplicate
  */
@@ -226,34 +267,6 @@ trio_copy_max(char *target,
   (void)strncpy(target, source, max - 1);
   target[max - 1] = (char)0;
   return TRUE;
-}
-
-
-/**
-   Create new string.
-
-   @param size Size of new string.
-   @return Pointer to string, or NULL if allocation failed.
-*/
-TRIO_PUBLIC TRIO_INLINE char *
-trio_create(size_t size)
-{
-  return (char *)TRIO_MALLOC(size);
-}
-
-
-/**
-   Destroy string.
-
-   @param string String to be freed.
-*/
-TRIO_PUBLIC TRIO_INLINE void
-trio_destroy(char *string)
-{
-  if (string)
-    {
-      TRIO_FREE(string);
-    }
 }
 
 
@@ -563,19 +576,6 @@ trio_index_last(const char *string,
   assert(string);
 
   return strchr(string, character);
-}
-
-
-/**
-   Count the number of characters in a string.
-
-   @param string String to measure.
-   @return Number of characters in @string.
-*/
-TRIO_PUBLIC TRIO_INLINE size_t
-trio_length(const char *string)
-{
-  return strlen(string);
 }
 
 
@@ -1072,6 +1072,24 @@ TrioStringGrow(trio_string_t *self,
 }
 
 
+/*
+ * TrioStringGrowTo
+ *
+ * The size of the string will be increased to 'length' plus one characters.
+ * If 'length' is less than the original size, the original size will be
+ * used (that is, the size of the string is never decreased).
+ */
+TRIO_PRIVATE BOOLEAN_T
+TrioStringGrowTo(trio_string_t *self,
+		 size_t length)
+{
+  length++; /* Room for terminating zero */
+  return (self->allocated < length)
+    ? TrioStringGrow(self, length - self->allocated)
+    : TRUE;
+}
+
+
 /**
    Create a new dynamic string.
    
@@ -1257,19 +1275,16 @@ TRIO_PUBLIC int
 trio_string_append(trio_string_t *self,
 		   trio_string_t *other)
 {
-  int delta;
+  size_t length;
   
   assert(self);
   assert(other);
 
-  delta = trio_string_size(self) - (self->length + other->length);
-  if (delta < 0)
-    {
-      if (!TrioStringGrow(self, -delta))
-	goto error;
-    }
+  length = self->length + other->length;
+  if (!TrioStringGrowTo(self, length))
+    goto error;
   trio_copy(&self->content[self->length], other->content);
-  self->length += other->length;
+  self->length = length;
   return TRUE;
   
  error:
@@ -1285,20 +1300,15 @@ trio_xstring_append(trio_string_t *self,
 		    const char *other)
 {
   size_t length;
-  int delta;
   
   assert(self);
   assert(other);
 
-  length = trio_length(other);
-  delta = trio_string_size(self) - (self->length + length);
-  if (delta < 0)
-    {
-      if (!TrioStringGrow(self, -delta))
-	goto error;
-    }
+  length = self->length + trio_length(other);
+  if (!TrioStringGrowTo(self, length))
+    goto error;
   trio_copy(&self->content[self->length], other);
-  self->length += length;
+  self->length = length;
   return TRUE;
   
  error:
