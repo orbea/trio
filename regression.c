@@ -7,9 +7,9 @@ static const char rcsid[] = "@(#)$Id$";
 #include <stdarg.h>
 #include <math.h>
 #include <float.h>
-#include "strio.h"
 #include "trio.h"
 #include "trionan.h"
+#include "triostr.h"
 #undef printf
 
 #if TRIO_WIDECHAR
@@ -62,7 +62,7 @@ int Verify(const char *file, int line,
     Dump(buffer, rc);
   va_end(args);
 
-  if (! StrEqualCase(result, buffer))
+  if (!trio_equal_case(result, buffer))
     {
       Report(file, line, result, buffer);
       return 1;
@@ -85,7 +85,7 @@ int VerifyReturnValues()
   rc = trio_sprintf(buffer, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
   expected = "10 10 0123456789";
-  if (!StrEqualCase(result, expected))
+  if (!trio_equal_case(result, expected))
     {
       nerr++;
       Report(__FILE__, __LINE__, expected, result);
@@ -94,7 +94,7 @@ int VerifyReturnValues()
   rc = trio_snprintf(buffer, sizeof(buffer), "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
   expected = "10 10 0123456789";
-  if (!StrEqualCase(result, expected))
+  if (!trio_equal_case(result, expected))
     {
       nerr++;
       Report(__FILE__, __LINE__, expected, result);
@@ -103,7 +103,7 @@ int VerifyReturnValues()
   rc = trio_snprintf(buffer, 4, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
   expected = "10 3 012";
-  if (!StrEqualCase(result, expected))
+  if (!trio_equal_case(result, expected))
     {
       nerr++;
       Report(__FILE__, __LINE__, expected, result);
@@ -113,7 +113,7 @@ int VerifyReturnValues()
   rc = trio_snprintf(buffer, 1, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
   expected = "10 0 ";
-  if (!StrEqualCase(result, expected))
+  if (!trio_equal_case(result, expected))
     {
       nerr++;
       Report(__FILE__, __LINE__, expected, result);
@@ -124,7 +124,7 @@ int VerifyReturnValues()
   rc = trio_snprintf(buffer, 0, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
   expected = "10 0 DO NOT TOUCH";
-  if (!StrEqualCase(result, expected))
+  if (!trio_equal_case(result, expected))
     {
       nerr++;
       Report(__FILE__, __LINE__, expected, result);
@@ -160,7 +160,7 @@ int VerifyAllocate()
       printf("  Expected %%n = %d\n", test_size);
       printf("  Got      %%n = %d\n", count);
     }
-  else if (!StrEqualCase(string, TEST_STRING))
+  else if (!trio_equal_case(string, TEST_STRING))
     {
       nerr++;
       Report(__FILE__, __LINE__, TEST_STRING, string);
@@ -369,43 +369,43 @@ int VerifyErrors(void)
   int nerrors = 0;
   
   /* Error: Invalid argument 1 */
-  rc = StrFormatMax(buffer, sizeof(buffer), "%d %r", 42, "text");
-  StrFormatMax(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
-	       TRIO_ERROR_CODE(rc),
-	       TRIO_ERROR_NAME(rc),
-	       TRIO_ERROR_POSITION(rc));
+  rc = trio_snprintf(buffer, sizeof(buffer), "%d %r", 42, "text");
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_NAME(rc),
+		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 5",
 		    "%s", buffer);
   /* Error: Invalid argument 2 */
-  rc = StrFormatMax(buffer, sizeof(buffer), "%#");
-  StrFormatMax(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
-	       TRIO_ERROR_CODE(rc),
-	       TRIO_ERROR_NAME(rc),
-	       TRIO_ERROR_POSITION(rc));
+  rc = trio_snprintf(buffer, sizeof(buffer), "%#");
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_NAME(rc),
+		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 3",
 		    "%s", buffer);
   /* Error: Invalid argument 3 */
-  rc = StrFormatMax(buffer, sizeof(buffer), "%hhhd", 42);
-  StrFormatMax(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
-	       TRIO_ERROR_CODE(rc),
-	       TRIO_ERROR_NAME(rc),
-	       TRIO_ERROR_POSITION(rc));
+  rc = trio_snprintf(buffer, sizeof(buffer), "%hhhd", 42);
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_NAME(rc),
+		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 4",
 		    "%s", buffer);
   /* Error: Double reference */
-  rc = StrFormatMax(buffer, sizeof(buffer), "hello %1$d %1$d", 31, 32);
-  StrFormatMax(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
-	       TRIO_ERROR_CODE(rc),
-	       TRIO_ERROR_NAME(rc),
-	       TRIO_ERROR_POSITION(rc));
+  rc = trio_snprintf(buffer, sizeof(buffer), "hello %1$d %1$d", 31, 32);
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_NAME(rc),
+		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 4 (Double reference), Pos = 0",
 		    "%s", buffer);
   /* Error: Reference gap */
-  rc = StrFormatMax(buffer, sizeof(buffer), "%3$d %1$d", 31, 32, 33);
-  StrFormatMax(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
-	       TRIO_ERROR_CODE(rc),
-	       TRIO_ERROR_NAME(rc),
-	       TRIO_ERROR_POSITION(rc));
+  rc = trio_snprintf(buffer, sizeof(buffer), "%3$d %1$d", 31, 32, 33);
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_NAME(rc),
+		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 5 (Reference gap), Pos = 1",
 		    "%s", buffer);
 
@@ -432,25 +432,25 @@ int VerifyStrings(void)
   char buffer[512];
 
   sprintf(buffer, "Find me now");
-  if (!StrEqual(buffer, "Find me now"))
+  if (!trio_equal(buffer, "Find me now"))
     nerrors++;
-  if (!StrEqualCase(buffer, "Find me now"))
+  if (!trio_equal_case(buffer, "Find me now"))
     nerrors++;
-  if (StrEqualCase(buffer, "FIND ME NOW"))
+  if (trio_equal_case(buffer, "FIND ME NOW"))
     nerrors++;
-  if (!StrEqualMax(buffer, sizeof("Find me") - 1, "Find ME"))
+  if (!trio_equal_max(buffer, sizeof("Find me") - 1, "Find ME"))
     nerrors++;
-  if (!StrContains(buffer, "me"))
+  if (!trio_contains(buffer, "me"))
     nerrors++;
-  if (StrContains(buffer, "and me"))
+  if (trio_contains(buffer, "and me"))
     nerrors++;
-  if (StrSubstring(buffer, "me") == NULL)
+  if (trio_substring(buffer, "me") == NULL)
     nerrors++;
-  if (StrSubstringMax(buffer, 4, "me") != NULL)
+  if (trio_substring_max(buffer, 4, "me") != NULL)
     nerrors++;
-  if (!StrMatch(buffer, "* me *"))
+  if (!trio_match(buffer, "* me *"))
     nerrors++;
-  if (StrMatchCase(buffer, "* ME *"))
+  if (trio_match_case(buffer, "* ME *"))
     nerrors++;
   
   return nerrors;

@@ -188,13 +188,6 @@ int trio_sscanfv(const char *buffer, const char *format, void **args);
 #define vdscanf trio_vdscanf
 #endif
 
-/* strio compatible names */
-#define StrScan trio_sscanf
-#define StrFormat trio_sprintf
-#define StrFormatMax trio_snprintf
-#define StrFormatAlloc trio_aprintf
-#define StrFormatAppendMax trio_snprintfcat
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

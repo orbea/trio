@@ -330,7 +330,10 @@ enum {
   /* Maximal length of locale separator strings */
   MAX_LOCALE_SEPARATOR_LENGTH = MB_LEN_MAX,
   /* Maximal number of integers in grouping */
-  MAX_LOCALE_GROUPS = 64
+  MAX_LOCALE_GROUPS = 64,
+
+  /* Initial size of asprintf buffer */
+  DYNAMIC_START_SIZE = 32
 };
 
 #define NO_GROUPING ((int)CHAR_MAX)
@@ -3077,63 +3080,19 @@ TrioOutStreamStringMax(trio_class_t *self,
 /*************************************************************************
  * TrioOutStreamStringDynamic
  */
-#define DYNAMIC_START_SIZE 32
-struct dynamicBuffer {
-  char *buffer;
-  size_t length;
-  size_t allocated;
-};
-
 TRIO_PRIVATE void
 TrioOutStreamStringDynamic(trio_class_t *self,
 			   int output)
 {
-  struct dynamicBuffer *infop;
-  
   assert(VALID(self));
   assert(VALID(self->location));
 
   if (self->error == 0)
     {
-      infop = (struct dynamicBuffer *)self->location;
-
-      if (infop->buffer == NULL)
-	{
-	  /* Start with a reasonable size */
-	  infop->buffer = (char *)TRIO_MALLOC(DYNAMIC_START_SIZE);
-	  if (infop->buffer == NULL)
-	    {
-	      self->error = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-	      goto error;
-	    }
-	  infop->allocated = DYNAMIC_START_SIZE;
-	  self->processed = 0;
-	  self->committed = 0;
-	}
-      else if (infop->length + sizeof(NIL) >= infop->allocated)
-	{
-	  char *newptr;
-	  size_t newsize;
-
-	  /* Allocate increasing chunks */
-	  newsize = infop->allocated * 2;
-	  newptr = (char *)TRIO_REALLOC(infop->buffer, newsize);
-      
-	  if (newptr == NULL)
-	    {
-	      self->error = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-	      goto error;
-	    }
-
-	  infop->buffer = newptr;
-	  infop->allocated = newsize;
-	}
-  
-      infop->buffer[infop->length] = (char)output;
-      infop->length++;
+      trio_string_append_char((trio_string_t *)self->location,
+			      (char)output);
       self->committed++;
     }
- error:
   /* The processed variable must always be increased */
   self->processed++;
 }
@@ -3433,23 +3392,24 @@ trio_aprintf(TRIO_CONST char *format,
 	     ...)
 {
   va_list args;
-  struct dynamicBuffer info;
+  trio_string_t *info;
+  char *result = NULL;
 
   assert(VALID(format));
   
-  info.buffer = NULL;
-  info.length = 0;
-  info.allocated = 0;
+  info = trio_string_create(DYNAMIC_START_SIZE);
+  if (info)
+    {
+      va_start(args, format);
+      (void)TrioFormat(info, 0, TrioOutStreamStringDynamic,
+		       format, args, NULL);
+      va_end(args);
 
-  va_start(args, format);
-  (void)TrioFormat(&info, 0, TrioOutStreamStringDynamic, format, args, NULL);
-  va_end(args);
-  if (info.length) {
-    info.buffer[info.length] = NIL; /* we terminate this with a zero byte */
-    return info.buffer;
-  }
-  else
-    return NULL;
+      trio_string_terminate(info);
+      result = trio_string_extract_buffer(info);
+      trio_string_destroy(info);
+    }
+  return result;
 }
 
 /* Deprecated */
@@ -3457,21 +3417,21 @@ char *
 trio_vaprintf(TRIO_CONST char *format,
 	      va_list args)
 {
-  struct dynamicBuffer info;
-
+  trio_string_t *info;
+  char *result = NULL;
+  
   assert(VALID(format));
   
-  info.buffer = NULL;
-  info.length = 0;
-  info.allocated = 0;
-
-  (void)TrioFormat(&info, 0, TrioOutStreamStringDynamic, format, args, NULL);
-  if (info.length) {
-    info.buffer[info.length] = NIL; /* we terminate this with a zero byte */
-    return info.buffer;
-  }
-  else
-    return NULL;
+  info = trio_string_create(DYNAMIC_START_SIZE);
+  if (info)
+    {
+      (void)TrioFormat(info, 0, TrioOutStreamStringDynamic,
+		       format, args, NULL);
+      trio_string_terminate(info);
+      result = trio_string_extract_buffer(info);
+      trio_string_destroy(info);
+    }
+  return result;
 }
 
 int
@@ -3481,36 +3441,44 @@ trio_asprintf(char **result,
 {
   va_list args;
   int status;
-  struct dynamicBuffer info;
+  trio_string_t *info;
+  char *work;
 
   assert(VALID(format));
 
-  info.buffer = NULL;
-  info.length = 0;
-  info.allocated = 0;
-
-  va_start(args, format);
-  status = TrioFormat(&info, 0, TrioOutStreamStringDynamic, format, args, NULL);
-  va_end(args);
-  if (status < 0) {
-     *result = NULL;
-     return status;
-  }
-  if (info.length == 0) {
-    /*
-     * If the length is zero, no characters have been written and therefore
-     * no memory has been allocated, but we must to allocate and return an
-     * empty string.
-     */
-    info.buffer = (char *)TRIO_MALLOC(sizeof(char));
-    if (info.buffer == NULL) {
-      *result = NULL;
-      return TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-    }
-  }
-  info.buffer[info.length] = NIL; /* we terminate this with a zero byte */
-  *result = info.buffer;
+  *result = NULL;
   
+  info = trio_string_create(DYNAMIC_START_SIZE);
+  if (info)
+    {
+      va_start(args, format);
+      status = TrioFormat(info, 0, TrioOutStreamStringDynamic,
+			  format, args, NULL);
+      va_end(args);
+      if (status < 0)
+	{
+	  goto error;
+	}
+      if (trio_string_length(info) == 0)
+	{
+	  /*
+	   * If the length is zero, no characters have been written and
+	   * therefore no memory has been allocated, but we must to
+	   * allocate and return an empty string.
+	   */
+	  work = trio_alloc(sizeof(char));
+	  if (work == NULL)
+	    {
+	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
+	      goto error;
+	    }
+	  trio_string_set_buffer(info, work);
+	}
+      trio_string_terminate(info);
+      *result = trio_string_extract_buffer(info);
+    error:
+      trio_string_destroy(info);
+    }
   return status;
 }
 
@@ -3520,29 +3488,36 @@ trio_vasprintf(char **result,
 	       va_list args)
 {
   int status;
-  struct dynamicBuffer info;
-
+  trio_string_t *info;
+  
   assert(VALID(format));
 
-  info.buffer = NULL;
-  info.length = 0;
-  info.allocated = 0;
-
-  status = TrioFormat(&info, 0, TrioOutStreamStringDynamic, format, args, NULL);
-  if (status < 0) {
-     *result = NULL;
-     return status;
-  }
-  if (info.length == 0) {
-    info.buffer = (char *)TRIO_MALLOC(sizeof(char));
-    if (info.buffer == NULL) {
-      *result = NULL;
-      return TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-    }
-  }
-  info.buffer[info.length] = NIL; /* we terminate this with a zero byte */
-  *result = info.buffer;
+  *result = NULL;
   
+  info = trio_string_create(DYNAMIC_START_SIZE);
+  if (info)
+    {
+      status = TrioFormat(info, 0, TrioOutStreamStringDynamic,
+			  format, args, NULL);
+      if (status < 0)
+	{
+	  goto error;
+	}
+      if (trio_string_length(info) == 0)
+	{
+	  char *work = trio_alloc(sizeof(char));
+	  if (work == NULL)
+	    {
+	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
+	      goto error;
+	    }
+	  trio_string_set_buffer(info, work);
+	}
+      trio_string_terminate(info);
+      *result = trio_string_extract_buffer(info);
+    error:
+      trio_string_destroy(info);
+    }
   return status;
 }
 
