@@ -102,8 +102,12 @@
  *     implicitly (the so-called "hidden bit"), which leaves us with
  *     the ability to represent 53 bits wide mantissa.
  */
-#if (FLT_RADIX == 2) && (DBL_MAX_EXP == 1024) && (DBL_MANT_DIG == 53)
+#if defined(__STDC_IEC_559__)
 # define USE_IEEE_754
+#else
+# if (FLT_RADIX == 2) && (DBL_MAX_EXP == 1024) && (DBL_MANT_DIG == 53)
+#  define USE_IEEE_754
+# endif
 #endif
 
 /*
