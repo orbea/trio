@@ -5,7 +5,7 @@ dnl
 AC_INIT(triodef.h)
 
 AC_PROG_CC
-ifdef([AC_PROG_CC_STDC], [AC_PROC_CC_STDC])
+ifdef([AC_PROG_CC_STDC], [AC_PROG_CC_STDC])
 AC_LANG_C
 
 AC_PROG_INSTALL
