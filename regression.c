@@ -16,7 +16,12 @@
 #include "trio.h"
 #include "triop.h"
 #include "trionan.h"
-#include "triostr.h"
+#if defined(TRIO_MINIMAL)
+# define TRIO_STRING_PUBLIC static
+# include "triostr.c"
+#else
+# include "triostr.h"
+#endif
 #undef printf
 
 #if TRIO_WIDECHAR
@@ -29,6 +34,7 @@
 #define FLOAT_EQUAL(x,y) (((x)>(y)-FLT_EPSILON) && ((x)<(y)+FLT_EPSILON))
 
 static TRIO_CONST char rcsid[] = "@(#)$Id$";
+
 
 /*************************************************************************
  *
@@ -272,11 +278,9 @@ VerifyFormatting(TRIO_NOARGS)
   /* Integer zero-padding, width, and precision */
   nerrors += Verify(__FILE__, __LINE__, "  000012",
 		    "%08.6d", 12);
-#if 0 /* The output depends on the locale settings */
   /* Integer thousand separator */
   nerrors += Verify(__FILE__, __LINE__, "Number 1,000,000",
 		    "Number %'d", 1000000);
-#endif
   /* Integer base */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		   "%u", 42);
@@ -307,12 +311,6 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.500000",
 		    "%f", 3141.5);
-  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000.000000",
-		    "%f", 1.234567890123456789e20);
-  nerrors += Verify(__FILE__, __LINE__, "0.000000",
-		    "%f", 1.234567890123456789e-20);
-  nerrors += Verify(__FILE__, __LINE__, "1.23456789012345700000e-20",
-		    "%.20e", 1.234567890123456789e-20);
   nerrors += Verify(__FILE__, __LINE__, "3.141000e+03",
 		    "%e", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "     -2.3420e-02",
@@ -337,7 +335,21 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%f", 1.0/3.0);
   nerrors += Verify(__FILE__, __LINE__, "0.666667",
 		    "%f", 2.0/3.0);
+  /* Double thousand separator */
+  nerrors += Verify(__FILE__, __LINE__, "1,000,000.000000",
+		    "%'f", 1000000.0);
   /* Beyond accuracy */
+  nerrors += Verify(__FILE__, __LINE__, "123456789012345680868.000000",
+		    "%f", 1.234567890123456789e20);
+  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000",
+		    "%Rf", 1.234567890123456789e20);
+  nerrors += Verify(__FILE__, __LINE__, "0.000000",
+		    "%f", 1.234567890123456789e-20);
+#if 0 /* FIXME */
+  nerrors += Verify(__FILE__, __LINE__, "1.23456789012345700000e-20",
+		    "%.20e", 1.234567890123456789e-20);
+  nerrors += Verify(__FILE__, __LINE__, "1.3999999999999999266844242442",
+		    "%.32g", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.40000000000000000000000000000000",
 		    "%.32f", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.4000000000000000000000000000",
@@ -346,8 +358,22 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.24f", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "1.40000000000000000",
 		    "%.17f", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "39413.800000000000000000000000000000",
+  nerrors += Verify(__FILE__, __LINE__, "39413.800000000002910406860626224608",
 		    "%.30f", 39413.80);
+#endif
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%.32Rf", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%.17Rf", 1.4);
+#if 0 /* FIXME */
+  nerrors += Verify(__FILE__, __LINE__, "39413.8",
+		    "%.30Rf", 39413.80);
+  /* 2^-1 + 2^-15 */
+  nerrors += Verify(__FILE__, __LINE__, "0.500030517578125",
+		    "%.*g", DBL_DIG + 4, 0.500030517578125);
+  nerrors += Verify(__FILE__, __LINE__, "0.66666666666666662966",
+		    "%.*g", DBL_DIG + 4, 2.0/3.0);
+#endif
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
@@ -390,6 +416,20 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%-16e", 3141.5);
   nerrors += Verify(__FILE__, __LINE__, "03.142e+03",
 		    "%010.3e", 3141.5);
+  /* Long double */
+#if !defined(TRIO_COMPILER_ANCIENT)
+  nerrors += Verify(__FILE__, __LINE__, "1.400000",
+		    "%Lf", 1.4L);
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%RLf", 1.4L);
+  nerrors += Verify(__FILE__, __LINE__, "1.4",
+		    "%.30RLf", 1.4L);
+  /* FIXME: gcc 2.7.2.3 does not calculate long double correctly */
+/*    nerrors += Verify(__FILE__, __LINE__, "0.666667", */
+/*  		    "%RLf", (2.0L/3.0L)); */
+/*    nerrors += Verify(__FILE__, __LINE__, "0.666666666666666666666666666667", */
+/*  		    "%.30RLf", (2.0L/3.0L)); */
+#endif
 #if 0 /* The output depends on the locale settings */
   nerrors += Verify(__FILE__, __LINE__, "31,415.200000",
 		    "%'f", 31415.2);
@@ -412,6 +452,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%f", trio_nan());
   nerrors += Verify(__FILE__, __LINE__, "NAN",
 		    "%F", trio_nan());
+  
   /* Char width alignment */
   nerrors += Verify(__FILE__, __LINE__, "Char X   .",
 	 "Char %-4c.", 'X');
@@ -462,7 +503,6 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%a", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "0XC.450000P+02",
 		    "%A", 3141.0);
-  /* FIXME: Is this the correct value? */
   nerrors += Verify(__FILE__, __LINE__, "0xb.351c43p-25",
 		    "%a", 3.141e-44);
   nerrors += Verify(__FILE__, __LINE__, "256",
@@ -753,6 +793,7 @@ VerifyScanningRegression(TRIO_NOARGS)
   int rc;
   int index;
   double dnumber;
+  long double ldnumber;
   long lnumber;
   int number;
   char ch;
@@ -769,7 +810,14 @@ VerifyScanningRegression(TRIO_NOARGS)
   rc = trio_sscanf("abc def", "%*s%n", &number);
   nerrors += Verify(__FILE__, __LINE__, "0 3",
 		    "%d %d", rc, number);
-  
+#if 0 /* FIXME */
+  rc = trio_sscanf("0.141882295971771490", "%lf", &dnumber);
+  nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971772000",
+		    "%d %.18f", rc, dnumber);
+  rc = trio_sscanf("0.141882295971771490", "%Lf", &ldnumber);
+  nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971772000",
+		    "%d %.18Lf", rc, ldnumber);
+#endif
   return nerrors;
 }
 
@@ -796,6 +844,7 @@ int
 VerifyStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
+#if !defined(TRIO_MINIMAL)
   char buffer[512];
   double dnumber;
   float fnumber;
@@ -871,6 +920,7 @@ VerifyStrings(TRIO_NOARGS)
   if (end != buffer)
     nerrors++;
   
+#endif /* !defined(TRIO_MINIMAL) */
   return nerrors;
 }
 
@@ -881,6 +931,7 @@ int
 VerifyDynamicStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
+#if !defined(TRIO_MINIMAL)
   trio_string_t *string;
 
   string = trio_xstring_duplicate("Find me now");
@@ -906,6 +957,7 @@ VerifyDynamicStrings(TRIO_NOARGS)
   if (string)
     trio_string_destroy(string);
   
+#endif /* !defined(TRIO_MINIMAL) */
   return nerrors;
 }
 
@@ -943,6 +995,11 @@ main(TRIO_NOARGS)
   int nerrors = 0;
 
   printf("%s\n", rcsid);
+
+  /* Override system locale settings */
+  trio_locale_set_decimal_point(".");
+  trio_locale_set_thousand_separator(",");
+  trio_locale_set_grouping("\3");
 
   printf("Verifying strings\n");
   nerrors += VerifyStrings();

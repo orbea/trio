@@ -4,8 +4,24 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.8 - 2002/05/08
+Version 1.8 - 2002/05/20
 ------------------------
+* Added TRIO_MINIMAL to build trio without the string functions.
+
+* Added the R modifier to print rounded floating-point numbers.
+
+* Added trio_to_long_double and long double scanning (the L modifier).
+
+* Added trio_locale_decimal_point, trio_locale_thousand_separator,
+  trio_locale_grouping to overwrite locale settings.
+
+* Rewrote TrioWriteDouble to avoid temporary buffers and thus the danger of
+  buffer overflows (for instance %.5000f).
+
+* Fixed thousand separator checking.
+
+* Fixed %f scanning to get a float and %lf to get a double.
+
 * Fixed WIN32 compilation (reported by Emmanuel Mogenet)
 
 

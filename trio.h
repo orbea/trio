@@ -132,6 +132,13 @@ int trio_vsscanf TRIO_PROTO((TRIO_CONST char *buffer, TRIO_CONST char *format, v
 int trio_sscanfv TRIO_PROTO((TRIO_CONST char *buffer, TRIO_CONST char *format, void **args));
 
 /*************************************************************************
+ * Locale Functions
+ */
+void trio_locale_set_decimal_point TRIO_PROTO((char *decimalPoint));
+void trio_locale_set_thousand_separator TRIO_PROTO((char *thousandSeparator));
+void trio_locale_set_grouping TRIO_PROTO((char *grouping));
+
+/*************************************************************************
  * Renaming
  */
 #ifdef TRIO_REPLACE_STDIO

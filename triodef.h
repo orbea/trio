@@ -89,6 +89,9 @@
 # if (_XOPEN_VERSION >= 500)
 #  define TRIO_COMPILER_SUPPORTS_UNIX98
 # endif
+# if (_XOPEN_VERSION >= 600)
+#  define TRIO_COMPILER_SUPPORTS_UNIX01
+# endif
 #endif
 
 /*************************************************************************
