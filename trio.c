@@ -746,13 +746,11 @@ typedef struct _trio_class_t {
   int error;
 } trio_class_t;
 
-#if TRIO_FEATURE_USER_DEFINED
 /* References (for user-defined callbacks) */
 typedef struct _trio_reference_t {
   trio_class_t *data;
   trio_parameter_t *parameter;
 } trio_reference_t;
-#endif
 
 #if TRIO_FEATURE_USER_DEFINED
 /* Registered entries (for user-defined callbacks) */
