@@ -4143,8 +4143,6 @@ TrioGetCharacterClass(const char *format,
 {
   int index = *indexPointer;
   int i;
-  int j;
-  int after;
   char ch;
   char range_begin;
   char range_end;
@@ -4229,31 +4227,41 @@ TrioGetCharacterClass(const char *format,
 	  break;
 	  
 	case QUALIFIER_EQUAL: /* Equivalence class expressions */
-	  /* Find matching sign */
-	  for (after = index + 1;
-	       ((format[after] != NIL) &&
-		(format[after] != SPECIFIER_UNGROUP) &&
-		(format[after] != QUALIFIER_EQUAL));
-	       after++)
-	    ;
-	  if (format[after] == QUALIFIER_EQUAL)
-	    {
-	      if (internalCollationUnconverted)
-		{
-		  TrioGetCollation();
-		  internalCollationUnconverted = FALSE;
-		}
-	      for (i = index + 1; i < after; i++)
-		{
-		  for (j = 0; internalCollationArray[(int)format[i]][j] != NIL; j++)
-		    characterclass[(int)internalCollationArray[(int)format[i]][j]]++;
-		}
-	      index = after + 1;
-	    }
-	  else
-	    {
-	      characterclass[(int)ch]++;
-	    }
+	  {
+	    int after;
+	    int j;
+	    int k;
+	    
+	    /* Find matching sign */
+	    for (after = index + 1;
+		 ((format[after] != NIL) &&
+		  (format[after] != SPECIFIER_UNGROUP) &&
+		  (format[after] != QUALIFIER_EQUAL));
+		 after++)
+	      ;
+	    if (format[after] == QUALIFIER_EQUAL)
+	      {
+		if (internalCollationUnconverted)
+		  {
+		    /* Lazy evalutation of collation array */
+		    TrioGetCollation();
+		    internalCollationUnconverted = FALSE;
+		  }
+		for (i = index + 1; i < after; i++)
+		  {
+		    /* Mark any equivalent character */
+		    k = (int)format[i];
+		    for (j = 0; internalCollationArray[k][j] != NIL; j++)
+		      characterclass[(int)internalCollationArray[k][j]]++;
+		  }
+		index = after + 1;
+	      }
+	    else
+	      {
+		/* Handle as normal character */
+		characterclass[(int)ch]++;
+	      }
+	  }
 	  break;
 	  
 	case QUALIFIER_COLON: /* Character class expressions */
