@@ -1,9 +1,8 @@
 FILES
 README
 CHANGES
-Makefile
+Makefile.in
 maketgz
-strio.c
 strio.h
 trio.c
 trio.h
@@ -16,6 +15,9 @@ triostr.h
 compare.c
 example.c
 regression.c
+configure.in
+install-sh
+autogen.sh
 doc/doc.h
 doc/doc_dynamic.h
 doc/doc_printf.h

@@ -133,6 +133,7 @@ order sorted by surname)
 @li Tero Jänkä
 @li Howard Kapustein
 @li Jose Ortiz
+@li Joe Orton
 @li Gisli Ottarsson
 @li Marc Werwerft
 @li Igor Zlatkovic

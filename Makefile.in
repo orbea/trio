@@ -1,20 +1,34 @@
-CFLAGS	= -g -DDEBUG -Wall
-#CFLAGS	= -O2
+CC	= @CC@
+CFLAGS	= @CFLAGS@ -DDEBUG
 OBJS	= triostr.o trio.o trionan.o
 TARGETLIB	= libtrio.a
 LDFLAGS	= -L. -ltrio -lm
 AR	= ar
-RANLIB	= ranlib
+RANLIB	= @RANLIB@
 ERASE	= rm -f
 GENDOC	= doxygen
 
 PURIFY = purify
 PURIFYOPTIONS = -chain-length=16 -first-only=YES
 
+# Installation settings
+INSTALL		= @INSTALL@
+INSTALL_DATA	= @INSTALL_DATA@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+includedir	= @includedir@
+libdir		= @libdir@
+
 all: $(TARGETLIB) $(TARGET) regression example
 
 test:
 	./regression
+
+install:	$(TARGETLIB)
+	$(INSTALL) -d $(libdir)
+	$(INSTALL) -d $(includedir)
+	$(INSTALL_DATA) $(TARGETLIB) $(libdir)/$(TARGETLIB)
+	$(INSTALL_DATA) trio.h triop.h $(includedir)    
 
 pure: $(TOBJS) $(OBJS)
 	$(PURIFY) $(PURIFYOPTIONS) $(CC) $(CFLAGS) $^ $(LDFLAGS)

@@ -29,7 +29,9 @@ fi
 mkdir $n
 
 # Copy all relevant files, with path and permissions!
-tar -cf - `cat FILES` | (cd $n; tar -xBpf -)
+tar -cf - `cat FILES` | (cd $n; tar -xBpf -) || exit 1
+
+(cd $n && sh autogen.sh) || exit 1
 
 # Make a tar archive of it all
 tar -cvf $n.tar $n
