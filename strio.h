@@ -34,11 +34,11 @@ enum {
 };
 
 #define StrAlloc(n) trio_create(n)
-#define StrAppend(x,y) trio_append((x),(y))
-#define StrAppendMax(x,n,y) trio_append_max((x),(n),(y))
+#define StrAppend(x,y) ((void)trio_append((x),(y)),(x))
+#define StrAppendMax(x,n,y) ((void)trio_append_max((x),(n),(y)),(x))
 #define StrContains(x,y) trio_contains((x),(y))
-#define StrCopy(x,y) trio_copy((x),(y))
-#define StrCopyMax(x,n,y) trio_copy_max((x),(n),(y))
+#define StrCopy(x,y) ((void)trio_copy((x),(y)),(x))
+#define StrCopyMax(x,n,y) ((void)trio_copy_max((x),(n),(y)),(x))
 #define StrDuplicate(x) trio_duplicate(x)
 #define StrDuplicateMax(x,n) trio_duplicate((x),(n))
 #define StrEqual(x,y) trio_equal((x),(y))

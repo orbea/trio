@@ -4,11 +4,19 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.6 - 2001/12/08
+Version 1.6 - 2001/12/27
 ------------------------
 * Added dynamic string functions.
 
+* Rewrote and extended documentation in JavaDoc (using Doxygen).
+
 * Moved and renamed strio functions to triostr.
+
+* Robert Collins
+  Added definition for Cygwin.
+
+* Markus Henke
+  Added long double workaround for the HP C/iX compiler.
 
 * Marc Verwerft
   Improved error handling for dynamically allocated strings.

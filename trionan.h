@@ -15,8 +15,8 @@
  *
  ************************************************************************/
 
-#ifndef __TRIO_NAN_H__
-#define __TRIO_NAN_H__
+#ifndef TRIO_NAN_H
+#define TRIO_NAN_H
 
 #include "triodef.h"
 
@@ -53,4 +53,4 @@ TRIO_PUBLIC int trio_isinf(double number);
 }
 #endif
 
-#endif /* __TRIO_NAN_H__ */
+#endif /* TRIO_NAN_H */

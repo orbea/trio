@@ -15,8 +15,8 @@
  *
  ************************************************************************/
 
-#ifndef __TRIO_TRIODEF_H__
-#define __TRIO_TRIODEF_H__
+#ifndef TRIO_TRIODEF_H
+#define TRIO_TRIODEF_H
 
 /*************************************************************************
  * Platform and compiler support detection
@@ -48,12 +48,17 @@
 # define TRIO_PLATFORM_UNIX
 #elif defined(__QNX__)
 # define TRIO_PLATFORM_UNIX
+# define TRIO_PLATFORM_QNX
+#elif defined(__CYGWIN__)
+# define TRIO_PLATFORM_UNIX
 #elif defined(AMIGA) && defined(TRIO_COMPILER_GCC)
 # define TRIO_PLATFORM_UNIX
 #elif defined(TRIO_COMPILER_MSVC) || defined(WIN32) || defined(_WIN32)
 # define TRIO_PLATFORM_WIN32
 #elif defined(VMS) || defined(__VMS)
 # define TRIO_PLATFORM_VMS
+#elif defined(mpeix) || defined(__mpexl)
+# define TRIO_PLATFORM_MPEIX
 #endif
 
 #if defined(__STDC__)
@@ -104,4 +109,4 @@
 # define TRIO_PROTO(x) ()
 #endif
 
-#endif /* __TRIO_TRIODEF_H__ */
+#endif /* TRIO_TRIODEF_H */

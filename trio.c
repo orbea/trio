@@ -672,6 +672,15 @@ typedef struct _trio_userdef_t {
 
 static TRIO_CONST char rcsid[] = "@(#)$Id$";
 
+/*
+ * Need this to workaround a parser bug in HP C/iX compiler that fails
+ * to resolves macro definitions that includes type 'long double',
+ * e.g: va_arg(arg_ptr, long double)
+ */
+#if defined(TRIO_PLATFORM_MPEIX)
+static TRIO_CONST long double ___dummy_long_double = 0;
+#endif
+
 static TRIO_CONST char internalNullString[] = "(nil)";
 
 #if defined(USE_LOCALE)
@@ -1869,7 +1878,7 @@ TrioParse(int type,
 
 /*************************************************************************
  *
- * @FORMATTING
+ * FORMATTING
  *
  ************************************************************************/
 
@@ -3098,9 +3107,30 @@ TrioOutStreamStringDynamic(trio_class_t *self,
 }
 
 /*************************************************************************
+ *
+ * Formatted printing functions
+ *
+ ************************************************************************/
+
+#if defined(TRIO_DOCUMENTATION)
+# include "doc/doc_printf.h"
+#endif
+/** @addtogroup Printf
+    @{
+*/
+
+/*************************************************************************
  * printf
  */
-int
+
+/**
+   Print to standard output stream.
+
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_printf(TRIO_CONST char *format,
 	    ...)
 {
@@ -3115,7 +3145,14 @@ trio_printf(TRIO_CONST char *format,
   return status;
 }
 
-int
+/**
+   Print to standard output stream.
+
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_vprintf(TRIO_CONST char *format,
 	     va_list args)
 {
@@ -3124,7 +3161,14 @@ trio_vprintf(TRIO_CONST char *format,
   return TrioFormat(stdout, 0, TrioOutStreamFile, format, args, NULL);
 }
 
-int
+/**
+   Print to standard output stream.
+
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_printfv(TRIO_CONST char *format,
 	     void ** args)
 {
@@ -3138,7 +3182,16 @@ trio_printfv(TRIO_CONST char *format,
 /*************************************************************************
  * fprintf
  */
-int
+
+/**
+   Print to file.
+
+   @param file File pointer.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_fprintf(FILE *file,
 	     TRIO_CONST char *format,
 	     ...)
@@ -3155,7 +3208,15 @@ trio_fprintf(FILE *file,
   return status;
 }
 
-int
+/**
+   Print to file.
+
+   @param file File pointer.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_vfprintf(FILE *file,
 	      TRIO_CONST char *format,
 	      va_list args)
@@ -3166,7 +3227,15 @@ trio_vfprintf(FILE *file,
   return TrioFormat(file, 0, TrioOutStreamFile, format, args, NULL);
 }
 
-int
+/**
+   Print to file.
+
+   @param file File pointer.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_fprintfv(FILE *file,
 	      TRIO_CONST char *format,
 	      void ** args)
@@ -3182,7 +3251,16 @@ trio_fprintfv(FILE *file,
 /*************************************************************************
  * dprintf
  */
-int
+
+/**
+   Print to file descriptor.
+
+   @param fd File descriptor.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_dprintf(int fd,
 	     TRIO_CONST char *format,
 	     ...)
@@ -3198,7 +3276,15 @@ trio_dprintf(int fd,
   return status;
 }
 
-int
+/**
+   Print to file descriptor.
+
+   @param fd File descriptor.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_vdprintf(int fd,
 	      TRIO_CONST char *format,
 	      va_list args)
@@ -3208,7 +3294,15 @@ trio_vdprintf(int fd,
   return TrioFormat(&fd, 0, TrioOutStreamFileDescriptor, format, args, NULL);
 }
 
-int
+/**
+   Print to file descriptor.
+
+   @param fd File descriptor.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_dprintfv(int fd,
 	      TRIO_CONST char *format,
 	      void **args)
@@ -3223,7 +3317,16 @@ trio_dprintfv(int fd,
 /*************************************************************************
  * sprintf
  */
-int
+
+/**
+   Print to string.
+
+   @param buffer Output string.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_sprintf(char *buffer,
 	     TRIO_CONST char *format,
 	     ...)
@@ -3241,7 +3344,15 @@ trio_sprintf(char *buffer,
   return status;
 }
 
-int
+/**
+   Print to string.
+
+   @param buffer Output string.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_vsprintf(char *buffer,
 	      TRIO_CONST char *format,
 	      va_list args)
@@ -3256,7 +3367,15 @@ trio_vsprintf(char *buffer,
   return status;
 }
 
-int
+/**
+   Print to string.
+
+   @param buffer Output string.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_sprintfv(char *buffer,
 	      TRIO_CONST char *format,
 	      void **args)
@@ -3275,9 +3394,19 @@ trio_sprintfv(char *buffer,
 /*************************************************************************
  * snprintf
  */
-int
+
+/**
+   Print at most @p max characters to string.
+
+   @param buffer Output string.
+   @param max Maximum number of characters to print.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_snprintf(char *buffer,
-	      size_t bufferSize,
+	      size_t max,
 	      TRIO_CONST char *format,
 	      ...)
 {
@@ -3288,17 +3417,26 @@ trio_snprintf(char *buffer,
   assert(VALID(format));
 
   va_start(args, format);
-  status = TrioFormat(&buffer, bufferSize > 0 ? bufferSize - 1 : 0,
+  status = TrioFormat(&buffer, max > 0 ? max - 1 : 0,
 		      TrioOutStreamStringMax, format, args, NULL);
-  if (bufferSize > 0)
+  if (max > 0)
     *buffer = NIL;
   va_end(args);
   return status;
 }
 
-int
+/**
+   Print at most @p max characters to string.
+
+   @param buffer Output string.
+   @param max Maximum number of characters to print.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_vsnprintf(char *buffer,
-	       size_t bufferSize,
+	       size_t max,
 	       TRIO_CONST char *format,
 	       va_list args)
 {
@@ -3307,16 +3445,25 @@ trio_vsnprintf(char *buffer,
   assert(VALID(buffer));
   assert(VALID(format));
 
-  status = TrioFormat(&buffer, bufferSize > 0 ? bufferSize - 1 : 0,
+  status = TrioFormat(&buffer, max > 0 ? max - 1 : 0,
 		      TrioOutStreamStringMax, format, args, NULL);
-  if (bufferSize > 0)
+  if (max > 0)
     *buffer = NIL;
   return status;
 }
 
-int
+/**
+   Print at most @p max characters to string.
+
+   @param buffer Output string.
+   @param max Maximum number of characters to print.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
 trio_snprintfv(char *buffer,
-	       size_t bufferSize,
+	       size_t max,
 	       TRIO_CONST char *format,
 	       void **args)
 {
@@ -3326,9 +3473,9 @@ trio_snprintfv(char *buffer,
   assert(VALID(buffer));
   assert(VALID(format));
 
-  status = TrioFormat(&buffer, bufferSize > 0 ? bufferSize - 1 : 0,
+  status = TrioFormat(&buffer, max > 0 ? max - 1 : 0,
 		      TrioOutStreamStringMax, format, dummy, args);
-  if (bufferSize > 0)
+  if (max > 0)
     *buffer = NIL;
   return status;
 }
@@ -3338,9 +3485,9 @@ trio_snprintfv(char *buffer,
  * Appends the new string to the buffer string overwriting the '\0'
  * character at the end of buffer.
  */
-int
+TRIO_PUBLIC int
 trio_snprintfcat(char *buffer,
-		 size_t bufferSize,
+		 size_t max,
 		 TRIO_CONST char *format,
 		 ...)
 {
@@ -3356,16 +3503,16 @@ trio_snprintfcat(char *buffer,
   buf_len = trio_length(buffer);
   buffer = &buffer[buf_len];
 
-  status = TrioFormat(&buffer, bufferSize - 1 - buf_len,
+  status = TrioFormat(&buffer, max - 1 - buf_len,
 		      TrioOutStreamStringMax, format, args, NULL);
   va_end(args);
   *buffer = NIL;
   return status;
 }
 
-int
+TRIO_PUBLIC int
 trio_vsnprintfcat(char *buffer,
-		  size_t bufferSize,
+		  size_t max,
 		  TRIO_CONST char *format,
 		  va_list args)
 {
@@ -3376,7 +3523,7 @@ trio_vsnprintfcat(char *buffer,
 
   buf_len = trio_length(buffer);
   buffer = &buffer[buf_len];
-  status = TrioFormat(&buffer, bufferSize - 1 - buf_len,
+  status = TrioFormat(&buffer, max - 1 - buf_len,
 		      TrioOutStreamStringMax, format, args, NULL);
   *buffer = NIL;
   return status;
@@ -3387,7 +3534,7 @@ trio_vsnprintfcat(char *buffer,
  */
 
 /* Deprecated */
-char *
+TRIO_PUBLIC char *
 trio_aprintf(TRIO_CONST char *format,
 	     ...)
 {
@@ -3397,7 +3544,7 @@ trio_aprintf(TRIO_CONST char *format,
 
   assert(VALID(format));
   
-  info = trio_string_create(DYNAMIC_START_SIZE);
+  info = trio_xstring_duplicate("");
   if (info)
     {
       va_start(args, format);
@@ -3413,7 +3560,7 @@ trio_aprintf(TRIO_CONST char *format,
 }
 
 /* Deprecated */
-char *
+TRIO_PUBLIC char *
 trio_vaprintf(TRIO_CONST char *format,
 	      va_list args)
 {
@@ -3422,7 +3569,7 @@ trio_vaprintf(TRIO_CONST char *format,
   
   assert(VALID(format));
   
-  info = trio_string_create(DYNAMIC_START_SIZE);
+  info = trio_xstring_duplicate("");
   if (info)
     {
       (void)TrioFormat(info, 0, TrioOutStreamStringDynamic,
@@ -3434,7 +3581,7 @@ trio_vaprintf(TRIO_CONST char *format,
   return result;
 }
 
-int
+TRIO_PUBLIC int
 trio_asprintf(char **result,
 	      TRIO_CONST char *format,
 	      ...)
@@ -3442,47 +3589,33 @@ trio_asprintf(char **result,
   va_list args;
   int status;
   trio_string_t *info;
-  char *work;
 
   assert(VALID(format));
 
   *result = NULL;
   
-  info = trio_string_create(DYNAMIC_START_SIZE);
-  if (info)
+  info = trio_xstring_duplicate("");
+  if (info == NULL)
+    {
+      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
+    }
+  else
     {
       va_start(args, format);
       status = TrioFormat(info, 0, TrioOutStreamStringDynamic,
 			  format, args, NULL);
       va_end(args);
-      if (status < 0)
+      if (status >= 0)
 	{
-	  goto error;
+	  trio_string_terminate(info);
+	  *result = trio_string_extract(info);
 	}
-      if (trio_string_length(info) == 0)
-	{
-	  /*
-	   * If the length is zero, no characters have been written and
-	   * therefore no memory has been allocated, but we must to
-	   * allocate and return an empty string.
-	   */
-	  work = trio_create(sizeof(char));
-	  if (work == NULL)
-	    {
-	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-	      goto error;
-	    }
-	  trio_string_set(info, work);
-	}
-      trio_string_terminate(info);
-      *result = trio_string_extract(info);
-    error:
       trio_string_destroy(info);
     }
   return status;
 }
 
-int
+TRIO_PUBLIC int
 trio_vasprintf(char **result,
 	       TRIO_CONST char *format,
 	       va_list args)
@@ -3494,45 +3627,54 @@ trio_vasprintf(char **result,
 
   *result = NULL;
   
-  info = trio_string_create(DYNAMIC_START_SIZE);
-  if (info)
+  info = trio_xstring_duplicate("");
+  if (info == NULL)
+    {
+      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
+    }
+  else
     {
       status = TrioFormat(info, 0, TrioOutStreamStringDynamic,
 			  format, args, NULL);
-      if (status < 0)
+      if (status >= 0)
 	{
-	  goto error;
+	  trio_string_terminate(info);
+	  *result = trio_string_extract(info);
 	}
-      if (trio_string_length(info) == 0)
-	{
-	  char *work = trio_create(sizeof(char));
-	  if (work == NULL)
-	    {
-	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-	      goto error;
-	    }
-	  trio_string_set(info, work);
-	}
-      trio_string_terminate(info);
-      *result = trio_string_extract(info);
-    error:
       trio_string_destroy(info);
     }
   return status;
 }
 
+/** @} End of Printf documentation module */
 
 /*************************************************************************
  *
- * @CALLBACK
+ * CALLBACK
  *
  ************************************************************************/
 
 
+#if defined(TRIO_DOCUMENTATION)
+# include "doc/doc_register.h"
+#endif
+/**
+   @addtogroup UserDefined
+   @{
+*/
+
 /*************************************************************************
- * trio_register [public]
+ * trio_register
  */
-void *
+
+/**
+   Register new user-defined specifier.
+
+   @param callback
+   @param name
+   @return Handle.
+ */
+TRIO_PUBLIC void *
 trio_register(trio_callback_t callback,
 	      TRIO_CONST char *name)
 {
@@ -4142,10 +4284,11 @@ trio_printv_ref(void *ref,
   return TrioFormatRef((trio_reference_t *)ref, format, dummy, argarray);
 }
 
+/** @} End of UserDefined documentation module */
 
 /*************************************************************************
  *
- * @SCANNING
+ * SCANNING
  *
  ************************************************************************/
 
@@ -5456,9 +5599,30 @@ TrioInStreamString(trio_class_t *self,
 }
 
 /*************************************************************************
+ *
+ * Formatted scanning functions
+ *
+ ************************************************************************/
+
+#if defined(TRIO_DOCUMENTATION)
+# include "doc/doc_scanf.h"
+#endif
+/** @addtogroup Scanf
+    @{
+*/
+
+/*************************************************************************
  * scanf
  */
-int
+
+/**
+   Scan characters from standard input stream.
+
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of scanned characters.
+ */
+TRIO_PUBLIC int
 trio_scanf(TRIO_CONST char *format,
 	   ...)
 {
@@ -5473,7 +5637,7 @@ trio_scanf(TRIO_CONST char *format,
   return status;
 }
 
-int
+TRIO_PUBLIC int
 trio_vscanf(TRIO_CONST char *format,
 	    va_list args)
 {
@@ -5482,7 +5646,7 @@ trio_vscanf(TRIO_CONST char *format,
   return TrioScan(stdin, 0, TrioInStreamFile, format, args, NULL);
 }
 
-int
+TRIO_PUBLIC int
 trio_scanfv(TRIO_CONST char *format,
 	    void **args)
 {
@@ -5496,7 +5660,7 @@ trio_scanfv(TRIO_CONST char *format,
 /*************************************************************************
  * fscanf
  */
-int
+TRIO_PUBLIC int
 trio_fscanf(FILE *file,
 	    TRIO_CONST char *format,
 	    ...)
@@ -5513,7 +5677,7 @@ trio_fscanf(FILE *file,
   return status;
 }
 
-int
+TRIO_PUBLIC int
 trio_vfscanf(FILE *file,
 	     TRIO_CONST char *format,
 	     va_list args)
@@ -5524,7 +5688,7 @@ trio_vfscanf(FILE *file,
   return TrioScan(file, 0, TrioInStreamFile, format, args, NULL);
 }
 
-int
+TRIO_PUBLIC int
 trio_fscanfv(FILE *file,
 	     TRIO_CONST char *format,
 	     void **args)
@@ -5540,7 +5704,7 @@ trio_fscanfv(FILE *file,
 /*************************************************************************
  * dscanf
  */
-int
+TRIO_PUBLIC int
 trio_dscanf(int fd,
 	    TRIO_CONST char *format,
 	    ...)
@@ -5556,7 +5720,7 @@ trio_dscanf(int fd,
   return status;
 }
 
-int
+TRIO_PUBLIC int
 trio_vdscanf(int fd,
 	     TRIO_CONST char *format,
 	     va_list args)
@@ -5566,7 +5730,7 @@ trio_vdscanf(int fd,
   return TrioScan(&fd, 0, TrioInStreamFileDescriptor, format, args, NULL);
 }
 
-int
+TRIO_PUBLIC int
 trio_dscanfv(int fd,
              TRIO_CONST char *format,
              void **args)
@@ -5581,7 +5745,7 @@ trio_dscanfv(int fd,
 /*************************************************************************
  * sscanf
  */
-int
+TRIO_PUBLIC int
 trio_sscanf(TRIO_CONST char *buffer,
 	    TRIO_CONST char *format,
 	    ...)
@@ -5598,7 +5762,7 @@ trio_sscanf(TRIO_CONST char *buffer,
   return status;
 }
 
-int
+TRIO_PUBLIC int
 trio_vsscanf(TRIO_CONST char *buffer,
 	     TRIO_CONST char *format,
 	     va_list args)
@@ -5609,7 +5773,7 @@ trio_vsscanf(TRIO_CONST char *buffer,
   return TrioScan(&buffer, 0, TrioInStreamString, format, args, NULL);
 }
 
-int
+TRIO_PUBLIC int
 trio_sscanfv(TRIO_CONST char *buffer,
 	     TRIO_CONST char *format,
 	     void **args)
@@ -5622,3 +5786,4 @@ trio_sscanfv(TRIO_CONST char *buffer,
   return TrioScan(&buffer, 0, TrioInStreamString, format, dummy, args);
 }
 
+/** @} End of Scanf documentation module */

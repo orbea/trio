@@ -45,6 +45,11 @@ extern "C" {
 # define isascii ((unsigned)(x) < 0x80)
 #endif
 
+/* Error macros */
+#define TRIO_ERROR_CODE(x) ((-(x)) & 0x00FF)
+#define TRIO_ERROR_POSITION(x) ((-(x)) >> 8)
+#define TRIO_ERROR_NAME(x) trio_strerror(x)
+
 /*
  * Error codes.
  *
@@ -60,11 +65,6 @@ enum {
   TRIO_ERANGE   = 7,
   TRIO_ERRNO    = 8
 };
-
-/* Error macros */
-#define TRIO_ERROR_CODE(x) ((-(x)) & 0x00FF)
-#define TRIO_ERROR_POSITION(x) ((-(x)) >> 8)
-#define TRIO_ERROR_NAME(x) trio_strerror(x)
 
 const char *trio_strerror(int);
 

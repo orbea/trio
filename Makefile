@@ -3,16 +3,10 @@ CFLAGS	= -g -DDEBUG -Wall
 OBJS	= triostr.o trio.o trionan.o
 TARGETLIB	= libtrio.a
 LDFLAGS	= -L. -ltrio -lm
-DOCS	= \
-	man/man3/trio_printf.3 \
-	man/man3/trio_scanf.3 \
-	man/man3/trio_register.3 \
-	man/man3/strio.3
-
 AR	= ar
 RANLIB	= ranlib
 ERASE	= rm -f
-GENDOC	= latex2man
+GENDOC	= doxygen
 
 PURIFY = purify
 PURIFYOPTIONS = -chain-length=16 -first-only=YES
@@ -41,10 +35,8 @@ $(TARGETLIB): $(OBJS)
 	$(AR) ruv $(TARGETLIB) $(OBJS)
 	$(RANLIB) $(TARGETLIB)
 
-man/man3/%.3 : tex/%.tex
-	$(GENDOC) $< $@
-
-doc: $(DOCS)
+doc::
+	$(GENDOC) doc/trio.cfg
 
 clean:
 	$(ERASE) *~ core regression example $(TOBJS) $(OBJS) $(TARGET) $(TARGETLIB) example.o regression.o
