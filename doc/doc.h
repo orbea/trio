@@ -98,7 +98,7 @@ followed by one or more numeric characters.
 @endverbatim
 The same but with locale using a trio extension.
 @verbatim
-  trio_sscanf(buffer, "%[:upper:]%[:digit:]", alphabetic, numeric);
+  trio_sscanf(buffer, "%[[:upper:]]%[[:digit:]]", alphabetic, numeric);
 @endverbatim
 
 @section legal Legal Issues
