@@ -49,6 +49,10 @@ static const char rcsid[] = "@(#)$Id$";
 # define PLATFORM_UNIX
 #endif
 
+#if defined(WIN32) || defined(_WIN32) || defined(_MSC_VER)
+# define PLATFORM_WIN32
+#endif
+
 /*************************************************************************
  * Include files
  */
@@ -74,13 +78,33 @@ static const char rcsid[] = "@(#)$Id$";
 # include <unistd.h>
 # include <locale.h>
 # define USE_LOCALE
-#endif
+#endif /* PLATFORM_UNIX */
+#if defined(PLATFORM_WIN32)
+# include <io.h>
+# define read _read
+# define write _write
+#endif /* PLATFORM_WIN32 */
 
-#if defined(_MSC_VER)
-#include <io.h>
-#define read _read
-#define write _write
-#endif /* _MSC_VER */
+#if defined(TRIO_MICROSOFT)
+# if defined(TRIO_C99) || defined(__GNUC__)
+#  if defined(TRIO_C99)
+#   include <stdint.h>
+#  else
+#   include <sys/types.h>
+#  endif
+#  define TRIO_INT8 int8_t
+#  define TRIO_INT16 int16_t
+#  define TRIO_INT32 int32_t
+#  define TRIO_INT64 int64_t
+# elif defined(PLATFORM_WIN32)
+#  define TRIO_INT8 __int8
+#  define TRIO_INT16 __int16
+#  define TRIO_INT32 __int32
+#  define TRIO_INT64 __int64
+# else
+#  undef TRIO_MICROSOFT
+# endif
+#endif
 
 /*************************************************************************
  * Generic definitions
@@ -117,6 +141,10 @@ static const char rcsid[] = "@(#)$Id$";
 # define TRIO_ERROR_RETURN(x,y) (-1)
 #endif
 
+/* xlC crashes on log10(0) */
+#define guarded_log10(x) ((x) == 0.0 ? -HUGE_VAL : log10(x))
+
+
 /*************************************************************************
  * Internal definitions
  */
@@ -125,23 +153,29 @@ static const char rcsid[] = "@(#)$Id$";
 # define USE_MULTIBYTE
 #endif
 
-#if !defined(USE_LONGLONG)
-# if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-#  define USE_LONGLONG
-# elif defined(__SUNPRO_C)
-#  define USE_LONGLONG
-# elif defined(_LONG_LONG) || defined(_LONGLONG)
-#  define USE_LONGLONG
+#ifndef __cplusplus
+# if !defined(USE_LONGLONG)
+#  if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+#   define USE_LONGLONG
+#  elif defined(__SUNPRO_C)
+#   define USE_LONGLONG
+#  elif defined(_LONG_LONG) || defined(_LONGLONG)
+#   define USE_LONGLONG
+#  endif
 # endif
 #endif
 
 /* The extra long numbers */
 #if defined(USE_LONGLONG)
-# define LONGLONG long long
-# define ULONGLONG unsigned long long
+# define LONGLONG long long int
+# define ULONGLONG unsigned long long int
+#elif defined(_MSC_VER)
+# define USE_LONGLONG
+# define LONGLONG __int64
+# define ULONGLONG unsigned __int64
 #else
-# define LONGLONG long
-# define ULONGLONG unsigned long
+# define LONGLONG long int
+# define ULONGLONG unsigned long int
 #endif
 
 /* The longest possible integer */
@@ -210,12 +244,14 @@ enum {
   FLAGS_ALLOC               = 2 * FLAGS_WIDECHAR,
   FLAGS_IGNORE              = 2 * FLAGS_ALLOC,
   FLAGS_IGNORE_PARAMETER    = 2 * FLAGS_IGNORE,
-  FLAGS_SIZE_PARAMETER      = 2 * FLAGS_IGNORE_PARAMETER,
+  FLAGS_VARSIZE_PARAMETER   = 2 * FLAGS_IGNORE_PARAMETER,
+  FLAGS_FIXED_SIZE          = 2 * FLAGS_VARSIZE_PARAMETER,
   /* Reused flags */
   FLAGS_EXCLUDE             = FLAGS_SHORT,
   FLAGS_USER_DEFINED        = FLAGS_IGNORE,
   /* Compounded flags */
   FLAGS_ALL_VARSIZES        = FLAGS_LONG | FLAGS_QUAD | FLAGS_INTMAX_T | FLAGS_PTRDIFF_T | FLAGS_SIZE_T,
+  FLAGS_ALL_SIZES           = FLAGS_ALL_VARSIZES | FLAGS_SHORTSHORT | FLAGS_SHORT,
 
   NO_POSITION  = -1,
   NO_WIDTH     =  0,
@@ -432,6 +468,14 @@ enum {
  *
  * !  Sticky
  * @  Parameter (for both print and scan)
+ *
+ * I  n-bit Integer
+ *    Numbers:
+ *      The following options exists
+ *        I8  = 8-bit integer
+ *        I16 = 16-bit integer
+ *        I32 = 32-bit integer
+ *        I64 = 64-bit integer
  */
 #define QUALIFIER_POSITION '$'
 #define QUALIFIER_SHORT 'h'
@@ -457,6 +501,9 @@ enum {
 #endif
 #if defined(TRIO_MISC)
 # define QUALIFIER_WIDECHAR 'w'
+#endif
+#if defined(TRIO_MICROSOFT)
+# define QUALIFIER_FIXED_SIZE 'I'
 #endif
 #if defined(TRIO_EXTENSION)
 # define QUALIFIER_QUOTE '\''
@@ -643,6 +690,9 @@ TrioIsQualifier(const char ch)
 #if defined(QUALIFIER_PARAM)
     case QUALIFIER_PARAM:
 #endif
+#if defined(QUALIFIER_FIXED_SIZE)
+    case QUALIFIER_FIXED_SIZE:
+#endif
       return TRUE;
     default:
       return FALSE;
@@ -692,23 +742,29 @@ static void
 TrioSetLocale(void)
 {
   internalLocaleValues = (struct lconv *)localeconv();
-  if (StrLength(internalLocaleValues->decimal_point) > 0)
+  if (internalLocaleValues)
     {
-      StrCopyMax(internalDecimalPoint,
-		 sizeof(internalDecimalPoint),
-		 internalLocaleValues->decimal_point);
-    }
-  if (StrLength(internalLocaleValues->thousands_sep) > 0)
-    {
-      StrCopyMax(internalThousandSeparator,
-		 sizeof(internalThousandSeparator),
-		 internalLocaleValues->thousands_sep);
-    }
-  if (StrLength(internalLocaleValues->grouping) > 0)
-    {
-      StrCopyMax(internalGrouping,
-		 sizeof(internalGrouping),
-		 internalLocaleValues->grouping);
+      if ((internalLocaleValues->decimal_point) &&
+	  (internalLocaleValues->decimal_point[0] != NIL))
+	{
+	  StrCopyMax(internalDecimalPoint,
+		     sizeof(internalDecimalPoint),
+		     internalLocaleValues->decimal_point);
+	}
+      if ((internalLocaleValues->thousands_sep) &&
+	  (internalLocaleValues->thousands_sep[0] != NIL))
+	{
+	  StrCopyMax(internalThousandSeparator,
+		     sizeof(internalThousandSeparator),
+		     internalLocaleValues->thousands_sep);
+	}
+      if ((internalLocaleValues->grouping) &&
+	  (internalLocaleValues->grouping[0] != NIL))
+	{
+	  StrCopyMax(internalGrouping,
+		     sizeof(internalGrouping),
+		     internalLocaleValues->grouping);
+	}
     }
 }
 #endif /* defined(USE_LOCALE) */
@@ -1095,6 +1151,45 @@ TrioPreprocess(int type,
 		  break;
 #endif
 
+#if defined(QUALIFIER_FIXED_SIZE)
+		case QUALIFIER_FIXED_SIZE:
+		  if (flags & FLAGS_FIXED_SIZE)
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+
+		  if (flags & (FLAGS_ALL_SIZES | FLAGS_LONGDOUBLE |
+			       FLAGS_WIDECHAR | FLAGS_VARSIZE_PARAMETER))
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+
+		  if ((format[index] == '6') &&
+		      (format[index + 1] == '4'))
+		    {
+		      varsize = sizeof(TRIO_INT64);
+		      index += 2;
+		    }
+		  else if ((format[index] == '3') &&
+			   (format[index + 1] == '2'))
+		    {
+		      varsize = sizeof(TRIO_INT32);
+		      index += 2;
+		    }
+		  else if ((format[index] == '1') &&
+			   (format[index + 1] == '6'))
+		    {
+		      varsize = sizeof(TRIO_INT16);
+		      index += 2;
+		    }
+		  else if (format[index] == '8')
+		    {
+		      varsize = sizeof(TRIO_INT8);
+		      index++;
+		    }
+		  else
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		  
+		  flags |= FLAGS_FIXED_SIZE;
+		  break;
+#endif
+
 #if defined(QUALIFIER_WIDECHAR)
 		case QUALIFIER_WIDECHAR:
 		  flags |= FLAGS_WIDECHAR;
@@ -1121,7 +1216,7 @@ TrioPreprocess(int type,
 		  
 #if defined(QUALIFIER_VARSIZE)
 		case QUALIFIER_VARSIZE:
-		  flags |= FLAGS_SIZE_PARAMETER;
+		  flags |= FLAGS_VARSIZE_PARAMETER;
 		  parameterPosition++;
 		  if (positional)
 		    varsize = parameterPosition;
@@ -1172,7 +1267,7 @@ TrioPreprocess(int type,
 	      indices[base] = pos;
 	      base = pos++;
 	    }
-	  if (flags & FLAGS_SIZE_PARAMETER)
+	  if (flags & FLAGS_VARSIZE_PARAMETER)
 	    {
 #if defined(TRIO_ERRORS)
 	      usedEntries[varsize] += 1;
@@ -1500,20 +1595,29 @@ TrioPreprocess(int type,
 	    }
 	  else
 	    {
-#if defined(QUALIFIER_VARSIZE)
-	      if (parameters[i].flags & FLAGS_SIZE_PARAMETER)
+#if defined(QUALIFIER_VARSIZE) || defined(QUALIFIER_FIXED_SIZE)
+	      if ((parameters[i].flags & FLAGS_VARSIZE_PARAMETER) ||
+		  (parameters[i].flags & FLAGS_FIXED_SIZE))
 		{
-		  /*
-		   * Variable sizes are mapped onto the fixed sizes, in
-		   * accordance with integer promotion.
-		   *
-		   * Please note that this may not be portable, as we
-		   * only guess the size, not the layout of the numbers.
-		   * For example, if int is little-endian, and long is
-		   * big-endian, then this will fail.
-		   */
+		  if (parameters[i].flags & FLAGS_VARSIZE_PARAMETER)
+		    {
+		      /*
+		       * Variable sizes are mapped onto the fixed sizes, in
+		       * accordance with integer promotion.
+		       *
+		       * Please note that this may not be portable, as we
+		       * only guess the size, not the layout of the numbers.
+		       * For example, if int is little-endian, and long is
+		       * big-endian, then this will fail.
+		       */
+		      varsize = (int)parameters[parameters[i].varsize].data.number.as_unsigned;
+		    }
+		  else
+		    {
+		      varsize = parameters[i].varsize;
+		    }
 		  parameters[i].flags &= ~FLAGS_ALL_VARSIZES;
-		  varsize = (int)parameters[parameters[i].varsize].data.number.as_unsigned;
+		  
 		  if (varsize <= (int)sizeof(int))
 		    ;
 		  else if (varsize <= (int)sizeof(long))
@@ -2066,7 +2170,7 @@ TrioWriteDouble(trio_T *self,
   if (flags & FLAGS_FLOAT_E)
     {
       /* Scale the number */
-      workNumber = log10(number);
+      workNumber = guarded_log10(number);
       if (workNumber == -HUGE_VAL)
 	{
 	  exponent = 0;
@@ -2092,16 +2196,26 @@ TrioWriteDouble(trio_T *self,
    * and number of fractional digits for others
    */
   integerDigits = (floor(number) > DBL_EPSILON)
-    ? 1 + (int)log10(floor(number))
+    ? 1 + (int)guarded_log10(floor(number))
     : 1;
   fractionDigits = (flags & FLAGS_FLOAT_G)
     ? precision - integerDigits
     : precision;
   number = floor(0.5 + number * pow(10.0, (double)fractionDigits));
-  if ((int)log10(number) + 1 > integerDigits + fractionDigits)
+  if ((int)guarded_log10(number) + 1 > integerDigits + fractionDigits)
     {
-      /* Adjust if number was rounded up one digit (ie. 99 to 100) */
-      integerDigits++;
+      if (flags & FLAGS_FLOAT_E)
+	{
+	  /* Adjust if number was rounded up one digit (ie. 0.99 to 1.00) */
+	  exponent--;
+	  uExponent -= (isExponentNegative) ? 1 : -1;
+	  number /= 10.0;
+	}
+      else
+	{
+	  /* Adjust if number was rounded up one digit (ie. 99 to 100) */
+	  integerDigits++;
+	}
     }
   
   /* Build the fraction part */
@@ -2463,7 +2577,7 @@ TrioFormatProcess(trio_T *data,
 #endif
 		      if (flags & FLAGS_QUAD)
 			{
-			  *(ULONGLONG int *)pointer = (ULONGLONG)data->committed;
+			  *(ULONGLONG *)pointer = (ULONGLONG)data->committed;
 			}
 		      else if (flags & FLAGS_LONG)
 			{
@@ -4554,7 +4668,7 @@ TrioScan(const void *source,
 		    else
 #endif
 		    if (flags & FLAGS_QUAD)
-		      *(ULONGLONG int *)pointer = (ULONGLONG)number;
+		      *(ULONGLONG *)pointer = (ULONGLONG)number;
 		    else if (flags & FLAGS_LONG)
 		      *(long int *)pointer = (long int)number;
 		    else if (flags & FLAGS_SHORT)
@@ -4639,7 +4753,7 @@ TrioScan(const void *source,
 #endif
 		  if (flags & FLAGS_QUAD)
 		    {
-		      *(ULONGLONG int *)pointer = (ULONGLONG)data->committed;
+		      *(ULONGLONG *)pointer = (ULONGLONG)data->committed;
 		    }
 		  else if (flags & FLAGS_LONG)
 		    {

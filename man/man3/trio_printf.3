@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Sat Feb 24 15:29:59 MET 2001
+.\" Manual page created with latex2man on Sat May 19 14:12:23 DST 2001
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "TRIO_PRINTF" "3" "24 February 2001" "libtrio "
+.TH "TRIO_PRINTF" "3" "19 May 2001" "libtrio "
 .SH NAME
 trio_printf, 
 trio_fprintf, 
@@ -315,6 +315,31 @@ Short short (hh) [C99, GNU]
 The argument is read as an (unsigned) char.
 .PP
 .TP
+Fixed size (I) [MSVC]
+.br
+The argument is read as a fixed sized integer. The modifier is followed by 
+a number, which specifies the number of bits in the integer, and can be one 
+of the following 
+.RS
+.TP
+.B *
+I8 
+.TP
+.B *
+I16 
+.TP
+.B *
+I32 
+.TP
+.B *
+I64 (if 64\-bits integers are supported) 
+.RE
+.RS
+.PP
+Works only for integers (i, u, d, o, x, X) 
+.PP
+.RE
+.TP
 Largest (j) [C99]
 .br
 The argument is read as an intmax_t/uintmax_t,
@@ -413,10 +438,10 @@ Integers (i, u, d, o, x, X)
 Floating\-point (f, F, e, E, g, G, a, A) 
 .TP
 .B *
-Characters (c, C) 
+Characters (c) 
 .TP
 .B *
-Strings (s, S) 
+Strings (s) 
 .TP
 .B *
 Pointer (p) 
@@ -810,6 +835,9 @@ BSD
 .TP
 GNU
 GNU libc 
+.TP
+MSVC
+Microsoft Visual C 
 .TP
 MISC
 Other non\-standard sources 

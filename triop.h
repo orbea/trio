@@ -26,6 +26,10 @@
 #ifndef TRIO_TRIOP_H
 #define TRIO_TRIOP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(__STDC__) && (__STDC_VERSION__ >= 199901L)
 # define TRIO_C99
 #endif
@@ -33,6 +37,7 @@
 #define TRIO_GNU
 #define TRIO_MISC
 #define TRIO_UNIX98
+#define TRIO_MICROSOFT
 #define TRIO_EXTENSION
 #define TRIO_ERRORS
 
@@ -97,5 +102,9 @@ void trio_print_uint(void *ref, unsigned int number);
 void trio_print_double(void *ref, double number);
 void trio_print_string(void *ref, char *string);
 void trio_print_pointer(void *ref, void *pointer);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* TRIO_TRIOP_H */

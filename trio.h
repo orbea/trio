@@ -32,6 +32,15 @@
 
 #if !defined(WITHOUT_TRIO)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* make utility and C++ compiler in Windows NT fails to find this symbol */ 
+#if defined(port2pcnt) && !defined(isascii)
+# define isascii ((unsigned)(x) < 0x80)
+#endif
+
 /*
  * Error codes.
  *
@@ -44,7 +53,7 @@ enum {
   TRIO_EDBLREF  = 4,
   TRIO_EGAP     = 5,
   TRIO_ENOMEM   = 6,
-  TRIO_ERANGE   = 7,
+  TRIO_ERANGE   = 7
 };
 
 /* Error macros */
@@ -180,6 +189,10 @@ int trio_sscanfv(const char *buffer, const char *format, void **args);
 #define StrFormatMax trio_snprintf
 #define StrFormatAlloc trio_aprintf
 #define StrFormatAppendMax trio_snprintfcat
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* WITHOUT_TRIO */
 

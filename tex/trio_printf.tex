@@ -204,6 +204,18 @@ The argument is read as an (unsigned) \texttt{short int}.
 \item Short short (hh) [C99, GNU]\\
 The argument is read as an (unsigned) \texttt{char}.
 
+\item Fixed size (I) [MSVC]\\
+The argument is read as a fixed sized integer. The modifier is followed by
+a number, which specifies the number of bits in the integer, and can be one
+of the following
+\begin{itemize}
+\item I8
+\item I16
+\item I32
+\item I64 (if 64-bits integers are supported)
+\end{itemize}
+Works only for integers (i, u, d, o, x, X)
+
 \item Largest (j) [C99]\\
 The argument is read as an \texttt{intmax_t}/\texttt{uintmax_t}, which is
 defined to be the largest signed/unsigned integer.
@@ -262,8 +274,8 @@ The following specifier groups exists
 \begin{itemize}
 \item Integers (i, u, d, o, x, X)
 \item Floating-point (f, F, e, E, g, G, a, A)
-\item Characters (c, C)
-\item Strings (s, S)
+\item Characters (c)
+\item Strings (s)
 \item Pointer (p)
 \item Count (n)
 \item Errno (m)
@@ -494,6 +506,7 @@ ANSI C (C89) is assumed.
 \item[UNIX98] The Single UNIX Specification, Version 2
 \item[BSD] 4.4BSD
 \item[GNU] GNU libc
+\item[MSVC] Microsoft Visual C
 \item[MISC] Other non-standard sources
 \item[TRIO] Extensions specific for this package
 \end{description}

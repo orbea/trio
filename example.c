@@ -245,6 +245,11 @@ int main(void)
 /*    trio_printf("%!'i %f %i\n", 12345, 12345.0, 12345); */
 /*    trio_printf("%!<base=2>i %i\n", 23, 23); */
 
+  rc = trio_sprintf(buffer, "%I32d", 12345);
+  Dump(buffer, rc);
+  rc = trio_sprintf(buffer, "%I32I8d", 12345);
+  Dump(buffer, rc);
+  
   /* rc = StrFormat(buffer, "\040-\040\040-\n"); */
 
 /*   rc = StrFormat(buffer, "%.*s@%s", 3, "Daniel", "Fool"); */
@@ -285,8 +290,8 @@ int main(void)
 /*    rc = trio_sprintf(buffer, "'%!08.6d' '%!d' '%d'", 4, 6, 8); */
 /*    Dump(buffer, rc); */
 
-  rc = trio_sprintf(buffer, "%0g", 0.123);
-  Dump(buffer, rc);
+/*    rc = trio_sprintf(buffer, "%0g", 0.123); */
+/*    Dump(buffer, rc); */
   
 /*    { */
 /*      void *argarray[4]; */
