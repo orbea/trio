@@ -26,3 +26,5 @@ doc/footer.html
 doc/header.html
 doc/trio.cfg
 doc/trio.css
+html/trio.css
+html/*.html
