@@ -11,6 +11,9 @@ static const char rcsid[] = "@(#)$Id$";
 #include "trio.h"
 #undef printf
 
+#if TRIO_WIDECHAR
+# include <wchar.h>
+#endif
 
 /*************************************************************************
  *
@@ -341,7 +344,17 @@ int VerifyFormatting(void)
   nerrors += Verify(__FILE__, __LINE__, "123456    12345 0001234  00123",
 		    "%4$d %3$*8$d %2$.*7$d %1$*6$.*5$d",
 		    123, 1234, 12345, 123456, 5, 6, 7, 8);
-  
+
+#if TRIO_WIDECHAR
+  nerrors += Verify(__FILE__, __LINE__, "Hello World",
+		    "%ls", L"Hello World");
+  nerrors += Verify(__FILE__, __LINE__, "\aHello World",
+		    "%#ls", L"\aHello World");
+  nerrors += Verify(__FILE__, __LINE__, "A",
+		    "%lc", L"A");
+  nerrors += Verify(__FILE__, __LINE__, "\a",
+		    "%#lc", L"\a");
+#endif
   return nerrors;
 }
 

@@ -199,7 +199,8 @@ leading zeros are determined by the precision. If precision is not present,
 width is used instead.
 
 \item Short (h)\\
-The argument is read as an (unsigned) \texttt{short int}.
+Integer arguments are read as an (unsigned) \texttt{short int}. String and
+character arguments are read as \texttt{char *} and \texttt{char} respectively.
 
 \item Short short (hh) [C99, GNU]\\
 The argument is read as an (unsigned) \texttt{char}.

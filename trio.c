@@ -1304,10 +1304,14 @@ TrioPreprocess(int type,
 	    {
 #if defined(SPECIFIER_CHAR_UPPER)
 	    case SPECIFIER_CHAR_UPPER:
-	      flags |= FLAGS_LONG;
+	      flags |= FLAGS_WIDECHAR;
 	      /* FALLTHROUGH */
 #endif
 	    case SPECIFIER_CHAR:
+	      if (flags & FLAGS_LONG)
+		flags |= FLAGS_WIDECHAR;
+	      else if (flags & FLAGS_SHORT)
+		flags &= ~FLAGS_WIDECHAR;
 	      parameters[pos].type = FORMAT_CHAR;
 	      break;
 
@@ -1319,6 +1323,8 @@ TrioPreprocess(int type,
 	    case SPECIFIER_STRING:
 	      if (flags & FLAGS_LONG)
 		flags |= FLAGS_WIDECHAR;
+	      else if (flags & FLAGS_SHORT)
+		flags &= ~FLAGS_WIDECHAR;
 	      parameters[pos].type = FORMAT_STRING;
 	      break;
 
@@ -2087,7 +2093,7 @@ TrioWriteString(trio_T *self,
   while (length-- > 0)
     {
       /* The ctype parameters must be an unsigned char (or EOF) */
-      ch = (unsigned char)(*string++);
+      ch = (int)((unsigned char)(*string++));
       TrioWriteStringCharacter(self, ch, flags);
     }
 
@@ -2099,6 +2105,44 @@ TrioWriteString(trio_T *self,
   if (flags & FLAGS_QUOTE)
     self->OutStream(self, CHAR_QUOTE);
 }
+
+/*************************************************************************
+ * TrioWriteWideStringCharacter [private]
+ *
+ * Description:
+ *  Output a wide string as a multi-byte sequence
+ */
+#if TRIO_WIDECHAR
+static int
+TrioWriteWideStringCharacter(trio_T *self,
+			     wint_t wch,
+			     unsigned long flags,
+			     int width)
+{
+  int size;
+  int i;
+  int ch;
+  char *string;
+  char buffer[64];
+
+  if (width == NO_WIDTH)
+    width = sizeof(buffer);
+  
+  size = wctomb(buffer, wch);
+  if ((size <= 0) || (size > width) || (buffer[0] == NIL))
+    return 0;
+
+  string = buffer;
+  i = size;
+  while ((width >= i) && (width-- > 0) && (i-- > 0))
+    {
+      /* The ctype parameters must be an unsigned char (or EOF) */
+      ch = (int)((unsigned char)(*string++));
+      TrioWriteStringCharacter(self, ch, flags);
+    }
+  return size;
+}
+#endif /* TRIO_WIDECHAR */
 
 /*************************************************************************
  * TrioWriteString [private]
@@ -2115,10 +2159,7 @@ TrioWriteWideString(trio_T *self,
 		    int precision)
 {
   int length;
-  int ch;
   int size;
-  char *string;
-  char buffer[64];
 
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -2132,7 +2173,7 @@ TrioWriteWideString(trio_T *self,
       TrioWriteString(self, NULL, flags, width, precision);
       return;
     }
-
+  
   if (NO_PRECISION == precision)
     {
       length = INT_MAX;
@@ -2154,17 +2195,11 @@ TrioWriteWideString(trio_T *self,
 
   while (length > 0)
     {
-      size = wctomb(buffer, *wstring++);
-      if ((size <= 0) || (buffer[0] == NIL))
+      size = TrioWriteWideStringCharacter(self, (wint_t)*wstring++,
+					  flags, length);
+      if (size == 0)
 	break; /* while */
-      
-      string = buffer;
-      while ((length >= size) && (length-- > 0) && (size-- > 0))
-	{
-	  /* The ctype parameters must be an unsigned char (or EOF) */
-	  ch = (unsigned char)(*string++);
-	  TrioWriteStringCharacter(self, ch, flags);
-	}
+      length -= size;
     }
 
   if (flags & FLAGS_LEFTADJUST)
@@ -2621,9 +2656,19 @@ TrioFormatProcess(trio_T *data,
 		      while (--width > 0)
 			data->OutStream(data, CHAR_ADJUST);
 		    }
-
-		  data->OutStream(data,
-				  (char)parameters[i].data.number.as_signed);
+#if TRIO_WIDECHAR
+		  if (flags & FLAGS_WIDECHAR)
+		    {
+		      TrioWriteWideStringCharacter(data,
+						   (wint_t)parameters[i].data.number.as_signed,
+						   flags,
+						   NO_WIDTH);
+		    }
+		  else
+#endif
+		    TrioWriteStringCharacter(data,
+					     parameters[i].data.number.as_signed,
+					     flags);
 
 		  if (flags & FLAGS_LEFTADJUST)
 		    {
@@ -4354,35 +4399,11 @@ TrioReadNumber(trio_T *self,
 /*************************************************************************
  * TrioReadChar [private]
  */
-static BOOLEAN_T
+static int
 TrioReadChar(trio_T *self,
 	     char *target,
+	     unsigned long flags,
 	     int width)
-{
-  int i;
-  
-  assert(VALID(self));
-  assert(VALID(self->InStream));
-
-  for (i = 0;
-       (self->current != EOF) && (i < width);
-       i++)
-    {
-      if (target)
-	target[i] = (char)self->current;
-      self->InStream(self, NULL);
-    }
-  return TRUE;
-}
-
-/*************************************************************************
- * TrioReadString [private]
- */
-static BOOLEAN_T
-TrioReadString(trio_T *self,
-	       char *target,
-	       int flags,
-	       int width)
 {
   int i;
   char ch;
@@ -4391,15 +4412,8 @@ TrioReadString(trio_T *self,
   assert(VALID(self));
   assert(VALID(self->InStream));
 
-  TrioSkipWhitespaces(self);
-    
-  /*
-   * Continue until end of string is reached, a whitespace is encountered,
-   * or width is exceeded
-   */
   for (i = 0;
-       ((width == NO_WIDTH) || (i < width)) &&
-       (! ((self->current == EOF) || isspace(self->current)));
+       (self->current != EOF) && (i < width);
        i++)
     {
       ch = (char)self->current;
@@ -4421,7 +4435,7 @@ TrioReadString(trio_T *self,
 		{
 		  /* Read octal number */
 		  if (!TrioReadNumber(self, &number, 0, 3, BASE_OCTAL))
-		    return FALSE;
+		    return 0;
 		  ch = (char)number;
 		}
 	      else if (toupper(self->current) == 'X')
@@ -4441,12 +4455,95 @@ TrioReadString(trio_T *self,
 	}
       if (target)
 	target[i] = ch;
-      self->InStream(self, NULL);
+    }
+  return 1;
+}
+
+/*************************************************************************
+ * TrioReadString [private]
+ */
+static BOOLEAN_T
+TrioReadString(trio_T *self,
+	       char *target,
+	       int flags,
+	       int width)
+{
+  int i;
+  
+  assert(VALID(self));
+  assert(VALID(self->InStream));
+
+  TrioSkipWhitespaces(self);
+    
+  /*
+   * Continue until end of string is reached, a whitespace is encountered,
+   * or width is exceeded
+   */
+  for (i = 0;
+       ((width == NO_WIDTH) || (i < width)) &&
+       (! ((self->current == EOF) || isspace(self->current)));
+       i++)
+    {
+      if (TrioReadChar(self, &target[i], flags, 1) == 0)
+	break; /* for */
     }
   if (target)
     target[i] = NIL;
   return TRUE;
 }
+
+/*************************************************************************
+ * TrioReadWideChar [private]
+ */
+#if TRIO_WIDECHAR
+static int
+TrioReadWideChar(trio_T *self,
+		 wchar_t *target,
+		 unsigned long flags,
+		 int width)
+{
+  int i;
+  int j;
+  int size;
+  int rc = 0;
+  wchar_t wch;
+  char buffer[64];
+  
+  assert(VALID(self));
+  assert(VALID(self->InStream));
+
+  for (i = 0;
+       (self->current != EOF) && (i < width);
+       i++)
+    {
+      if (isascii(self->current))
+	{
+	  if (TrioReadChar(self, buffer, flags, 1) == 0)
+	    return 0;
+	  buffer[1] = NIL;
+	}
+      else
+	{
+	  /* Collect multi-byte characters */
+	  for (j = 0; !isascii(self->current); j++)
+	    {
+	      buffer[j] = (char)self->current;
+	      self->InStream(self, NULL);
+	    }
+	  buffer[j] = NIL;
+	}
+      if (target)
+	{
+	  size = mbtowc(&wch, buffer, sizeof(buffer));
+	  if (size > 0)
+	    target[i] = wch;
+	}
+      rc += size;
+      self->InStream(self, NULL);
+    }
+  return rc;
+}
+#endif /* TRIO_WIDECHAR */
 
 /*************************************************************************
  * TrioReadWideString [private]
@@ -4459,12 +4556,7 @@ TrioReadWideString(trio_T *self,
 		   int width)
 {
   int i;
-  int j;
-  char ch;
-  wchar_t wch;
   int size;
-  LONGEST number;
-  char buffer[64];
   
   assert(VALID(self));
   assert(VALID(self->InStream));
@@ -4482,66 +4574,13 @@ TrioReadWideString(trio_T *self,
   for (i = 0;
        ((width == NO_WIDTH) || (i < width)) &&
        (! ((self->current == EOF) || isspace(self->current)));
-       i++)
+       )
     {
-      if (isascii(self->current))
-	{
-	  ch = (char)self->current;
-	  if ((flags & FLAGS_ALTERNATIVE) && (ch == CHAR_BACKSLASH))
-	    {
-	      self->InStream(self, NULL);
-	      switch (self->current)
-		{
-		case '\\': ch = '\\'; break;
-		case 'a': ch = '\a'; break;
-		case 'b': ch = '\b'; break;
-		case 'f': ch = '\f'; break;
-		case 'n': ch = '\n'; break;
-		case 'r': ch = '\r'; break;
-		case 't': ch = '\t'; break;
-		case 'v': ch = '\v'; break;
-		default:
-		  if (isdigit(self->current))
-		    {
-		      /* Read octal number */
-		      if (!TrioReadNumber(self, &number, 0, 3, BASE_OCTAL))
-			return FALSE;
-		      ch = (char)number;
-		    }
-		  else if (toupper(self->current) == 'X')
-		    {
-		      /* Read hexadecimal number */
-		      self->InStream(self, NULL);
-		      if (!TrioReadNumber(self, &number, 0, 2, BASE_HEX))
-			return FALSE;
-		      ch = (char)number;
-		    }
-		  else
-		    {
-		      ch = (char)self->current;
-		    }
-		  break;
-		}
-	    }
-	  buffer[0] = ch;
-	}
-      else
-	{
-	  /* Collect multi-byte characters */
-	  j = 0;
-	  while (!isascii(self->current))
-	    {
-	      buffer[j++] = (char)self->current;
-	      self->InStream(self, NULL);
-	    }
-	}
-      if (target)
-	{
-	  size = mbtowc(&wch, buffer, sizeof(buffer));
-	  if (size > 0)
-	    target[i] = wch;
-	}
-      self->InStream(self, NULL);
+      size = TrioReadWideChar(self, &target[i], flags, 1);
+      if (size == 0)
+	break; /* for */
+
+      i += size;
     }
   if (target)
     target[i] = L'\0';
@@ -5050,12 +5089,28 @@ TrioScan(const void *source,
 	      break; /* FORMAT_COUNT */
 	      
 	    case FORMAT_CHAR:
-	      if (!TrioReadChar(data,
-				(flags & FLAGS_IGNORE)
-				? NULL
-				: parameters[i].data.string,
-				(width == NO_WIDTH) ? 1 : width))
-		return assignment;
+#if TRIO_WIDECHAR
+	      if (flags & FLAGS_WIDECHAR)
+		{
+		  if (TrioReadWideChar(data,
+				       (flags & FLAGS_IGNORE)
+				       ? NULL
+				       : parameters[i].data.wstring,
+				       flags,
+				       (width == NO_WIDTH) ? 1 : width) > 0)
+		    return assignment;
+		}
+	      else
+#endif
+		{
+		  if (TrioReadChar(data,
+				   (flags & FLAGS_IGNORE)
+				   ? NULL
+				   : parameters[i].data.string,
+				   flags,
+				   (width == NO_WIDTH) ? 1 : width) > 0)
+		    return assignment;
+		}
 	      assignment++;
 	      break; /* FORMAT_CHAR */
 	      

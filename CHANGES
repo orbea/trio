@@ -6,8 +6,8 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.x - 2001/05/24
 ------------------------
-* Added wide character arguments (%ls, %ws, and %S) for both printf and scanf
-  (%lc, %C, and %l[] are still missing).
+* Added wide character arguments (%ls, %ws, %S, %lc, %wc, and %C) for both
+  printf and scanf.
 
 * Added mutex callbacks for user-specified specifiers to enable applications to
   add thread-safety. These are registered with trio_register, where the
