@@ -3084,7 +3084,7 @@ TrioOutStreamStringDynamic(trio_class_t *self,
   assert(VALID(self));
   assert(VALID(self->location));
 
-  if (self->error != 0)
+  if (self->error == 0)
     {
       infop = (struct dynamicBuffer *)self->location;
 
@@ -3095,7 +3095,7 @@ TrioOutStreamStringDynamic(trio_class_t *self,
 	  if (infop->buffer == NULL)
 	    {
 	      self->error = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-	      return; /* fail */
+	      goto error;
 	    }
 	  infop->allocated = DYNAMIC_START_SIZE;
 	  self->processed = 0;
@@ -3113,7 +3113,7 @@ TrioOutStreamStringDynamic(trio_class_t *self,
 	  if (newptr == NULL)
 	    {
 	      self->error = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-	      return;
+	      goto error;
 	    }
 
 	  infop->buffer = newptr;
@@ -3124,6 +3124,8 @@ TrioOutStreamStringDynamic(trio_class_t *self,
       infop->length++;
       self->committed++;
     }
+ error:
+  /* Processed must always be increased */
   self->processed++;
 }
 
