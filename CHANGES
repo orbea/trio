@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.8 - 2002/05/20
+Version 1.8 - 2002/05/21
 ------------------------
+* Alexander Lukyanov
+  Fixed boundary case for scanning and EOF.
+
 * Jacob Navia
   Enabled the L modifier for formatting.
 

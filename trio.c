@@ -5229,6 +5229,7 @@ TRIO_ARGS5((self, target, flags, width, base),
   int digit;
   int count;
   BOOLEAN_T isNegative = FALSE;
+  BOOLEAN_T gotNumber = FALSE;
   int j;
 
   assert(VALID(self));
@@ -5328,12 +5329,13 @@ TRIO_ARGS5((self, target, flags, width, base),
             
       number *= base;
       number += digit;
+      gotNumber = TRUE; /* we need at least one digit */
 
       self->InStream(self, NULL);
     }
 
   /* Was anything read at all? */
-  if (self->processed == count)
+  if (!gotNumber)
     return FALSE;
   
   if (target)

@@ -818,6 +818,10 @@ VerifyScanningRegression(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "1 0.141882295971772000",
 		    "%d %.18Lf", rc, ldnumber);
 #endif
+  number = 33;
+  rc = trio_sscanf("total 1", "total %d", &number);
+  nerrors += Verify(__FILE__, __LINE__, "1 1",
+		    "%d %d", rc, number);
   return nerrors;
 }
 
