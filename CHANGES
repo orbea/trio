@@ -4,8 +4,14 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2005/01/15
+Version 1.11 - 2005/01/16
 -------------------------
+* Added macros for internal features.
+
+* Jon Foster
+  Added macros for conditional compilation of many features. Documented all
+  the features.
+
 * Karl Bochert
   Fixed problem with Borland C++, which changes the floating-point precision
   for certain math functions (log10() and _flclass()).

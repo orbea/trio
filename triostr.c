@@ -26,9 +26,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
 #include "triodef.h"
 #include "triostr.h"
+#if TRIO_FEATURE_FLOAT
+# include <math.h>
+#endif
 
 /*************************************************************************
  * Definitions
@@ -55,7 +57,7 @@
 # define BOOLEAN_T int
 #endif
 
-#if defined(TRIO_COMPILER_SUPPORTS_C99)
+#if TRIO_FEATURE_FLOAT && defined(TRIO_COMPILER_SUPPORTS_C99)
 # define USE_STRTOD
 # define USE_STRTOF
 #else
@@ -90,21 +92,22 @@
 # define USE_TOUPPER
 #endif
 
-#if !defined(HAVE_POWL)
-# if defined(TRIO_COMPILER_SUPPORTS_C99) \
-  || defined(TRIO_COMPILER_SUPPORTS_UNIX01)
-#  define HAVE_POWL
-# else
-#  if defined(TRIO_COMPILER_MSVC)
-#   if defined(powl)
-#    define HAVE_POWL
+#if TRIO_FEATURE_FLOAT
+# if !defined(HAVE_POWL)
+#  if defined(TRIO_COMPILER_SUPPORTS_C99) \
+   || defined(TRIO_COMPILER_SUPPORTS_UNIX01)
+#   define HAVE_POWL
+#  else
+#   if defined(TRIO_COMPILER_MSVC)
+#    if defined(powl)
+#     define HAVE_POWL
+#    endif
 #   endif
 #  endif
 # endif
-#endif
-
-#if !defined(HAVE_POWL)
-# define powl(x,y) pow((double)(x),(double)(y))
+# if !defined(HAVE_POWL)
+#  define powl(x,y) pow((double)(x),(double)(y))
+# endif
 #endif
 
 /*************************************************************************
@@ -364,6 +367,8 @@ TRIO_ARGS2((source, size),
    
    @post @p target will be zero terminated.
 */
+#if !defined(TRIO_EMBED_STRING) \
+ || (defined(TRIO_EMBED_STRING) && TRIO_EXTENSION)
 TRIO_STRING_PUBLIC char *
 trio_duplicate
 TRIO_ARGS1((source),
@@ -371,6 +376,7 @@ TRIO_ARGS1((source),
 {
   return TrioDuplicateMax(source, trio_length(source));
 }
+#endif
 
 
 #if !defined(TRIO_MINIMAL)
@@ -412,6 +418,8 @@ trio_duplicate_max TRIO_ARGS2((source, max),
    
    Case-insensitive comparison.
 */
+#if !defined(TRIO_EMBED_STRING) \
+ || (defined(TRIO_EMBED_STRING) && (TRIO_EXTENSION || TRIO_FEATURE_FLOAT))
 TRIO_STRING_PUBLIC int
 trio_equal
 TRIO_ARGS2((first, second),
@@ -423,9 +431,9 @@ TRIO_ARGS2((first, second),
 
   if ((first != NULL) && (second != NULL))
     {
-#if defined(USE_STRCASECMP)
+# if defined(USE_STRCASECMP)
       return (0 == strcasecmp(first, second));
-#else
+# else
       while ((*first != NIL) && (*second != NIL))
 	{
 	  if (trio_to_upper(*first) != trio_to_upper(*second))
@@ -436,10 +444,11 @@ TRIO_ARGS2((first, second),
 	  second++;
 	}
       return ((*first == NIL) && (*second == NIL));
-#endif
+# endif
     }
   return FALSE;
 }
+#endif
 
 
 /**
@@ -451,6 +460,8 @@ TRIO_ARGS2((first, second),
    
    Case-sensitive comparison.
 */
+#if !defined(TRIO_EMBED_STRING) \
+ || (defined(TRIO_EMBED_STRING) && (TRIO_EXTENSION || TRIO_FEATURE_SCANF))
 TRIO_STRING_PUBLIC int
 trio_equal_case
 TRIO_ARGS2((first, second),
@@ -466,6 +477,7 @@ TRIO_ARGS2((first, second),
     }
   return FALSE;
 }
+#endif
 
 
 #if !defined(TRIO_MINIMAL)
@@ -507,6 +519,8 @@ TRIO_ARGS3((first, max, second),
 
    Collating characters are considered equal.
 */
+#if !defined(TRIO_EMBED_STRING) \
+ || (defined(TRIO_EMBED_STRING) && TRIO_EXTENSION)
 TRIO_STRING_PUBLIC int
 trio_equal_locale
 TRIO_ARGS2((first, second),
@@ -516,13 +530,13 @@ TRIO_ARGS2((first, second),
   assert(first);
   assert(second);
 
-#if defined(LC_COLLATE)
+# if defined(LC_COLLATE)
   return (strcoll(first, second) == 0);
-#else
+# else
   return trio_equal(first, second);
-#endif
+# endif
 }
-
+#endif
 
 /**
    Compare if two strings up until the first @p max characters are equal.
@@ -534,6 +548,8 @@ TRIO_ARGS2((first, second),
    
    Case-insensitive comparison.
 */
+#if !defined(TRIO_EMBED_STRING) \
+ || (defined(TRIO_EMBED_STRING) && TRIO_EXTENSION)
 TRIO_STRING_PUBLIC int
 trio_equal_max
 TRIO_ARGS3((first, max, second),
@@ -546,9 +562,9 @@ TRIO_ARGS3((first, max, second),
 
   if ((first != NULL) && (second != NULL))
     {
-#if defined(USE_STRNCASECMP)
+# if defined(USE_STRNCASECMP)
       return (0 == strncasecmp(first, second, max));
-#else
+# else
       /* Not adequately tested yet */
       size_t cnt = 0;
       while ((*first != NIL) && (*second != NIL) && (cnt <= max))
@@ -562,10 +578,11 @@ TRIO_ARGS3((first, max, second),
 	  cnt++;
 	}
       return ((cnt == max) || ((*first == NIL) && (*second == NIL)));
-#endif
+# endif
     }
   return FALSE;
 }
+#endif
 
 
 /**
@@ -981,15 +998,16 @@ TRIO_ARGS2((string, delimiters),
    @endverbatim
 */
 /* FIXME: Add EBNF for hex-floats */
+#if TRIO_FEATURE_FLOAT
 TRIO_STRING_PUBLIC trio_long_double_t
 trio_to_long_double
 TRIO_ARGS2((source, endp),
 	   TRIO_CONST char *source,
 	   char **endp)
 {
-#if defined(USE_STRTOLD)
+# if defined(USE_STRTOLD)
   return strtold(source, endp);
-#else
+# else
   int isNegative = FALSE;
   int isExponentNegative = FALSE;
   trio_long_double_t integer = 0.0;
@@ -1070,10 +1088,10 @@ TRIO_ARGS2((source, endp),
 	}
       if ((*source == 'e')
 	  || (*source == 'E')
-#if TRIO_MICROSOFT
+#  if TRIO_MICROSOFT
 	  || (*source == 'd')
 	  || (*source == 'D')
-#endif
+#  endif
 	  )
 	{
 	  source++; /* Skip exponential indicator */
@@ -1103,9 +1121,9 @@ TRIO_ARGS2((source, endp),
   if (endp)
     *endp = (char *)source;
   return value;
-#endif
+# endif
 }
-
+#endif /* TRIO_FEATURE_FLOAT */
 
 /**
    Convert string to floating-point number.
@@ -1116,6 +1134,7 @@ TRIO_ARGS2((source, endp),
 
    See @ref trio_to_long_double.
 */
+#if TRIO_FEATURE_FLOAT
 TRIO_STRING_PUBLIC double
 trio_to_double
 TRIO_ARGS2((source, endp),
@@ -1128,6 +1147,7 @@ TRIO_ARGS2((source, endp),
   return (double)trio_to_long_double(source, endp);
 #endif
 }
+#endif
 
 #if !defined(TRIO_MINIMAL)
 /**
@@ -1139,18 +1159,20 @@ TRIO_ARGS2((source, endp),
 
    See @ref trio_to_long_double.
 */
+# if TRIO_FEATURE_FLOAT
 TRIO_STRING_PUBLIC float
 trio_to_float
 TRIO_ARGS2((source, endp),
 	   TRIO_CONST char *source,
 	   char **endp)
 {
-#if defined(USE_STRTOF)
+#  if defined(USE_STRTOF)
   return strtof(source, endp);
-#else
+#  else
   return (float)trio_to_long_double(source, endp);
-#endif
+#  endif
 }
+# endif /* TRIO_FEATURE_FLOAT */
 #endif /* !defined(TRIO_MINIMAL) */
 
 

@@ -142,6 +142,7 @@ order sorted by surname)
 @li Robert Collins
 @li Danny Dulai
 @li Bob Friesenhahn
+@li Jon Foster
 @li John Fotheringham
 @li Markus Henke
 @li Ken Gibson
