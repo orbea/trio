@@ -364,18 +364,18 @@ enum {
 #define CHAR_ADJUST ' '
 
 /* Character class expressions */
-#define CLASS_ALNUM ":alnum:"
-#define CLASS_ALPHA ":alpha:"
-#define CLASS_BLANK ":blank:"
-#define CLASS_CNTRL ":cntrl:"
-#define CLASS_DIGIT ":digit:"
-#define CLASS_GRAPH ":graph:"
-#define CLASS_LOWER ":lower:"
-#define CLASS_PRINT ":print:"
-#define CLASS_PUNCT ":punct:"
-#define CLASS_SPACE ":space:"
-#define CLASS_UPPER ":upper:"
-#define CLASS_XDIGIT ":xdigit:"
+#define CLASS_ALNUM "[:alnum:]"
+#define CLASS_ALPHA "[:alpha:]"
+#define CLASS_BLANK "[:blank:]"
+#define CLASS_CNTRL "[:cntrl:]"
+#define CLASS_DIGIT "[:digit:]"
+#define CLASS_GRAPH "[:graph:]"
+#define CLASS_LOWER "[:lower:]"
+#define CLASS_PRINT "[:print:]"
+#define CLASS_PUNCT "[:punct:]"
+#define CLASS_SPACE "[:space:]"
+#define CLASS_UPPER "[:upper:]"
+#define CLASS_XDIGIT "[:xdigit:]"
 
 /*
  * SPECIFIERS:
