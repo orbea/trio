@@ -19,6 +19,9 @@
  * Include files
  */
 
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,8 +63,10 @@
 #endif
 
 #if defined(TRIO_PLATFORM_UNIX)
-# define USE_STRCASECMP
-# define USE_STRNCASECMP
+# if defined(TRIO_COMPILER_SUPPORTS_UNIX95)
+#  define USE_STRCASECMP
+#  define USE_STRNCASECMP
+# endif
 # if defined(TRIO_PLATFORM_SUNOS)
 #  define USE_SYS_ERRLIST
 # else
@@ -79,6 +84,21 @@
 #if !(defined(TRIO_PLATFORM_SUNOS))
 # define USE_TOLOWER
 # define USE_TOUPPER
+#endif
+
+#if !defined(HAVE_POWL)
+# if defined(TRIO_COMPILER_SUPPORTS_C99) \
+  || defined(TRIO_COMPILER_SUPPORTS_UNIX01)
+#  define HAVE_POWL
+# elif defined(TRIO_COMPILER_MSVC)
+#  if defined(powl)
+#   define HAVE_POWL
+#  endif
+# endif
+#endif
+
+#if !defined(HAVE_POWL)
+# define powl(x,y) pow((double)(x),(double)(y))
 #endif
 
 /*************************************************************************
@@ -1065,9 +1085,9 @@ TRIO_ARGS2((source, endp),
   if (exponent != 0)
     {
       if (isExponentNegative)
-	value /= pow(base, (double)exponent);
+	value /= powl(base, (trio_long_double_t)exponent);
       else
-	value *= pow(base, (double)exponent);
+	value *= powl(base, (trio_long_double_t)exponent);
     }
   if (isNegative)
     value = -value;
