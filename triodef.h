@@ -34,8 +34,12 @@
 # define TRIO_COMPILER_XLC /* Workaround for old xlc */
 #elif defined(__DECC) || defined(__DECCXX)
 # define TRIO_COMPILER_DECC
+#elif defined(__osf__) && defined(__LANGUAGE_C__)
+# define TRIO_COMPILER_DECC /* Workaround for old DEC C compilers */
 #elif defined(_MSC_VER)
 # define TRIO_COMPILER_MSVC
+#elif defined(__BORLANDC__)
+# define TRIO_COMPILER_BCB
 #endif
 
 #if defined(unix) || defined(__unix) || defined(__unix__)
@@ -97,22 +101,44 @@
 # define TRIO_PRIVATE static
 #endif
 
-#if defined(TRIO_COMPILER_SUPPORTS_C90) || defined(__cplusplus)
-# define TRIO_CONST const
-# define TRIO_VOLATILE volatile
-# define TRIO_POINTER void *
-# define TRIO_PROTO(x) x
-#else
+#if !defined(TRIO_COMPILER_SUPPORTS_C90) && !defined(__cplusplus)
+# define TRIO_COMPILER_ANCIENT
+#endif
+
+#if defined(TRIO_COMPILER_ANCIENT)
 # define TRIO_CONST
 # define TRIO_VOLATILE
-# define TRIO_POINTER char *
+# define TRIO_SIGNED
+typedef double trio_long_double_t;
+typedef char * trio_pointer_t;
 # define TRIO_PROTO(x) ()
+# define TRIO_NOARGS
+# define TRIO_VA_ELLIPSIS va_alist
+# define TRIO_VA_DECL va_dcl
+# define TRIO_VA_START(x,y) va_start((x))
+# define TRIO_VA_END(x) va_end(x)
+#else
+# define TRIO_CONST const
+# define TRIO_VOLATILE volatile
+# define TRIO_SIGNED signed
+typedef long double trio_long_double_t;
+typedef void * trio_pointer_t;
+# define TRIO_PROTO(x) x
+# define TRIO_NOARGS void
+# define TRIO_VA_ELLIPSIS ...
+# define TRIO_VA_DECL
+# define TRIO_VA_START(x,y) va_start((x),(y))
+# define TRIO_VA_END(x) va_end(x)
 #endif
 
 #if defined(TRIO_COMPILER_SUPPORTS_C99) || defined(__cplusplus)
 # define TRIO_INLINE inline
 #elif defined(TRIO_COMPILER_GCC)
 # define TRIO_INLINE __inline__
+#elif defined(TRIO_COMPILER_MSVC)
+# define TRIO_INLINE _inline
+#elif defined(TRIO_COMPILER_BCB)
+# define TRIO_INLINE __inline
 #else
 # define TRIO_INLINE
 #endif

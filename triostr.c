@@ -15,8 +15,6 @@
  *
  ************************************************************************/
 
-static const char rcsid[] = "@(#)$Id$";
-
 /*************************************************************************
  * Include files
  */
@@ -74,6 +72,12 @@ struct _trio_string_t
 };
 
 /*************************************************************************
+ * Constants
+ */
+
+static TRIO_CONST char rcsid[] = "@(#)$Id$";
+
+/*************************************************************************
  * Static String Functions
  */
 
@@ -91,7 +95,8 @@ struct _trio_string_t
    @return Pointer to string, or NULL if allocation failed.
 */
 TRIO_PUBLIC TRIO_INLINE char *
-trio_create(size_t size)
+trio_create(size)
+     size_t size;
 {
   return (char *)TRIO_MALLOC(size);
 }
@@ -103,7 +108,8 @@ trio_create(size_t size)
    @param string String to be freed.
 */
 TRIO_PUBLIC TRIO_INLINE void
-trio_destroy(char *string)
+trio_destroy(string)
+     char *string;
 {
   if (string)
     {
@@ -119,7 +125,8 @@ trio_destroy(char *string)
    @return Number of characters in @string.
 */
 TRIO_PUBLIC TRIO_INLINE size_t
-trio_length(const char *string)
+trio_length(string)
+     TRIO_CONST char *string;
 {
   return strlen(string);
 }
@@ -129,7 +136,9 @@ trio_length(const char *string)
  * TrioDuplicateMax
  */
 TRIO_PRIVATE char *
-TrioDuplicateMax(const char *source, size_t size)
+TrioDuplicateMax(source, size)
+     TRIO_CONST char *source;
+     size_t size;
 {
   char *target;
 
@@ -160,8 +169,9 @@ TrioDuplicateMax(const char *source, size_t size)
    @post @p target will be zero terminated.
 */
 TRIO_PUBLIC int
-trio_append(char *target,
-	    const char *source)
+trio_append(target, source)
+     char *target;
+     TRIO_CONST char *source;
 {
   assert(target);
   assert(source);
@@ -186,9 +196,10 @@ trio_append(char *target,
    @post @p target will be zero terminated.
 */
 TRIO_PUBLIC int
-trio_append_max(char *target,
-		size_t max,
-		const char *source)
+trio_append_max(target, max, source)
+     char *target;
+     size_t max;
+     TRIO_CONST char *source;
 {
   size_t length;
   
@@ -213,8 +224,9 @@ trio_append_max(char *target,
    @return Boolean value indicating success or failure.
 */
 TRIO_PUBLIC TRIO_INLINE int
-trio_contains(const char *string,
-	      const char *substring)
+trio_contains(string, substring)
+     TRIO_CONST char *string;
+     TRIO_CONST char *substring;
 {
   assert(string);
   assert(substring);
@@ -237,8 +249,9 @@ trio_contains(const char *string,
    @post @p target will be zero terminated.
 */
 TRIO_PUBLIC int
-trio_copy(char *target,
-	  const char *source)
+trio_copy(target, source)
+     char *target;
+     TRIO_CONST char *source;
 {
   assert(target);
   assert(source);
@@ -263,9 +276,10 @@ trio_copy(char *target,
    @post @p target will be zero terminated.
 */
 TRIO_PUBLIC int
-trio_copy_max(char *target,
-	      size_t max,
-	      const char *source)
+trio_copy_max(target, max, source)
+     char *target;
+     size_t max;
+     TRIO_CONST char *source;
 {
   assert(target);
   assert(source);
@@ -286,7 +300,8 @@ trio_copy_max(char *target,
    @post @p target will be zero terminated.
 */
 TRIO_PUBLIC char *
-trio_duplicate(const char *source)
+trio_duplicate(source)
+     TRIO_CONST char *source;
 {
   return TrioDuplicateMax(source, trio_length(source));
 }
@@ -302,8 +317,9 @@ trio_duplicate(const char *source)
    @post @p target will be zero terminated.
 */
 TRIO_PUBLIC char *
-trio_duplicate_max(const char *source,
-		   size_t max)
+trio_duplicate_max(source, max)
+     TRIO_CONST char *source;
+     size_t max;
 {
   size_t length;
 
@@ -329,8 +345,9 @@ trio_duplicate_max(const char *source,
    Case-insensitive comparison.
 */
 TRIO_PUBLIC int
-trio_equal(const char *first,
-	   const char *second)
+trio_equal(first, second)
+     TRIO_CONST char *first;
+     TRIO_CONST char *second;
 {
   assert(first);
   assert(second);
@@ -366,8 +383,9 @@ trio_equal(const char *first,
    Case-sensitive comparison.
 */
 TRIO_PUBLIC int
-trio_equal_case(const char *first,
-		const char *second)
+trio_equal_case(first, second)
+     TRIO_CONST char *first;
+     TRIO_CONST char *second;
 {
   assert(first);
   assert(second);
@@ -391,9 +409,10 @@ trio_equal_case(const char *first,
    Case-sensitive comparison.
 */
 TRIO_PUBLIC int
-trio_equal_case_max(const char *first,
-		    size_t max,
-		    const char *second)
+trio_equal_case_max(first, max, second)
+     TRIO_CONST char *first;
+     size_t max;
+     TRIO_CONST char *second;
 {
   assert(first);
   assert(second);
@@ -416,8 +435,9 @@ trio_equal_case_max(const char *first,
    Collating characters are considered equal.
 */
 TRIO_PUBLIC int
-trio_equal_locale(const char *first,
-		  const char *second)
+trio_equal_locale(first, second)
+     TRIO_CONST char *first;
+     TRIO_CONST char *second;
 {
   assert(first);
   assert(second);
@@ -441,9 +461,10 @@ trio_equal_locale(const char *first,
    Case-insensitive comparison.
 */
 TRIO_PUBLIC int
-trio_equal_max(const char *first,
-	       size_t max,
-	       const char *second)
+trio_equal_max(first, max, second)
+     TRIO_CONST char *first;
+     size_t max;
+     TRIO_CONST char *second;
 {
   assert(first);
   assert(second);
@@ -478,8 +499,9 @@ trio_equal_max(const char *first,
    @param error_number Error number.
    @return Textual description of @p error_number.
 */
-TRIO_PUBLIC const char *
-trio_error(int error_number)
+TRIO_PUBLIC TRIO_CONST char *
+trio_error(error_number)
+     int error_number;
 {
 #if defined(USE_STRERROR)
   return strerror(error_number);
@@ -502,10 +524,11 @@ trio_error(int error_number)
    function strftime.
 */
 TRIO_PUBLIC size_t
-trio_format_date_max(char *target,
-		     size_t max,
-		     const char *format,
-		     const struct tm *datetime)
+trio_format_date_max(target, max, format, datetime)
+     char *target;
+     size_t max;
+     TRIO_CONST char *format;
+     TRIO_CONST struct tm *datetime;
 {
   assert(target);
   assert(format);
@@ -527,8 +550,9 @@ trio_format_date_max(char *target,
    @li @c TRIO_HASH_PLAIN Plain hash function.
 */
 TRIO_PUBLIC unsigned long
-trio_hash(const char *string,
-	  int type)
+trio_hash(string, type)
+     TRIO_CONST char *string;
+     int type;
 {
   unsigned long value = 0L;
   char ch;
@@ -560,8 +584,9 @@ trio_hash(const char *string,
    @param A pointer to the found character, or NULL if character was not found.
  */
 TRIO_PUBLIC TRIO_INLINE char *
-trio_index(const char *string,
-	   char character)
+trio_index(string, character)
+     TRIO_CONST char *string;
+     int character;
 {
   assert(string);
 
@@ -577,8 +602,9 @@ trio_index(const char *string,
    @param A pointer to the found character, or NULL if character was not found.
  */
 TRIO_PUBLIC TRIO_INLINE char *
-trio_index_last(const char *string,
-		char character)
+trio_index_last(string, character)
+     TRIO_CONST char *string;
+     int character;
 {
   assert(string);
 
@@ -593,7 +619,8 @@ trio_index_last(const char *string,
    @return Number of processed characters (converted or not).
 */
 TRIO_PUBLIC TRIO_INLINE int
-trio_lower(char *target)
+trio_lower(target)
+     char *target;
 {
   assert(target);
 
@@ -615,8 +642,9 @@ trio_lower(char *target)
    @li @c ? Match a single character.
 */
 TRIO_PUBLIC int
-trio_match(const char *string,
-	   const char *pattern)
+trio_match(string, pattern)
+     TRIO_CONST char *string;
+     TRIO_CONST char *pattern;
 {
   assert(string);
   assert(pattern);
@@ -664,8 +692,9 @@ trio_match(const char *string,
    @li @c ? Match a single character.
 */
 TRIO_PUBLIC int
-trio_match_case(const char *string,
-		const char *pattern)
+trio_match_case(string, pattern)
+     TRIO_CONST char *string;
+     TRIO_CONST char *pattern;
 {
   assert(string);
   assert(pattern);
@@ -708,9 +737,10 @@ trio_match_case(const char *string,
    @return Number of processed characters.
 */
 TRIO_PUBLIC size_t
-trio_span_function(char *target,
-		   const char *source,
-		   int (*Function)(int))
+trio_span_function(target, source, Function)
+     char *target;
+     TRIO_CONST char *source;
+     int (*Function) TRIO_PROTO((int));
 {
   size_t count = 0;
 
@@ -736,8 +766,9 @@ trio_span_function(char *target,
    if no match was found.
 */
 TRIO_PUBLIC TRIO_INLINE char *
-trio_substring(const char *string,
-	       const char *substring)
+trio_substring(string, substring)
+     TRIO_CONST char *string;
+     TRIO_CONST char *substring;
 {
   assert(string);
   assert(substring);
@@ -756,9 +787,10 @@ trio_substring(const char *string,
    if no match was found.
 */
 TRIO_PUBLIC char *
-trio_substring_max(const char *string,
-		   size_t max,
-		   const char *substring)
+trio_substring_max(string, max, substring)
+     TRIO_CONST char *string;
+     size_t max;
+     TRIO_CONST char *substring;
 {
   size_t count;
   size_t size;
@@ -793,7 +825,9 @@ trio_substring_max(const char *string,
    @warning @p string will be destroyed.
 */
 TRIO_PUBLIC TRIO_INLINE char *
-trio_tokenize(char *string, const char *delimiters)
+trio_tokenize(string, delimiters)
+     char *string;
+     TRIO_CONST char *delimiters;
 {
   assert(delimiters);
   
@@ -824,8 +858,9 @@ trio_tokenize(char *string, const char *delimiters)
 */
 /* FIXME: Add EBNF for hex-floats */
 TRIO_PUBLIC double
-trio_to_double(const char *source,
-	       const char **endp)
+trio_to_double(source, endp)
+     TRIO_CONST char *source;
+     TRIO_CONST char **endp;
 {
 #if defined(USE_STRTOD)
   return strtod(source, (char **)endp);
@@ -959,8 +994,9 @@ trio_to_double(const char *source,
    See @ref trio_to_double.
 */
 TRIO_PUBLIC TRIO_INLINE float
-trio_to_float(const char *source,
-	      const char **endp)
+trio_to_float(source, endp)
+     TRIO_CONST char *source;
+     TRIO_CONST char **endp;
 {
 #if defined(USE_STRTOF)
   return strtof(source, (char **)endp);
@@ -978,9 +1014,10 @@ trio_to_float(const char *source,
    @param base Radix number of number.
 */
 TRIO_PUBLIC TRIO_INLINE long
-trio_to_long(const char *string,
-	     char **endp,
-	     int base)
+trio_to_long(string, endp, base)
+     TRIO_CONST char *string;
+     char **endp;
+     int base;
 {
   assert(string);
   assert((base >= 2) && (base <= 36));
@@ -997,9 +1034,10 @@ trio_to_long(const char *string,
    @param base Radix number of number.
 */
 TRIO_PUBLIC TRIO_INLINE unsigned long
-trio_to_unsigned_long(const char *string,
-		      char **endp,
-		      int base)
+trio_to_unsigned_long(string, endp, base)
+     TRIO_CONST char *string;
+     char **endp;
+     int base;
 {
   assert(string);
   assert((base >= 2) && (base <= 36));
@@ -1015,7 +1053,8 @@ trio_to_unsigned_long(const char *string,
    @return The number of processed characters (converted or not).
 */
 TRIO_PUBLIC TRIO_INLINE int
-trio_upper(char *target)
+trio_upper(target)
+     char *target;
 {
   assert(target);
 
@@ -1041,7 +1080,7 @@ trio_upper(char *target)
  * TrioStringAlloc
  */
 TRIO_PRIVATE trio_string_t *
-TrioStringAlloc(void)
+TrioStringAlloc(TRIO_NOARGS)
 {
   trio_string_t *self;
   
@@ -1063,8 +1102,9 @@ TrioStringAlloc(void)
  * 'delta' is zero, the size will be doubled.
  */
 TRIO_PRIVATE BOOLEAN_T
-TrioStringGrow(trio_string_t *self,
-	       size_t delta)
+TrioStringGrow(self, delta)
+     trio_string_t *self;
+     size_t delta;
 {
   BOOLEAN_T status = FALSE;
   char *new_content;
@@ -1093,8 +1133,9 @@ TrioStringGrow(trio_string_t *self,
  * used (that is, the size of the string is never decreased).
  */
 TRIO_PRIVATE BOOLEAN_T
-TrioStringGrowTo(trio_string_t *self,
-		 size_t length)
+TrioStringGrowTo(self, length)
+     trio_string_t *self;
+     size_t length;
 {
   length++; /* Room for terminating zero */
   return (self->allocated < length)
@@ -1110,7 +1151,8 @@ TrioStringGrowTo(trio_string_t *self,
    @return Newly allocated dynamic string, or NULL if memory allocation failed.
 */
 TRIO_PUBLIC trio_string_t *
-trio_string_create(int initial_size)
+trio_string_create(initial_size)
+     int initial_size;
 {
   trio_string_t *self;
 
@@ -1139,7 +1181,8 @@ trio_string_create(int initial_size)
    @param self Dynamic string
 */
 TRIO_PUBLIC void
-trio_string_destroy(trio_string_t *self)
+trio_string_destroy(self)
+     trio_string_t *self;
 {
   assert(self);
   
@@ -1166,7 +1209,9 @@ trio_string_destroy(trio_string_t *self)
    terminating zero, is returned.
 */
 TRIO_PUBLIC char *
-trio_string_get(trio_string_t *self, int offset)
+trio_string_get(self, offset)
+     trio_string_t *self;
+     int offset;
 {
   char *result = NULL;
   
@@ -1209,7 +1254,8 @@ trio_string_get(trio_string_t *self, int offset)
    of the dynamic string without deallocation of the content.
 */
 TRIO_PUBLIC char *
-trio_string_extract(trio_string_t *self)
+trio_string_extract(self)
+     trio_string_t *self;
 {
   char *result;
   
@@ -1237,8 +1283,9 @@ trio_string_extract(trio_string_t *self)
    You are responsible for deallocating @p buffer yourself.
 */
 TRIO_PUBLIC void
-trio_xstring_set(trio_string_t *self,
-		 char *buffer)
+trio_xstring_set(self, buffer)
+     trio_string_t *self;
+     char *buffer;
 {
   assert(self);
 
@@ -1251,7 +1298,8 @@ trio_xstring_set(trio_string_t *self,
  * trio_string_size
  */
 TRIO_PUBLIC int
-trio_string_size(trio_string_t *self)
+trio_string_size(self)
+     trio_string_t *self;
 {
   assert(self);
 
@@ -1263,17 +1311,10 @@ trio_string_size(trio_string_t *self)
  * trio_string_terminate
  */
 TRIO_PUBLIC void
-trio_string_terminate(trio_string_t *self)
+trio_string_terminate(self)
+     trio_string_t *self;
 {
-  char *end;
-  
-  assert(self);
-
-  end = trio_string_get(self, -1);
-  if (end)
-    {
-      *end = NIL;
-    }
+  trio_xstring_append_char(self, 0);
 }
 
 
@@ -1285,8 +1326,9 @@ trio_string_terminate(trio_string_t *self)
    @return Boolean value indicating success or failure.
 */
 TRIO_PUBLIC int
-trio_string_append(trio_string_t *self,
-		   trio_string_t *other)
+trio_string_append(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   size_t length;
   
@@ -1309,8 +1351,9 @@ trio_string_append(trio_string_t *self,
  * trio_xstring_append
  */
 TRIO_PUBLIC int
-trio_xstring_append(trio_string_t *self,
-		    const char *other)
+trio_xstring_append(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   size_t length;
   
@@ -1333,8 +1376,9 @@ trio_xstring_append(trio_string_t *self,
  * trio_xstring_append_char
  */
 TRIO_PUBLIC int
-trio_xstring_append_char(trio_string_t *self,
-			 char character)
+trio_xstring_append_char(self, character)
+     trio_string_t *self;
+     char character;
 {
   assert(self);
 
@@ -1360,8 +1404,9 @@ trio_xstring_append_char(trio_string_t *self,
    @return Boolean value indicating success or failure.
 */
 TRIO_PUBLIC int
-trio_string_contains(trio_string_t *self,
-		     trio_string_t *other)
+trio_string_contains(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1374,8 +1419,9 @@ trio_string_contains(trio_string_t *self,
  * trio_xstring_contains
  */
 TRIO_PUBLIC int
-trio_xstring_contains(trio_string_t *self,
-		      const char *other)
+trio_xstring_contains(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1388,8 +1434,9 @@ trio_xstring_contains(trio_string_t *self,
  * trio_string_copy
  */
 TRIO_PUBLIC int
-trio_string_copy(trio_string_t *self,
-		 trio_string_t *other)
+trio_string_copy(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1403,8 +1450,9 @@ trio_string_copy(trio_string_t *self,
  * trio_xstring_copy
  */
 TRIO_PUBLIC int
-trio_xstring_copy(trio_string_t *self,
-		  const char *other)
+trio_xstring_copy(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1418,7 +1466,8 @@ trio_xstring_copy(trio_string_t *self,
  * trio_string_duplicate
  */
 TRIO_PUBLIC trio_string_t *
-trio_string_duplicate(trio_string_t *other)
+trio_string_duplicate(other)
+     trio_string_t *other;
 {
   trio_string_t *self;
   
@@ -1446,7 +1495,8 @@ trio_string_duplicate(trio_string_t *other)
  * trio_xstring_duplicate
  */
 TRIO_PUBLIC trio_string_t *
-trio_xstring_duplicate(const char *other)
+trio_xstring_duplicate(other)
+     TRIO_CONST char *other;
 {
   trio_string_t *self;
   
@@ -1474,8 +1524,9 @@ trio_xstring_duplicate(const char *other)
  * trio_string_equal
  */
 TRIO_PUBLIC int
-trio_string_equal(trio_string_t *self,
-		  trio_string_t *other)
+trio_string_equal(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1488,8 +1539,9 @@ trio_string_equal(trio_string_t *self,
  * trio_xstring_equal
  */
 TRIO_PUBLIC int
-trio_xstring_equal(trio_string_t *self,
-		   const char *other)
+trio_xstring_equal(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1502,9 +1554,10 @@ trio_xstring_equal(trio_string_t *self,
  * trio_string_equal_max
  */
 TRIO_PUBLIC int
-trio_string_equal_max(trio_string_t *self,
-		      size_t max,
-		      trio_string_t *other)
+trio_string_equal_max(self, max, other)
+     trio_string_t *self;
+     size_t max;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1517,9 +1570,10 @@ trio_string_equal_max(trio_string_t *self,
  * trio_xstring_equal_max
  */
 TRIO_PUBLIC int
-trio_xstring_equal_max(trio_string_t *self,
-		       size_t max,
-		       const char *other)
+trio_xstring_equal_max(self, max, other)
+     trio_string_t *self;
+     size_t max;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1532,8 +1586,9 @@ trio_xstring_equal_max(trio_string_t *self,
  * trio_string_equal_case
  */
 TRIO_PUBLIC int
-trio_string_equal_case(trio_string_t *self,
-		       trio_string_t *other)
+trio_string_equal_case(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1546,8 +1601,9 @@ trio_string_equal_case(trio_string_t *self,
  * trio_xstring_equal_case
  */
 TRIO_PUBLIC int
-trio_xstring_equal_case(trio_string_t *self,
-			const char *other)
+trio_xstring_equal_case(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1560,9 +1616,10 @@ trio_xstring_equal_case(trio_string_t *self,
  * trio_string_equal_case_max
  */
 TRIO_PUBLIC int
-trio_string_equal_case_max(trio_string_t *self,
-			   size_t max,
-			   trio_string_t *other)
+trio_string_equal_case_max(self, max, other)
+     trio_string_t *self;
+     size_t max;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1575,9 +1632,10 @@ trio_string_equal_case_max(trio_string_t *self,
  * trio_xstring_equal_case_max
  */
 TRIO_PUBLIC int
-trio_xstring_equal_case_max(trio_string_t *self,
-			    size_t max,
-			    const char *other)
+trio_xstring_equal_case_max(self, max, other)
+     trio_string_t *self;
+     size_t max;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1590,10 +1648,11 @@ trio_xstring_equal_case_max(trio_string_t *self,
  * trio_string_format_data_max
  */
 TRIO_PUBLIC size_t
-trio_string_format_date_max(trio_string_t *self,
-			    size_t max,
-			    const char *format,
-			    const struct tm *datetime)
+trio_string_format_date_max(self, max, format, datetime)
+     trio_string_t *self;
+     size_t max;
+     TRIO_CONST char *format;
+     TRIO_CONST struct tm *datetime;
 {
   assert(self);
 
@@ -1605,8 +1664,9 @@ trio_string_format_date_max(trio_string_t *self,
  * trio_string_index
  */
 TRIO_PUBLIC char *
-trio_string_index(trio_string_t *self,
-		  int character)
+trio_string_index(self, character)
+     trio_string_t *self;
+     int character;
 {
   assert(self);
 
@@ -1618,8 +1678,9 @@ trio_string_index(trio_string_t *self,
  * trio_string_index_last
  */
 TRIO_PUBLIC char *
-trio_string_index_last(trio_string_t *self,
-		       int character)
+trio_string_index_last(self, character)
+     trio_string_t *self;
+     int character;
 {
   assert(self);
 
@@ -1631,7 +1692,8 @@ trio_string_index_last(trio_string_t *self,
  * trio_string_length
  */
 TRIO_PUBLIC int
-trio_string_length(trio_string_t *self)
+trio_string_length(self)
+     trio_string_t *self;
 {
   assert(self);
 
@@ -1647,7 +1709,8 @@ trio_string_length(trio_string_t *self)
  * trio_string_lower
  */
 TRIO_PUBLIC int
-trio_string_lower(trio_string_t *self)
+trio_string_lower(self)
+     trio_string_t *self;
 {
   assert(self);
 
@@ -1659,8 +1722,9 @@ trio_string_lower(trio_string_t *self)
  * trio_string_match
  */
 TRIO_PUBLIC int
-trio_string_match(trio_string_t *self,
-		  trio_string_t *other)
+trio_string_match(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1673,8 +1737,9 @@ trio_string_match(trio_string_t *self,
  * trio_xstring_match
  */
 TRIO_PUBLIC int
-trio_xstring_match(trio_string_t *self,
-		   const char *other)
+trio_xstring_match(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1687,8 +1752,9 @@ trio_xstring_match(trio_string_t *self,
  * trio_string_match_case
  */
 TRIO_PUBLIC int
-trio_string_match_case(trio_string_t *self,
-		       trio_string_t *other)
+trio_string_match_case(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1701,8 +1767,9 @@ trio_string_match_case(trio_string_t *self,
  * trio_xstring_match_case
  */
 TRIO_PUBLIC int
-trio_xstring_match_case(trio_string_t *self,
-			const char *other)
+trio_xstring_match_case(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1715,8 +1782,9 @@ trio_xstring_match_case(trio_string_t *self,
  * trio_string_substring
  */
 TRIO_PUBLIC char *
-trio_string_substring(trio_string_t *self,
-		      trio_string_t *other)
+trio_string_substring(self, other)
+     trio_string_t *self;
+     trio_string_t *other;
 {
   assert(self);
   assert(other);
@@ -1729,8 +1797,9 @@ trio_string_substring(trio_string_t *self,
  * trio_xstring_substring
  */
 TRIO_PUBLIC char *
-trio_xstring_substring(trio_string_t *self,
-		       const char *other)
+trio_xstring_substring(self, other)
+     trio_string_t *self;
+     TRIO_CONST char *other;
 {
   assert(self);
   assert(other);
@@ -1743,7 +1812,8 @@ trio_xstring_substring(trio_string_t *self,
  * trio_string_upper
  */
 TRIO_PUBLIC int
-trio_string_upper(trio_string_t *self)
+trio_string_upper(self)
+     trio_string_t *self;
 {
   assert(self);
 

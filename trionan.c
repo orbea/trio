@@ -62,7 +62,11 @@
  *
  ************************************************************************/
 
-static const char rcsid[] = "@(#)$Id$";
+/*
+ * TODO:
+ *  o Put all the magic into trio_fpclassign(), and use this from
+ *    trio_isnan() etc.
+ */
 
 /*************************************************************************
  * Include files
@@ -128,8 +132,10 @@ static const char rcsid[] = "@(#)$Id$";
 
 
 /*************************************************************************
- * Data
+ * Constants
  */
+
+static TRIO_CONST char rcsid[] = "@(#)$Id$";
 
 #if defined(USE_IEEE_754)
 
@@ -187,7 +193,8 @@ static TRIO_CONST unsigned char ieee_754_qnan_array[] = {
  * trio_make_double
  */
 TRIO_PRIVATE double
-trio_make_double(TRIO_CONST unsigned char *values)
+trio_make_double(values)
+     TRIO_CONST unsigned char *values;
 {
   TRIO_VOLATILE double result;
   int i;
@@ -202,8 +209,9 @@ trio_make_double(TRIO_CONST unsigned char *values)
  * trio_is_special_quantity
  */
 TRIO_PRIVATE int
-trio_is_special_quantity(double number,
-			 int *has_mantissa)
+trio_is_special_quantity(number, has_mantissa)
+     double number;
+     int *has_mantissa;
 {
   unsigned int i;
   unsigned char current;
@@ -224,7 +232,8 @@ trio_is_special_quantity(double number,
  * trio_is_negative
  */
 TRIO_PRIVATE int
-trio_is_negative(double number)
+trio_is_negative(number)
+     double number;
 {
   unsigned int i;
   int is_negative = TRIO_FALSE;
@@ -245,7 +254,7 @@ trio_is_negative(double number)
    @return Floating-point representation of negative zero.
 */
 TRIO_PUBLIC double
-trio_nzero(void)
+trio_nzero(TRIO_NOARGS)
 {
 #if defined(USE_IEEE_754)
   return trio_make_double(ieee_754_negzero_array);
@@ -262,7 +271,7 @@ trio_nzero(void)
    @return Floating-point representation of positive infinity.
 */
 TRIO_PUBLIC double
-trio_pinf(void)
+trio_pinf(TRIO_NOARGS)
 {
   /* Cache the result */
   static double result = 0.0;
@@ -306,7 +315,7 @@ trio_pinf(void)
    @return Floating-point value of negative infinity.
 */
 TRIO_PUBLIC double
-trio_ninf(void)
+trio_ninf(TRIO_NOARGS)
 {
   static double result = 0.0;
 
@@ -327,7 +336,7 @@ trio_ninf(void)
    @return Floating-point representation of NaN.
 */
 TRIO_PUBLIC double
-trio_nan(void)
+trio_nan(TRIO_NOARGS)
 {
   /* Cache the result */
   static double result = 0.0;
@@ -375,9 +384,11 @@ trio_nan(void)
    @return Boolean value indicating whether or not the number is a NaN.
 */
 TRIO_PUBLIC int
-trio_isnan(TRIO_VOLATILE double number)
+trio_isnan(number)
+     TRIO_VOLATILE double number;
 {
-#if defined(isnan) || defined(TRIO_COMPILER_SUPPORTS_UNIX95)
+#if (defined(TRIO_COMPILER_SUPPORTS_C99) && defined(isnan)) \
+ || defined(TRIO_COMPILER_SUPPORTS_UNIX95)
   /*
    * C99 defines isnan() as a macro. UNIX95 defines isnan() as a
    * function. This function was already present in XPG4, but this
@@ -442,7 +453,8 @@ trio_isnan(TRIO_VOLATILE double number)
    @return 1 if positive infinity, -1 if negative infinity, 0 otherwise.
 */
 TRIO_PUBLIC int
-trio_isinf(TRIO_VOLATILE double number)
+trio_isinf(number)
+     TRIO_VOLATILE double number;
 {
 #if defined(TRIO_COMPILER_DECC)
   /*
@@ -452,8 +464,18 @@ trio_isinf(TRIO_VOLATILE double number)
   return ((fp_class(number) == FP_POS_INF)
 	  ? 1
 	  : ((fp_class(number) == FP_NEG_INF) ? -1 : 0));
+
+#elif defined(_FPCLASSIFY)
+  /*
+   * HP-UX 11.0 has an isinf() macro, but it is broken, so we use
+   * the _FPCLASSIFY() macro instead. We also guard the C99 check
+   * below by checking for the existance of the _ISINF() macro.
+   */
+  return (_FPCLASSIFY(number) == FP_INFINITE)
+    ? ((number > 0.0) ? 1 : -1)
+    : 0;
   
-#elif defined(isinf)
+#elif defined(isinf) && !defined(_ISINF)
   /*
    * C99 defines isinf() as a macro.
    */
@@ -514,9 +536,10 @@ trio_isinf(TRIO_VOLATILE double number)
    @return Boolean value indicating whether or not the number is a finite.
 */
 TRIO_PUBLIC int
-trio_isfinite(TRIO_VOLATILE double number)
+trio_isfinite(number)
+     TRIO_VOLATILE double number;
 {
-#if defined(isfinite)
+#if defined(TRIO_COMPILER_SUPPORTS_C99) && defined(isfinite)
   /*
    * C99 defines isfinite() as a macro.
    */
@@ -550,8 +573,9 @@ trio_isfinite(TRIO_VOLATILE double number)
  * The sign of NaN is always false
  */
 TRIO_PUBLIC int
-trio_fpclassign(TRIO_VOLATILE double number,
-		int *is_negative)
+trio_fpclassign(number, is_negative)
+     TRIO_VOLATILE double number;
+     int *is_negative;
 {
 #if defined(fpclassify) && defined(signbit)
   /*
@@ -648,7 +672,46 @@ trio_fpclassign(TRIO_VOLATILE double number,
     *is_negative = (number < 0.0);
     return TRIO_FP_NORMAL;
   }
-  
+
+#elif defined(FP_PLUS_NORM) || defined(__hpux)
+
+  /*
+   * HP-UX 9.x and 10.x have an fpclassify() function, that is different
+   * from the C99 fpclassify() macro supported on HP-UX 11.x.
+   */
+  switch (fpclassify(number)) {
+  case FP_QNAN:
+  case FP_SNAN:
+    *is_negative = TRIO_FALSE;
+    return TRIO_FP_NAN;
+  case FP_PLUS_INF:
+    *is_negative = TRIO_FALSE;
+    return TRIO_FP_INFINITE;
+  case FP_MINUS_INF:
+    *is_negative = TRIO_TRUE;
+    return TRIO_FP_INFINITE;
+  case FP_PLUS_DENORM:
+    *is_negative = TRIO_FALSE;
+    return TRIO_FP_SUBNORMAL;
+  case FP_MINUS_DENORM:
+    *is_negative = TRIO_TRUE;
+    return TRIO_FP_SUBNORMAL;
+  case FP_PLUS_ZERO:
+    *is_negative = TRIO_FALSE;
+    return TRIO_FP_ZERO;
+  case FP_MINUS_ZERO:
+    *is_negative = TRIO_TRUE;
+    return TRIO_FP_ZERO;
+  case FP_PLUS_NORM:
+    *is_negative = TRIO_FALSE;
+    return TRIO_FP_NORMAL;
+  case FP_MINUS_NORM:
+    *is_negative = TRIO_TRUE;
+    return TRIO_FP_NORMAL;
+  default:
+    assert(0);
+  }
+
 #else
   /*
    * Fallback solution.
@@ -698,7 +761,8 @@ trio_fpclassign(TRIO_VOLATILE double number,
    sign bit set (i.e. is negative).
 */
 TRIO_PUBLIC int
-trio_signbit(TRIO_VOLATILE double number)
+trio_signbit(number)
+     TRIO_VOLATILE double number;
 {
   int is_negative;
   
@@ -713,7 +777,8 @@ trio_signbit(TRIO_VOLATILE double number)
    @return Enumerable value indicating the class of @p number
 */
 TRIO_PUBLIC int
-trio_fpclassify(TRIO_VOLATILE double number)
+trio_fpclassify(number)
+     TRIO_VOLATILE double number;
 {
   int dummy;
   
@@ -734,7 +799,9 @@ trio_fpclassify(TRIO_VOLATILE double number)
 #if defined(STANDALONE)
 # include <stdio.h>
 
-static const char *getClassification(int type)
+static TRIO_CONST char *
+getClassification(type)
+     int type;
 {
   switch (type) {
   case TRIO_FP_INFINITE:
@@ -752,7 +819,10 @@ static const char *getClassification(int type)
   }
 }
 
-static void print_class(const char *prefix, double number)
+static void
+print_class(prefix, number)
+     TRIO_CONST char *prefix;
+     double number;
 {
   printf("%-6s: %s %-15s %g\n",
 	 prefix,
@@ -761,13 +831,13 @@ static void print_class(const char *prefix, double number)
 	 number);
 }
 
-int main(void)
+int main(TRIO_NOARGS)
 {
   double my_nan;
   double my_pinf;
   double my_ninf;
 # if defined(TRIO_PLATFORM_UNIX)
-  void (*signal_handler)(int);
+  void (*signal_handler) TRIO_PROTO((int));
 # endif
 
   my_nan = trio_nan();

@@ -34,16 +34,16 @@ pure: $(TOBJS) $(OBJS)
 	$(PURIFY) $(PURIFYOPTIONS) $(CC) $(CFLAGS) $^ $(LDFLAGS)
 
 regression: regression.o $(TARGETLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) regression.o $(LDFLAGS) -o $@
 
 example: example.o $(TARGETLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) example.o $(LDFLAGS) -o $@
 
 compare: compare.o $(TARGETLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) compare.o $(LDFLAGS) -o $@
 
 userdef: userdef.o $(TARGETLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) userdef.o $(LDFLAGS) -o $@
 
 $(TARGETLIB): $(OBJS)
 	$(AR) ruv $(TARGETLIB) $(OBJS)

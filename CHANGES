@@ -4,10 +4,24 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.7 - 2002/03/28
+Version 1.7 - 2002/04/07
 ------------------------
+* Made trio compile with K&R compilers.
+
+* Emmanuel Mogenet
+  Fixed bug in trio_asprintf.
+
+* Emmanuel Mogenet
+  Various WIN32 fixes.
+
 * Joe Orton
-  Added autoconf
+  Fixed trio_isinf() on HP-UX, and added test cases.
+
+* Joe Orton
+  Fixed non-portable use of $^ in Makefile.
+
+* Joe Orton
+  Added autoconf.
 
 * Alexander Lukyanov
   Fixed a number of bugs in the scanning of EOF and the count specifier.
