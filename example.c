@@ -7,6 +7,7 @@
 #include <math.h>
 #include <unistd.h>
 /*  #include <nan.h> */
+#include <wchar.h>
 #include "strio.h"
 #include "trio.h"
 #undef printf
@@ -250,8 +251,14 @@ int main(void)
 /*    rc = trio_sprintf(buffer, "%I32I8d", 12345); */
 /*    Dump(buffer, rc); */
 
-  rc = trio_sprintf(buffer, "*%5f*", 3.3);
-  Dump(buffer, rc);
+/*    rc = trio_sprintf(buffer, "*%5f*", 3.3); */
+/*    Dump(buffer, rc); */
+  
+  {
+    wchar_t *wstring = L"some data";
+    rc = trio_sprintf(buffer, "%ls", wstring);
+    Dump(buffer, rc);
+  }
   
   /* rc = StrFormat(buffer, "\040-\040\040-\n"); */
 
