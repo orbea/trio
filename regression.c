@@ -511,19 +511,19 @@ VerifyFormatting(TRIO_NOARGS)
 #endif
 
 #if TRIO_C99
-  nerrors += Verify(__FILE__, __LINE__, "0x2.a00000p+1",
+  nerrors += Verify(__FILE__, __LINE__, "0x2.ap+1",
 		    "%a", 42.0);
-  nerrors += Verify(__FILE__, __LINE__, "-0x2.a00000p+1",
+  nerrors += Verify(__FILE__, __LINE__, "-0x2.ap+1",
 		    "%a", -42.0);
-  nerrors += Verify(__FILE__, __LINE__, "0x1.800000p+0",
+  nerrors += Verify(__FILE__, __LINE__, "0x1.8p+0",
 		    "%a", 1.5);
-  nerrors += Verify(__FILE__, __LINE__, "0x1.666666p+0",
+  nerrors += Verify(__FILE__, __LINE__, "0x1.6666666666666p+0",
 		    "%a", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "0xc.450000p+2",
+  nerrors += Verify(__FILE__, __LINE__, "0xc.45p+2",
 		    "%a", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "0XC.450000P+2",
+  nerrors += Verify(__FILE__, __LINE__, "0XC.45P+2",
 		    "%A", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "0xb.351c43p-25",
+  nerrors += Verify(__FILE__, __LINE__, "0xb.351c434a98fa8p-25",
 		    "%a", 3.141e-44);
   nerrors += Verify(__FILE__, __LINE__, "256",
 		    "%zd", sizeof(buffer));
@@ -816,11 +816,11 @@ VerifyScanningFloats(TRIO_NOARGS)
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1234567",
 				      "%.10g", 1234567.0);
 #if TRIO_C99
-  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x2.a00000p+1",
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x2.ap+1",
 				      "%a", 42.0);
-  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x1.2d6870p+5",
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x1.2d687p+5",
 				      "%a", 1234567.0);
-  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0X1.2D6870P+5",
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0X1.2D687P+5",
 				      "%A", 1234567.0);
 #endif
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.79769e+308",

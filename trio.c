@@ -2701,7 +2701,17 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     precision = baseDigits;
 
   if (precision == NO_PRECISION)
-    precision = FLT_DIG;
+    {
+      if (isHex)
+	{
+	  keepTrailingZeroes = FALSE;
+	  precision = FLT_MANT_DIG;
+	}
+      else
+	{
+	  precision = FLT_DIG;
+	}
+    }
   
   if (isNegative)
     number = -number;
