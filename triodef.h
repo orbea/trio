@@ -139,7 +139,7 @@ typedef char * trio_pointer_t;
 # define TRIO_VARGS4(list,a1,a2,a3,a4) list a1; a2; a3; a4
 # define TRIO_VARGS5(list,a1,a2,a3,a4,a5) list a1; a2; a3; a4; a5
 # define TRIO_VA_DECL va_dcl
-# define TRIO_VA_START(x,y) va_start((x))
+# define TRIO_VA_START(x,y) va_start(x)
 # define TRIO_VA_END(x) va_end(x)
 #else /* ANSI C */
 # define TRIO_CONST const
