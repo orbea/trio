@@ -15,8 +15,9 @@
  *
  ************************************************************************/
 
-/* FIXME
- * StrToLongDouble
+/*
+ * TODO
+ * - StrToLongDouble
  */
  
 static const char rcsid[] = "@(#)$Id$";

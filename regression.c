@@ -301,6 +301,11 @@ int VerifyFormatting(void)
 		    "%F", HUGE_VAL);
   nerrors += Verify(__FILE__, __LINE__, "-INF",
 		    "%F", -HUGE_VAL);
+  /* These two may fail if NaN is unsupported */
+  nerrors += Verify(__FILE__, __LINE__, "nan",
+		    "%f", cos(HUGE_VAL));
+  nerrors += Verify(__FILE__, __LINE__, "NAN",
+		    "%F", cos(HUGE_VAL));
   /* Quote flag */
   nerrors += Verify(__FILE__, __LINE__, "Another \"quoted\" string",
 		   "Another %'s string", "quoted");
@@ -398,6 +403,10 @@ int VerifyStrings(void)
   sprintf(buffer, "Find me now");
   if (!StrEqual(buffer, "Find me now"))
     nerrors++;
+  if (!StrEqualCase(buffer, "Find me now"))
+    nerrors++;
+  if (StrEqualCase(buffer, "FIND ME NOW"))
+    nerrors++;
   if (!StrEqualMax(buffer, sizeof("Find me") - 1, "Find ME"))
     nerrors++;
   if (!StrContains(buffer, "me"))
@@ -407,6 +416,10 @@ int VerifyStrings(void)
   if (StrSubstring(buffer, "me") == NULL)
     nerrors++;
   if (StrSubstringMax(buffer, 4, "me") != NULL)
+    nerrors++;
+  if (!StrMatch(buffer, "* me *"))
+    nerrors++;
+  if (StrMatchCase(buffer, "* ME *"))
     nerrors++;
   
   return nerrors;

@@ -13,6 +13,8 @@ regression.c
 man/man3/strio.3
 man/man3/trio_printf.3
 man/man3/trio_scanf.3
+man/man3/trio_register.3
 tex/strio.tex
 tex/trio_printf.tex
 tex/trio_scanf.tex
+tex/trio_register.tex

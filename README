@@ -14,9 +14,15 @@ and others.
  MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
  CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
 
-Compile with 'make'
+Trio is intended to be an integral part of another application, so we
+have not done anything to create a proper installation.
+
+Compile with 'make' (edit the Makefile if you want a release build)
 
 Test the package with 'make test'
+
+Install by copying trio.h, triop.h, and libtrio.a (and man/man?/* if
+you want documentation) to the appropriate directories.
 
 Catch some usage examples in example.c
 

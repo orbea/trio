@@ -1,0 +1,322 @@
+% $Id$
+%
+% Copyright (C) 1998 Bjorn Reese and Daniel Stenberg.
+%
+% Permission to use, copy, modify, and distribute this software for any
+% purpose with or without fee is hereby granted, provided that the above
+% copyright notice and this permission notice appear in all copies.
+%
+% THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
+% WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+% MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+% CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
+
+\documentclass{article}
+\usepackage{latex2man}
+
+\begin{Name}{3}{trio_register}{Bjorn Reese and Daniel Stenberg}{libtrio}{trio_register}
+trio_register,
+trio_unregister
+- callback functions for trio_printf
+\end{Name}
+
+\section{Synopsis}
+
+\texttt{cc \Dots\ -ltrio -lm}
+
+\texttt{\#include $<$trio.h$>$}\\
+\texttt{\#include $<$triop.h$>$}
+
+\texttt{void *trio_register(trio_callback_t callback, const char *namespace);}\\
+\texttt{void trio_unregister(void *handle);}
+
+\texttt{const char *trio_get_format(void *ref);}\\
+\texttt{void *trio_get_argument(void *ref);}
+
+\texttt{int trio_print_ref(void *ref, const char *format, ...);}\\
+\texttt{int trio_vprint_ref(void *ref, const char *format, va_list args);}\\
+\texttt{int trio_printv_ref(void *ref, const char *format, void **args);}\\
+
+\texttt{int trio_print_int(void *ref, int number);}\\
+
+
+\section{Description}
+This documentation is incomplete.
+
+\section{User-defined Specifier}
+The user-defined specifier consists of a start character (ASCII 074 = '$<$'),
+an optional namespace string followed by a namespace separator
+(ASCII 072 = ':'), a format string, and an end character (ASCII 076 = '$>$').
+
+The namespace string can consist of alphanumeric characters, and is used to
+define a named reference (see below). The namespace is case-sensitive. If no
+namespace is specified, then we use an unnamed reference (see below).
+
+The format can consist of any character except the end character ('$>$'), the
+namespace separator (':'), and the nil character (ASCII 000 = \Bs 0).
+
+Any modifier can be used together with the user-defined specifier.
+
+\section{Registering}
+A user-defined specifier must be registered before it can be used.
+Unregistered user-defined specifiers are ignored. The \textbf{trio_register}
+function is used to register a user-defined specifier. It takes two argument,
+a callback function and a namespace, and it returns a handle. The handle must
+be used to unregister the specifier later. 
+
+The following example registers a user-define specifier with the "my_namespace"
+namespace:
+
+\texttt{my_handle = trio_register(my_callback, "my_namespace");}
+
+There can only be one user-defined specifier with a given namespace. There
+can be an unlimited number (subject to maximum length of the namespace) of
+different user-defined specifiers.
+
+Passing NULL as the namespace argument results in an anonymous reference.
+There can be an unlimited number of anonymous references.
+
+
+\subsection{References}
+There are two ways that a registered callback can be called. Either the
+user-defined specifier must contain the registered namespace in the format
+string, or the handle is passed as an argument to the formatted printing
+function.
+
+If the namespace is used, then a user-defined pointer must be passed as an
+argument:
+
+\texttt{trio_printf("<my_namespace:format>", my_data);}\\
+
+If the handle is used, then the user-defined specifier must not contain a
+namespace. Instead the handle must be passed as an argument, followed by a
+user-defined pointer:
+
+\texttt{trio_printf("<format>", my_handle, my_data);}\\
+
+The two examples above are equivalent.
+
+There must be exactly one user-defined pointer per user-defined specifier.
+This pointer can be used within the callback function with the
+\textbf{trio_get_argument} getter function (see below).
+
+The format string is optional. It can be used within the callback function
+with the \textbf{trio_get_format} getter function.
+
+\subsection{Anonymous References}
+Anonymous references are specified by passing NULL as the namespace.
+
+The handle must be passed as an argument followed by a user-defined pointer.
+No namespace can be specified.
+
+\texttt{anon_handle = trio_register(callback, NULL);}\\
+\texttt{trio_printf("<format>", anon_handle, my_data);}\\
+
+\subsection{Restrictions}
+\begin{itemize}
+\item The length of the namespace string cannot exceed 63 characters.
+\item The length of the user-defined format string cannot exceed 255
+characters.
+\item User-defined formatting cannot re-define existing specifiers.
+This restriction was imposed because the existing formatting specifiers have
+a well-defined behaviour, and any re-definition would apply globally to an
+application (imagine a third-party library changing the behaviour of a
+specifier that is crusial to your application).
+\end{itemize}
+
+
+\section{Callback Function}
+The callback function will be called if a matching user-defined specifier
+is found within the formatting string. The callback function takes one input
+parameter, an opaque reference which is needed by the private functions. It
+returns an int, which is currently ignored. The prototype is
+
+\texttt{int (*trio_callback_t)(void *ref)}
+
+See the Example section for full examples.
+
+
+\section{Printing Functions}
+The following printing functions must only be used inside a callback function.
+These functions will print to the same output medium as the printf function
+which invoked the callback function. For example, if the user-defined
+specifier is used in an sprintf function, then these print functions will
+output their result to the same string.
+
+\subsection{Elementary Printing}
+There are a number of function to print elementary data types.
+\begin{itemize}
+\item[\textbf{trio_print_int}]
+Print a signed integer. For example:\\
+\texttt{trio_print_int(42);}
+\item[\textbf{trio_print_uint}]
+Print an unsigned integer.
+\item[\textbf{trio_print_double}]
+Print a floating-point number.
+\item[\textbf{trio_print_string}]
+Print a string. For example:\\
+\texttt{trio_print_string("Hello World");}\\
+\texttt{trio_print_string(trio_get_format());}
+\item[\textbf{trio_print_pointer}]
+Print a pointer.
+\end{itemize}
+
+\subsection{Formatted Printing}
+The functions \textbf{trio_print_ref}, \textbf{trio_vprint_ref}, and
+\textbf{trio_printv_ref} outputs a formatted string just like its printf
+equivalents.
+
+\texttt{trio_print_ref(ref, "There are \%d towels", 42);}\\
+\texttt{trio_print_ref(ref, "\%<recursive>", recursive_writer, trio_get_argument());}\\
+
+\section{Getter and Setter Functions}
+The following getter and setter functions must only be used inside a callback
+function. They can either operate on the modifiers or on special data.
+
+\subsection{Modifiers}
+The value of a modifier, or a boolean indication of its presence or absence,
+can be found or set with the getter and setter functions.
+The generic prototypes of the these getter and setter functions are
+
+\texttt{int~~trio_get_???(void *ref);}\\
+\texttt{void~trio_set_???(void *ref, int);}\\
+
+where \texttt{???} refers to a modifier. For example, to get the width of
+the user-defined specifier use
+
+\texttt{int width = trio_get_width(ref);}\\
+
+\subsection{Special Data}
+Consider the following user-defined specifier, in its two possible referencing
+presentations.
+
+\texttt{trio_printf("\%<format>", namespace_writer, argument);}\\
+\texttt{trio_printf("\%<namespace:format>", argument);}\\
+
+\textbf{trio_get_format} will get the \textbf{format} string, and
+\textbf{trio_get_argument} will get the \textbf{argument} parameter.
+There are no associated setter functions.
+
+
+\section{Examples}
+The following examples show various types of user-defined specifiers. Although
+each specifier is demonstrated in isolation, they can all co-exist within the
+same application.
+\subsection{Time}
+Print the time in the format "HOUR:MINUTE:SECOND" if "time" is specified inside
+the user-defined specifier.
+
+\begin{verbatim}
+static int time_writer(void *ref)
+{
+  const char *format;
+  time_t *data;
+  char buffer[256];
+
+  format = trio_get_format(ref);
+  if ((format) && (strcmp(format, "time") == 0)) {
+    data = trio_get_argument(ref);
+    if (data == NULL)
+      return -1;
+    strftime(buffer, sizeof(buffer), "%%H:%%M:%%S", localtime(data));
+    trio_print_string(ref, buffer);
+  }
+  return 0;
+}
+\end{verbatim}
+
+\begin{verbatim}
+int main(void)
+{
+  void *handle;
+  time_t now = time(NULL);
+
+  handle = trio_register(time_print, "my_time");
+
+  trio_printf("%%<time>", handle, &now);
+  trio_printf("%%<my_time:time>", &now);
+
+  trio_unregister(handle);
+  return 0;
+}
+\end{verbatim}
+
+\subsection{Complex Numbers}
+Consider a complex number consisting of a real part, re, and an imaginary part,
+im.
+
+\begin{verbatim}
+struct Complex {
+  double re;
+  double im;
+};
+\end{verbatim}
+This example can print such a complex number in one of two formats.
+The default format is "re + i im". If the alternative modifier is used, then
+the format is "r exp(i theta)", where r is the length of the complex vector
+(re, im) and theta is its angle.
+
+\begin{verbatim}
+static int complex_print(void *ref)
+{
+  struct Complex *data;
+  const char *format;
+
+  data = (struct Complex *)trio_get_argument(ref);
+  if (data) {
+    format = trio_get_format(ref);
+    
+    if (trio_get_alternative(ref)) {
+      double r, theta;
+      
+      r = sqrt(pow(data->re, 2) + pow(data->im, 2));
+      theta = acos(data->re / r);
+      trio_print_ref(ref, "%%#f exp(i %%#f)", r, theta);
+      
+    } else {
+      trio_print_ref(ref, "%%#f + i %%#f", data->re, data->im);
+    }
+  }
+  return 0;
+}
+\end{verbatim}
+
+\begin{verbatim}
+int main(void)
+{
+  void *handle;
+
+  handle = trio_register(complex_print, "complex");
+
+  /* Normal format. With handle and the with namespace */
+  trio_printf("%%<>", handle, &complex);
+  trio_printf("%%<complex:>", &complex);
+  /* In exponential notation */
+  trio_printf("%%#<>", handle, &complex);
+  trio_printf("%%#<complex:unused data>", &complex);
+
+  trio_unregister(handle);
+  return 0;
+}
+\end{verbatim}
+
+
+\section{Return Values}
+\textbf{trio_register} returns a handle, or NULL if an error occured.
+
+
+\section{See Also}
+\Cmd{trio_printf}{3}
+
+
+\section{Legal Issues}
+Copyright \copyright\ 1998-2000 Bjorn Reese and Daniel Stenberg.
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.

@@ -27,7 +27,11 @@ trio_vprintf,
 trio_vfprintf,
 trio_vsprintf,
 trio_vsnprintf,
-trio_vaprintf
+trio_vaprintf,
+trio_printfv,
+trio_fprintfv,
+trio_sprintfv,
+trio_snprintfv
 - formatted output conversion
 \end{Name}
 
@@ -42,15 +46,23 @@ trio_vaprintf
 \texttt{int trio_dprintf(int fd, const char *format, ...);}\\
 \texttt{int trio_sprintf(char *buffer, const char *format, ...);}\\
 \texttt{int trio_snprintf(char *buffer, size_t max, const char *format, ...);}\\
-\texttt{int trio_snprintfcat(char *buffer, size_t max, const char *format, ...);}\\
-\texttt{int trio_asprintf(char **buffer, const char *format, ...);}\\
+
 \texttt{int trio_vprintf(const char *format, va_list args);}\\
 \texttt{int trio_vfprintf(FILE *file, const char *format, va_list args);}\\
 \texttt{int trio_vdprintf(int fd, const char *format, va_list args);}\\
 \texttt{int trio_vsprintf(char *buffer, const char *format, va_list args);}\\
 \texttt{int trio_vsnprintf(char *buffer, size_t bufferSize, const char *format, va_list args);}\\
-\texttt{int trio_vasprintf(char **buffer, const char *format, va_list args);}
 
+\texttt{int trio_printfv(const char *format, void **args);}\\
+\texttt{int trio_fprintfv(FILE *file, const char *format, void **args);}\\
+\texttt{int trio_dprintfv(int fd, const char *format, void **args);}\\
+\texttt{int trio_sprintfv(char *buffer, const char *format, void **args);}\\
+\texttt{int trio_snprintfv(char *buffer, size_t bufferSize, const char *format, void **args);}\\
+
+\texttt{int trio_snprintfcat(char *buffer, size_t max, const char *format, ...);}\\
+
+\texttt{int trio_asprintf(char **buffer, const char *format, ...);}\\
+\texttt{int trio_vasprintf(char **buffer, const char *format, va_list args);}
 
 \section{Description}
 This documentation is incomplete.
@@ -61,24 +73,24 @@ All these functions outputs a string which is formatted according to the
 \Arg{format} string and the consecutive arguments. The \Arg{format} string
 is described in the Formatting section below.
 
-\textbf{trio_printf} and \textbf{trio_vprintf} writes the output to the
-standard output stream (stdout).
+\textbf{trio_printf}, \textbf{trio_vprintf}, and \textbf{trio_printfv} writes
+the output to the standard output stream (stdout).
 
-\textbf{trio_fprintf} and \textbf{trio_vfprintf} writes the output to a given
-output stream.
+\textbf{trio_fprintf}, \textbf{trio_vfprintf}, and \textbf{trio_fprintfv}
+writes the output to a given output stream.
 
-\textbf{trio_dprintf} and \textbf{trio_vdprintf} writes the output to a file
-descriptor (this includes, for example, sockets).
+\textbf{trio_dprintf}, \textbf{trio_vdprintf}, and \textbf{trio_dprintfv}
+writes the output to a file descriptor (this includes, for example, sockets).
 
-\textbf{trio_sprintf} and \textbf{trio_vsprintf} writes the output into
-\Arg{buffer}.
+\textbf{trio_sprintf}, \textbf{trio_vsprintf}, and \textbf{trio_sprintfv}
+writes the output into \Arg{buffer}.
 
-\textbf{trio_snprintf} and \textbf{trio_vsnprintf} writes \Arg{max} - 1
-characters into \Arg{buffer} followed by a terminating zero character. If
-\Arg{max} is 1, then \Arg{buffer} will be an empty string. If \Arg{max} is 0,
-then \Arg{buffer} is left untouched, and can consequently be \texttt{NULL}.
-The number of characters that would have been written to \Arg{buffer}, had
-there been sufficient space, is returned.
+\textbf{trio_snprintf}, \textbf{trio_vsnprintf}, and \textbf{trio_vsnprintf}
+writes \Arg{max} - 1 characters into \Arg{buffer} followed by a terminating
+zero character. If \Arg{max} is 1, then \Arg{buffer} will be an empty string.
+If \Arg{max} is 0, then \Arg{buffer} is left untouched, and can consequently
+be \texttt{NULL}. The number of characters that would have been written to
+\Arg{buffer}, had there been sufficient space, is returned.
 
 \textbf{trio_snprintfcat} appends the formatted text at the end of
 \Arg{buffer}.
@@ -163,6 +175,12 @@ Prefixes, such as 0x for hexadecimal integers, are part of width.\\
 \end{enumerate}
 
 \item Precision (.9)\\
+The precision has different semantics for the various data types.
+The precision specifies the maximum number of printed characters for strings,
+the number of digits after the decimal-point for floating-point numbers,
+the number of significant digits for the g (and G) representation of
+floating-point numbers,
+the minimum number of printed digits for integers.
 
 \begin{enumerate}
 \item \texttt{trio_printf("|\%10.8i|\%.8i|", 42, 42);}\\
@@ -181,9 +199,9 @@ be between 2 and 36 (both included).
 \end{enumerate}
 
 \item Padding (0)\\
-This modifier means that (integer and floating point) numbers are prepended by
-zeros. The number of leading zeros are determined by the precision. If
-precision is not present width is used instead.
+Integer and floating point numbers are prepended by zeros. The number of
+leading zeros are determined by the precision. If precision is not present,
+width is used instead.
 
 \item Short (h)\\
 The argument is read as an (unsigned) \texttt{short int}.
@@ -219,21 +237,28 @@ returned by the \texttt{sizeof} operator.
 Corresponds to the size_t modifier (z).
 
 \item Alternative (\#)\\
+Prepend radix indicator for hexadecimal, octal, and binary integer numbers
+and for pointers.
+Always add a decimal-pointer for floating-point numbers.
+Escape non-printable characters for strings.
 
 \item Spacing (\ )\\
+Prepend leading spaces when necessary.
 
 \item Sign (+)\\
 Always prepend a sign to numbers. Normally only the negative sign is prepended
 to a number. With this modifier the positive sign may also be prepended.
 
 \item Alignment (-)\\
-The output will be left-justified.
+The output will be left-justified in the field specified by the width.
 
 \item Argument (*)\\
+Width, precision, or base is read from the argument list, rather than from
+the formatting string.
 
 \item Quote/Grouping (') [MISC]\\
 Groups integers and the integer-part of floating-point numbers according to
-the locale.
+the locale. Quote strings and characters.
 
 \item Sticky (!) [TRIO]\\
 The modifiers listed for the current specifier will be reused by subsequent

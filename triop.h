@@ -13,18 +13,18 @@
  * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
  * CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
  *
- ************************************************************************/
-
-#ifndef TRIO_TRIOP_H
-#define TRIO_TRIOP_H
-
-/*
+ ************************************************************************
+ *
  * Private functions, types, etc. used for callback functions.
  *
  * The ref pointer is an opaque type and should remain as such.
  * Private data must only be accessible through the getter and
  * setter functions.
- */
+ *
+ ************************************************************************/
+
+#ifndef TRIO_TRIOP_H
+#define TRIO_TRIOP_H
 
 #if defined(__STDC__) && (__STDC_VERSION__ >= 199901L)
 # define TRIO_C99
@@ -36,21 +36,6 @@
 #define TRIO_EXTENSION
 #define TRIO_ERRORS
 
-enum trio_format_type {
-  TRIO_FORMAT_UNKNOWN = 0,
-  TRIO_FORMAT_INT,
-  TRIO_FORMAT_DOUBLE,
-  TRIO_FORMAT_CHAR,
-  TRIO_FORMAT_STRING,
-  TRIO_FORMAT_POINTER,
-  TRIO_FORMAT_COUNT,
-  TRIO_FORMAT_PARAMETER,
-  TRIO_FORMAT_GROUP,
-  TRIO_FORMAT_ERRNO,
-  TRIO_FORMAT_USER_DEFINED,
-  
-  TRIO_FORMAT_LAST
-};
 
 typedef int (*trio_callback_t)(void *ref);
 
@@ -67,30 +52,38 @@ int  trio_get_precision(void *ref);
 void trio_set_precision(void *ref, int precision);
 int  trio_get_base(void *ref);
 void trio_set_base(void *ref, int base);
-int  trio_get_long(void *ref);
-void trio_set_long(void *ref, int is_long);
-int  trio_get_short(void *ref);
+int  trio_get_padding(void *ref);
+void trio_set_padding(void *ref, int is_padding);
+int  trio_get_short(void *ref); /* h */
+void trio_set_shortshort(void *ref, int is_shortshort);
+int  trio_get_shortshort(void *ref); /* hh */
 void trio_set_short(void *ref, int is_short);
-int  trio_get_leftadjusted(void *ref);
-void trio_set_leftadjusted(void *ref, int is_leftadjusted);
-int  trio_get_space(void *ref);
-void trio_set_space(void *ref, int is_space);
-int  trio_get_showsign(void *ref);
-void trio_set_showsign(void *ref, int is_showsign);
-int  trio_get_nilpad(void *ref);
-void trio_set_nilpad(void *ref, int is_nilpad);
-int  trio_get_unsigned(void *ref);
-void trio_set_unsigned(void *ref, int is_unsiged);
-/*  int  trio_get_quote(void *ref); */
-/*  void trio_set_quote(void *ref, int is_quote); */
-/*  int  trio_get_upper(void *ref); */
-/*  void trio_set_upper(void *ref, int is_upper); */
-/*  int  trio_get_float_F(void *ref); */
-/*  void trio_set_float_F(void *ref, int is_float_F); */
-/*  int  trio_get_float_E(void *ref); */
-/*  void trio_set_float_E(void *ref, int is_float_E); */
-/*  int  trio_get_float_G(void *ref); */
-/*  void trio_set_float_G(void *ref, int is_float_G); */
+int  trio_get_long(void *ref); /* l */
+void trio_set_long(void *ref, int is_long);
+int  trio_get_longlong(void *ref); /* ll */
+void trio_set_longlong(void *ref, int is_longlong);
+int  trio_get_longdouble(void *ref); /* L */
+void trio_set_longdouble(void *ref, int is_longdouble);
+int  trio_get_alternative(void *ref); /* # */
+void trio_set_alternative(void *ref, int is_alternative);
+int  trio_get_alignment(void *ref); /* - */
+void trio_set_alignment(void *ref, int is_leftaligned);
+int  trio_get_spacing(void *ref); /* (space) */
+void trio_set_spacing(void *ref, int is_space);
+int  trio_get_sign(void *ref); /* + */
+void trio_set_sign(void *ref, int is_showsign);
+int  trio_get_quote(void *ref); /* ' */
+void trio_set_quote(void *ref, int is_quote);
+int  trio_get_upper(void *ref);
+void trio_set_upper(void *ref, int is_upper);
+#if defined(TRIO_C99)
+int  trio_get_largest(void *ref); /* j */
+void trio_set_largest(void *ref, int is_largest);
+int  trio_get_ptrdiff(void *ref); /* t */
+void trio_set_ptrdiff(void *ref, int is_ptrdiff);
+int  trio_get_size(void *ref); /* z / Z */
+void trio_set_size(void *ref, int is_size);
+#endif
 
 /* Printing */
 int trio_print_ref(void *ref, const char *format, ...);

@@ -17,7 +17,7 @@ GENDOC	= latex2man
 PURIFY = purify
 PURIFYOPTIONS = -chain-length=16 -first-only=YES
 
-all: $(TARGETLIB) $(TARGET) regression example userdef
+all: $(TARGETLIB) $(TARGET) regression example
 
 test:
 	./regression

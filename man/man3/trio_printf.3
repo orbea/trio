@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Sat Dec  2 16:22:02 MET 2000
+.\" Manual page created with latex2man on Sat Dec  9 12:53:24 MET 2000
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "TRIO_PRINTF" "3" "02 December 2000" "libtrio "
+.TH "TRIO_PRINTF" "3" "09 December 2000" "libtrio "
 .SH NAME
 trio_printf, 
 trio_fprintf, 
@@ -22,7 +22,11 @@ trio_vprintf,
 trio_vfprintf, 
 trio_vsprintf, 
 trio_vsnprintf, 
-trio_vaprintf 
+trio_vaprintf, 
+trio_printfv, 
+trio_fprintfv, 
+trio_sprintfv, 
+trio_snprintfv 
 \- formatted output conversion 
 .PP
 .SH SYNOPSIS
@@ -41,10 +45,7 @@ int trio_sprintf(char *buffer, const char *format, ...);
 .br
 int trio_snprintf(char *buffer, size_t max, const char *format, ...);
 .br
-int trio_snprintfcat(char *buffer, size_t max, const char *format, ...);
-.br
-int trio_asprintf(char **buffer, const char *format, ...);
-.br
+.PP
 int trio_vprintf(const char *format, va_list args);
 .br
 int trio_vfprintf(FILE *file, const char *format, va_list args);
@@ -54,6 +55,23 @@ int trio_vdprintf(int fd, const char *format, va_list args);
 int trio_vsprintf(char *buffer, const char *format, va_list args);
 .br
 int trio_vsnprintf(char *buffer, size_t bufferSize, const char *format, va_list args);
+.br
+.PP
+int trio_printfv(const char *format, void **args);
+.br
+int trio_fprintfv(FILE *file, const char *format, void **args);
+.br
+int trio_dprintfv(int fd, const char *format, void **args);
+.br
+int trio_sprintfv(char *buffer, const char *format, void **args);
+.br
+int trio_snprintfv(char *buffer, size_t bufferSize, const char *format, void **args);
+.br
+.PP
+int trio_snprintfcat(char *buffer, size_t max, const char *format, ...);
+.br
+.PP
+int trio_asprintf(char **buffer, const char *format, ...);
 .br
 int trio_vasprintf(char **buffer, const char *format, va_list args);
 .PP
@@ -69,52 +87,55 @@ string and the consecutive arguments. The
 string 
 is described in the Formatting section below. 
 .PP
-.BR "trio_printf"
+.BR "trio_printf",
+.BR "trio_vprintf",
 and 
-.BR "trio_vprintf"
-writes the output to the 
-standard output stream (stdout). 
+.BR "trio_printfv"
+writes 
+the output to the standard output stream (stdout). 
 .PP
-.BR "trio_fprintf"
+.BR "trio_fprintf",
+.BR "trio_vfprintf",
 and 
-.BR "trio_vfprintf"
-writes the output to a given 
-output stream. 
+.BR "trio_fprintfv"
+writes the output to a given output stream. 
 .PP
-.BR "trio_dprintf"
+.BR "trio_dprintf",
+.BR "trio_vdprintf",
 and 
-.BR "trio_vdprintf"
-writes the output to a file 
-descriptor (this includes, for example, sockets). 
+.BR "trio_dprintfv"
+writes the output to a file descriptor (this includes, for example, sockets). 
 .PP
-.BR "trio_sprintf"
+.BR "trio_sprintf",
+.BR "trio_vsprintf",
 and 
-.BR "trio_vsprintf"
+.BR "trio_sprintfv"
 writes the output into 
 .IR "buffer".
 .PP
-.BR "trio_snprintf"
+.BR "trio_snprintf",
+.BR "trio_vsnprintf",
 and 
 .BR "trio_vsnprintf"
 writes 
 .IR "max"
-\- 1 
-characters into 
+\- 1 characters into 
 .IR "buffer"
-followed by a terminating zero character. If 
+followed by a terminating 
+zero character. If 
 .IR "max"
 is 1, then 
 .IR "buffer"
-will be an empty string. If 
+will be an empty string. 
+If 
 .IR "max"
-is 0, 
-then 
+is 0, then 
 .IR "buffer"
-is left untouched, and can consequently be NULL.
+is left untouched, and can consequently 
+be NULL.
 The number of characters that would have been written to 
 .IR "buffer",
-had 
-there been sufficient space, is returned. 
+had there been sufficient space, is returned. 
 .PP
 .BR "trio_snprintfcat"
 appends the formatted text at the end of 
@@ -243,6 +264,12 @@ trio_printf("|%10i|", 42);
 .TP
 Precision (.9)
 .br
+The precision has different semantics for the various data types. 
+The precision specifies the maximum number of printed characters for strings, 
+the number of digits after the decimal\-point for floating\-point numbers, 
+the number of significant digits for the g (and G) representation of 
+floating\-point numbers, 
+the minimum number of printed digits for integers. 
 .PP
 .RS
 .TP
@@ -278,9 +305,9 @@ trio_printf("|%*.8.*i|", 10, 2, 42);
 .TP
 Padding (0)
 .br
-This modifier means that (integer and floating point) numbers are prepended by 
-zeros. The number of leading zeros are determined by the precision. If 
-precision is not present width is used instead. 
+Integer and floating point numbers are prepended by zeros. The number of 
+leading zeros are determined by the precision. If precision is not present, 
+width is used instead. 
 .PP
 .TP
 Short (h)
@@ -342,10 +369,15 @@ Corresponds to the size_t modifier (z).
 .TP
 Alternative (#)
 .br
+Prepend radix indicator for hexadecimal, octal, and binary integer numbers 
+and for pointers. 
+Always add a decimal\-pointer for floating\-point numbers. 
+Escape non\-printable characters for strings. 
 .PP
 .TP
 Spacing ( )
 .br
+Prepend leading spaces when necessary. 
 .PP
 .TP
 Sign (+)
@@ -356,17 +388,19 @@ to a number. With this modifier the positive sign may also be prepended.
 .TP
 Alignment (\-)
 .br
-The output will be left\-justified. 
+The output will be left\-justified in the field specified by the width. 
 .PP
 .TP
 Argument (*)
 .br
+Width, precision, or base is read from the argument list, rather than from 
+the formatting string. 
 .PP
 .TP
 Quote/Grouping (') [MISC]
 .br
 Groups integers and the integer\-part of floating\-point numbers according to 
-the locale. 
+the locale. Quote strings and characters. 
 .PP
 .TP
 Sticky (!) [TRIO]

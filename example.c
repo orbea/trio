@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <math.h>
 #include <unistd.h>
+/*  #include <nan.h> */
 #include "strio.h"
 #include "trio.h"
 #undef printf
@@ -167,10 +168,9 @@ int main(void)
 /*    trio_printf("%f\n", HUGE_VAL); */
 /*    printf("%f\n", -HUGE_VAL); */
 /*    trio_printf("%f\n", -HUGE_VAL); */
-/*  #if defined(NAN) */
+/*  #define NAN (cos(HUGE_VAL)) */
 /*    printf("%f\n", NAN); */
 /*    trio_printf("%f\n", NAN); */
-/*  #endif */
   
 /*    printf("'%+06d'\n", 1234); */
 /*    trio_printf("'%+06d'\n", 1234); */

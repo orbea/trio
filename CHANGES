@@ -5,13 +5,29 @@ The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
 
+Version 1.00 - 2000/12/10
+-------------------------
+* Bumped Version number.
+
+
+Version 0.25 - 2000/12/09
+-------------------------
+* Wrote more documentation.
+
+* Improved NaN support and added NaN to regression test.
+
+* Fixed C99 support.
+
+* Added missing getter/setter functions.
+
+
 Version 0.24 - 2000/12/02
 -------------------------
 * Added callback functionality for the user-defined specifier (<>). All
   the necessary functions are defined in triop.h header file. See the
   documentation for trio_register for further detail.
 
-* Added initial documentation on the callback functionality.
+* Wrote initial documentation on the callback functionality.
 
 * Added the printfv and scanfv family of functions, which takes a pointer
   array rather than variadic arguments. Each pointer in the array must point
