@@ -4844,7 +4844,7 @@ TrioReadString(trio_class_t *self,
        (! ((self->current == EOF) || isspace(self->current)));
        i++)
     {
-      if (TrioReadChar(self, &target[i], flags, 1) == 0)
+      if (TrioReadChar(self, (target ? &target[i] : 0), flags, 1) == 0)
 	break; /* for */
     }
   if (target)
@@ -5294,10 +5294,11 @@ TrioScanProcess(trio_class_t *data,
 				    width,
 				    base))
 		  return assignment;
-		assignment++;
-		
+
 		if (!(flags & FLAGS_IGNORE))
 		  {
+		    assignment++;
+
 		    pointer = parameters[i].data.pointer;
 #if defined(QUALIFIER_SIZE_T) || defined(QUALIFIER_SIZE_T_UPPER)
 		    if (flags & FLAGS_SIZE_T)
@@ -5349,9 +5350,10 @@ TrioScanProcess(trio_class_t *data,
 				      width))
 		    return assignment;
 		}
-	      assignment++;
+	      if (!(flags & FLAGS_IGNORE))
+		assignment++;
 	      break; /* FORMAT_STRING */
-	      
+
 	    case FORMAT_DOUBLE:
 	      if (!TrioReadDouble(data,
 				  (flags & FLAGS_IGNORE)
@@ -5360,7 +5362,8 @@ TrioScanProcess(trio_class_t *data,
 				  flags,
 				  width))
 		return assignment;
-	      assignment++;
+	      if (!(flags & FLAGS_IGNORE))
+		assignment++;
 	      break; /* FORMAT_DOUBLE */
 
 	    case FORMAT_GROUP:
@@ -5392,44 +5395,48 @@ TrioScanProcess(trio_class_t *data,
 				   flags,
 				   parameters[i].width))
 		  return assignment;
-		assignment++;
+		if (!(flags & FLAGS_IGNORE))
+		  assignment++;
 	      }
 	      break; /* FORMAT_GROUP */
-	      
+
 	    case FORMAT_COUNT:
 	      pointer = parameters[i].data.pointer;
 	      if (NULL != pointer)
 		{
+		  int count = data->committed;
+		  if (ch != EOF)
+		    count--; /* a character is read, but is not consumed yet */
 #if defined(QUALIFIER_SIZE_T) || defined(QUALIFIER_SIZE_T_UPPER)
 		  if (flags & FLAGS_SIZE_T)
-		    *(size_t *)pointer = (size_t)data->committed;
+		    *(size_t *)pointer = (size_t)count;
 		  else
 #endif
 #if defined(QUALIFIER_PTRDIFF_T)
 		  if (flags & FLAGS_PTRDIFF_T)
-		    *(ptrdiff_t *)pointer = (ptrdiff_t)data->committed;
+		    *(ptrdiff_t *)pointer = (ptrdiff_t)count;
 		  else
 #endif
 #if defined(QUALIFIER_INTMAX_T)
 		  if (flags & FLAGS_INTMAX_T)
-		    *(trio_intmax_t *)pointer = (trio_intmax_t)data->committed;
+		    *(trio_intmax_t *)pointer = (trio_intmax_t)count;
 		  else
 #endif
 		  if (flags & FLAGS_QUAD)
 		    {
-		      *(trio_ulonglong_t *)pointer = (trio_ulonglong_t)data->committed;
+		      *(trio_ulonglong_t *)pointer = (trio_ulonglong_t)count;
 		    }
 		  else if (flags & FLAGS_LONG)
 		    {
-		      *(long int *)pointer = (long int)data->committed;
+		      *(long int *)pointer = (long int)count;
 		    }
 		  else if (flags & FLAGS_SHORT)
 		    {
-		      *(short int *)pointer = (short int)data->committed;
+		      *(short int *)pointer = (short int)count;
 		    }
 		  else
 		    {
-		      *(int *)pointer = (int)data->committed;
+		      *(int *)pointer = (int)count;
 		    }
 		}
 	      break; /* FORMAT_COUNT */
@@ -5457,9 +5464,10 @@ TrioScanProcess(trio_class_t *data,
 				   (width == NO_WIDTH) ? 1 : width) == 0)
 		    return assignment;
 		}
-	      assignment++;
+	      if (!(flags & FLAGS_IGNORE))
+		assignment++;
 	      break; /* FORMAT_CHAR */
-	      
+
 	    case FORMAT_POINTER:
 	      if (!TrioReadPointer(data,
 				   (flags & FLAGS_IGNORE)
@@ -5467,12 +5475,13 @@ TrioScanProcess(trio_class_t *data,
 				   : (void **)parameters[i].data.pointer,
 				   flags))
 		return assignment;
-	      assignment++;
+	      if (!(flags & FLAGS_IGNORE))
+		assignment++;
 	      break; /* FORMAT_POINTER */
-	      
+
 	    case FORMAT_PARAMETER:
 	      break; /* FORMAT_PARAMETER */
-	      
+
 	    default:
 	      return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
 	    }

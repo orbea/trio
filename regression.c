@@ -683,6 +683,7 @@ int VerifyScanningRegression(void)
   int index;
   double dnumber;
   long lnumber;
+  int number;
   char ch;
 
   rc = trio_sscanf("1.5", "%lf%n", &dnumber, &index);
@@ -691,6 +692,13 @@ int VerifyScanningRegression(void)
   rc = trio_sscanf("q 123", "%c%ld", &ch, &lnumber);
   nerrors += Verify(__FILE__, __LINE__, "q 123",
 		    "%c %ld", ch, lnumber);
+  rc = trio_sscanf("abc", "%*s%n", &number);
+  nerrors += Verify(__FILE__, __LINE__, "0 3",
+		    "%d %d", rc, number);
+  rc = trio_sscanf("abc def", "%*s%n", &number);
+  nerrors += Verify(__FILE__, __LINE__, "0 3",
+		    "%d %d", rc, number);
+  
   return nerrors;
 }
 
