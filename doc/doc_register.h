@@ -317,15 +317,41 @@ the format is "r exp(i theta)", where r is the length of the complex vector
 
 @ref trio_register returns a handle, or NULL if an error occured.
 
-@b NOTES
-
-@ref trio_register and @ref trio_unregister are not thread-safe.
-In multi-threaded applications they must be guarded by mutexes.
-
-@internal Describe :enter and :leave callbacks
-
 @b SEE @b ALSO
 
 @ref trio_printf
+
+@b NOTES
+
+User-defined specifiers, @ref trio_register, and @ref trio_unregister are
+not thread-safe. In multi-threaded applications they must be guarded by
+mutexes. Trio provides two special callback functions, called ":enter" and
+":leave", which are invoked every time a thread-unsafe operation is attempted.
+As the thread model is determined by the application, these callback functions
+must be implemented by the application.
+
+The following callback functions are for demonstration-purposes only.
+Replace their bodies with locking and unlocking of a mutex to achieve
+thread-safety.
+@verbatim
+  static int enter_region(void *ref)
+  {
+    fprintf(stderr, "Enter Region\n");
+    return 1;
+  }
+
+  static int leave_region(void *ref)
+  {
+    fprintf(stderr, "Leave Region\n");
+    return 1;
+  }
+@endverbatim
+These two callbacks must be registered before other callbacks are registered.
+@verbatim
+  trio_register(enter_region, ":enter");
+  trio_register(leave_region, ":leave");
+
+  another_handle = trio_register(another_callback, NULL);
+@endverbatim
 
 */

@@ -119,6 +119,17 @@ CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER."
 
 @section contribution Contribution
 
+@subsection contribute Contribute
+We appreciate any type of contribution, from ideas over improvements to
+error corrections.
+
+The project space contains references to bug and feature tracking,
+mailing-list, and the CVS repository. We prefer communication via the
+mailing-list, but do not require you to be subscribed, because trio is a
+small project.
+
+The project space is located at http://sourceforge.net/projects/ctrio/
+
 @subsection contributors Contributors
 We have received contributions from the following persons (in alphabetic
 order sorted by surname)
