@@ -835,8 +835,8 @@ trio_to_double(const char *source,
   int isExponentNegative = FALSE;
   unsigned long integer = 0;
   unsigned long fraction = 0;
-  unsigned long fracdiv = 1;
   unsigned long exponent = 0;
+  double fracdiv = 1.0;
   double value = 0.0;
 
   /* First try hex-floats */
@@ -860,7 +860,7 @@ trio_to_double(const char *source,
 	      fraction += (isdigit((int)*source)
 			   ? (*source - '0')
 			   : 10 + (toupper((int)*source) - 'A'));
-	      fracdiv *= 16;
+	      fracdiv *= 16.0;
 	      source++;
 	    }
 	  if ((*source == 'p') || (*source == 'P'))
@@ -902,7 +902,7 @@ trio_to_double(const char *source,
 	    {
 	      fraction *= 10;
 	      fraction += (*source - '0');
-	      fracdiv *= 10;
+	      fracdiv *= 10.0;
 	      source++;
 	    }
 	}
@@ -930,7 +930,7 @@ trio_to_double(const char *source,
   value = (double)integer;
   if (fraction != 0)
     {
-      value += (double)fraction / (double)fracdiv;
+      value += (double)fraction / fracdiv;
     }
   if (exponent != 0)
     {
