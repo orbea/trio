@@ -154,6 +154,10 @@
 # endif
 #endif
 
+#if defined(__cplusplus)
+# define PREDEF_STANDARD_CXX89
+#endif
+
 #if defined(TRIO_PLATFORM_UNIX)
 # include <unistd.h>
 #endif
@@ -186,7 +190,7 @@
 # define TRIO_PRIVATE static
 #endif
 
-#if !(defined(PREDEF_STANDARD_C89) || defined(__cplusplus))
+#if !(defined(PREDEF_STANDARD_C89) || defined(PREDEF_STANDARD_CXX98))
 # define TRIO_COMPILER_ANCIENT
 #endif
 
@@ -236,7 +240,7 @@ typedef void * trio_pointer_t;
 # define TRIO_VA_END(x) va_end(x)
 #endif
 
-#if defined(TRIO_COMPILER_SUPPORTS_C99) || defined(__cplusplus)
+#if defined(PREDEF_STANDARD_C99) || defined(PREDEF_STANDARD_CXX98)
 # define TRIO_INLINE inline
 #else
 # if defined(TRIO_COMPILER_GCC)
