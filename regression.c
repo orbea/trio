@@ -348,12 +348,12 @@ int VerifyFormatting(void)
 #if TRIO_WIDECHAR
   nerrors += Verify(__FILE__, __LINE__, "Hello World",
 		    "%ls", L"Hello World");
-  nerrors += Verify(__FILE__, __LINE__, "\aHello World",
+  nerrors += Verify(__FILE__, __LINE__, "\\aHello World",
 		    "%#ls", L"\aHello World");
   nerrors += Verify(__FILE__, __LINE__, "A",
-		    "%lc", L"A");
-  nerrors += Verify(__FILE__, __LINE__, "\a",
-		    "%#lc", L"\a");
+		    "%lc", L'A');
+  nerrors += Verify(__FILE__, __LINE__, "\\a",
+		    "%#lc", L'\a');
 #endif
   return nerrors;
 }
