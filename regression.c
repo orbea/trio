@@ -261,6 +261,8 @@ int VerifyFormatting(void)
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "3141.000",
+		    "%.3f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.",
 		    "%#f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "0.",
@@ -273,7 +275,7 @@ int VerifyFormatting(void)
 		    "%#.0f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "11.",
 		    "%#.4f", 11.0);
-  nerrors += Verify(__FILE__, __LINE__, "100",
+  nerrors += Verify(__FILE__, __LINE__, "100.00",
 		    "%.2f", 99.9999);
   nerrors += Verify(__FILE__, __LINE__, "100",
 		    "%.2g", 99.9999);
