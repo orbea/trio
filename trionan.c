@@ -106,7 +106,9 @@
 #  if defined(TRIO_PLATFORM_VMS)
 #   error "Must be compiled with option /IEEE_MODE=UNDERFLOW_TO_ZERO/FLOAT=IEEE"
 #  else
-#   error "Must be compiled with option -ieee"
+#   if !defined(_CFE)
+#    error "Must be compiled with option -ieee"
+#   endif
 #  endif
 # elif defined(TRIO_COMPILER_GCC) && (defined(__osf__) || defined(__linux__))
 #  error "Must be compiled with option -mieee"
