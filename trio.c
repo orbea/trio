@@ -3105,6 +3105,16 @@ TRIO_ARGS3((data, format, parameters),
 		{
 		  /* Get width from parameter list */
 		  width = (int)parameters[width].data.number.as_signed;
+		  if (width < 0)
+		    {
+		      /*
+		       * A negative width is the same as the - flag and
+		       * a positive width.
+		       */
+		      flags |= FLAGS_LEFTADJUST;
+		      flags &= ~FLAGS_NILPADDING;
+		      width = -width;
+		    }
 		}
 	      
 	      /* Find precision */
@@ -3115,6 +3125,14 @@ TRIO_ARGS3((data, format, parameters),
 		    {
 		      /* Get precision from parameter list */
 		      precision = (int)parameters[precision].data.number.as_signed;
+		      if (precision < 0)
+			{
+			  /*
+			   * A negative precision is the same as no
+			   * precision
+			   */
+			  precision = NO_PRECISION;
+			}
 		    }
 		}
 	      else

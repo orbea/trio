@@ -487,10 +487,14 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%-8s", "testing");
   nerrors += Verify(__FILE__, __LINE__, " testing",
 		    "%*s", 8, "testing");
+  nerrors += Verify(__FILE__, __LINE__, "testing ",
+		    "%*s", -8, "testing");
   nerrors += Verify(__FILE__, __LINE__, "test",
 		    "%.4s", "testing");
   nerrors += Verify(__FILE__, __LINE__, "test",
 		    "%.*s", 4, "testing");
+  nerrors += Verify(__FILE__, __LINE__, "testing",
+		    "%.*s", -4, "testing");
 #if TRIO_UNIX98
   /* Positional */
   nerrors += Verify(__FILE__, __LINE__, "222 111",

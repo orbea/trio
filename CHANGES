@@ -4,8 +4,14 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.10 - 2002/12/08
+Version 1.10 - 2002/12/21
 -------------------------
+* Fixed handling of negative width and precision via paramters (reported by
+  Jacob Navia)
+
+* Nigel Hall
+  Fixed TRIO_VA_START for VMS.
+
 * Rune Enggaard Lausen
   Fixed compilation for Borland C++ Builder.
 
