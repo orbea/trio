@@ -1166,8 +1166,8 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   char ch;
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   int charlen;
-  int save_errno;
 #endif
+  int save_errno;
   int i = -1;
   int num;
   char *tmpformat;
@@ -1178,12 +1178,11 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
    */
   memset(usedEntries, 0, sizeof(usedEntries));
 
+  save_errno = errno;
   index = 0;
   parameterPosition = 0;
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-  save_errno = errno;
   mblen(NULL, 0);
-  errno = save_errno;
 #endif
   
   while (format[index])
@@ -1195,9 +1194,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	   * Multibyte characters cannot be legal specifiers or
 	   * modifiers, so we skip over them.
 	   */
-	  save_errno = errno;
 	  charlen = mblen(&format[index], MB_LEN_MAX);
-	  errno = save_errno;
 	  index += (charlen > 0) ? charlen : 1;
 	  continue; /* while */
 	}
@@ -2104,7 +2101,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 
 #if defined(FORMAT_ERRNO)
 	case FORMAT_ERRNO:
-	  parameters[i].data.errorNumber = errno;
+	  parameters[i].data.errorNumber = save_errno;
 	  break;
 #endif
 
@@ -2995,7 +2992,6 @@ TRIO_ARGS3((data, format, parameters),
 {
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   int charlen;
-  int save_errno;
 #endif
   int i;
   TRIO_CONST char *string;
@@ -3009,9 +3005,7 @@ TRIO_ARGS3((data, format, parameters),
   index = 0;
   i = 0;
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-  save_errno = errno;
   mblen(NULL, 0);
-  errno = save_errno;
 #endif
   
   while (format[index])
@@ -3019,9 +3013,7 @@ TRIO_ARGS3((data, format, parameters),
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
       if (! isascii(format[index]))
 	{
-	  save_errno = errno;
 	  charlen = mblen(&format[index], MB_LEN_MAX);
-	  errno = save_errno;
 	  while (charlen-- > 0)
 	    {
 	      data->OutStream(data, format[index++]);
