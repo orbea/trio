@@ -28,7 +28,7 @@ install:	$(TARGETLIB)
 	$(INSTALL) -d $(libdir)
 	$(INSTALL) -d $(includedir)
 	$(INSTALL_DATA) $(TARGETLIB) $(libdir)/$(TARGETLIB)
-	$(INSTALL_DATA) trio.h triop.h $(includedir)    
+	$(INSTALL_DATA) trio.h triop.h triodef.h $(includedir)    
 
 pure: $(TOBJS) $(OBJS)
 	$(PURIFY) $(PURIFYOPTIONS) $(CC) $(CFLAGS) $^ $(LDFLAGS)
