@@ -2857,7 +2857,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       exponentDigits = (uExponent == 0)
 	? 1
 	: (int)ceil(TrioLogarithm((double)(uExponent + 1),
-				  (isHex) ? 10.0 : base));
+				  (isHex) ? 10 : base));
     }
   else
     exponentDigits = 0;
@@ -3024,7 +3024,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
         self->OutStream(self, '0');
 
       if (isHex)
-	base = 10.0;
+	base = 10;
       exponentBase = (int)TrioPower(base, exponentDigits - 1);
       for (i = 0; i < exponentDigits; i++)
 	{

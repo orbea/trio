@@ -651,7 +651,7 @@ TRIO_ARGS2((string, type),
 
    @param string String to be searched.
    @param character Character to be found.
-   @param A pointer to the found character, or NULL if character was not found.
+   @return A pointer to the found character, or NULL if character was not found.
  */
 TRIO_STRING_PUBLIC char *
 trio_index
@@ -672,7 +672,7 @@ TRIO_ARGS2((string, character),
 
    @param string String to be searched.
    @param character Character to be found.
-   @param A pointer to the found character, or NULL if character was not found.
+   @return A pointer to the found character, or NULL if character was not found.
  */
 TRIO_STRING_PUBLIC char *
 trio_index_last
@@ -913,7 +913,7 @@ TRIO_ARGS3((string, max, substring),
    Tokenize string.
 
    @param string String to be tokenized.
-   @param tokens String containing list of delimiting characters.
+   @param delimiters String containing list of delimiting characters.
    @return Start of new token.
 
    @warning @p string will be destroyed.

@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2003/11/23
+Version 1.11 - 2004/07/11
 -------------------------
+* David Byron
+  Fixed several compiler warnings.
+
 * Bob Friesenhahn
   Fixed installation of header files
 

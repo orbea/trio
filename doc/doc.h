@@ -136,6 +136,7 @@ order sorted by surname)
 
 @li Craig Berry
 @li Stan Boehm
+@li David Byron
 @li Robert Collins
 @li Danny Dulai
 @li John Fotheringham
@@ -153,6 +154,7 @@ order sorted by surname)
 @li Jose Ortiz
 @li Joe Orton
 @li Gisli Ottarsson
+@li Shaun Tancheff
 @li Marc Werwerft
 @li Igor Zlatkovic
 
