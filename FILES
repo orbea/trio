@@ -7,6 +7,8 @@ strio.c
 strio.h
 trio.c
 trio.h
+trionan.c
+trionan.h
 triop.h
 example.c
 regression.c

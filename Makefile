@@ -1,6 +1,6 @@
 CFLAGS	= -g -DDEBUG -Wall
 #CFLAGS	= -O2
-OBJS	= trio.o strio.o
+OBJS	= trio.o trionan.o strio.o
 TARGETLIB	= libtrio.a
 LDFLAGS	= -L. -ltrio -lm
 DOCS	= \
@@ -26,16 +26,16 @@ pure: $(TOBJS) $(OBJS)
 	$(PURIFY) $(PURIFYOPTIONS) $(CC) $(CFLAGS) $^ $(LDFLAGS)
 
 regression: regression.o $(TARGETLIB)
-	$(CC) -o regression regression.o $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 example: example.o $(TARGETLIB)
-	$(CC) -o example example.o $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 compare: compare.o $(TARGETLIB)
-	$(CC) -o compare compare.o $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 userdef: userdef.o $(TARGETLIB)
-	$(CC) -o userdef userdef.o $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 $(TARGETLIB): $(OBJS)
 	$(AR) ruv $(TARGETLIB) $(OBJS)
