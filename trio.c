@@ -867,7 +867,7 @@ TrioGetPosition(TRIO_CONST char *format,
  * TrioFindNamespace
  *
  * Find registered user-defined specifier.
- * The prev argument is used for optimisation only.
+ * The prev argument is used for optimization only.
  */
 TRIO_PRIVATE trio_userdef_t *
 TrioFindNamespace(TRIO_CONST char *name, trio_userdef_t **prev)
@@ -2088,7 +2088,7 @@ TrioWriteStringCharacter(trio_class_t *self,
 {
   if (flags & FLAGS_ALTERNATIVE)
     {
-      if (! (isprint(ch) || isspace(ch)))
+      if (! isprint(ch))
 	{
 	  /*
 	   * Non-printable characters are converted to C escapes or
@@ -2340,39 +2340,42 @@ TrioWriteDouble(trio_class_t *self,
 
   number = (double)longdoubleNumber;
   
-  /* Look for infinite numbers and non-a-number first */
-  switch (trio_isinf(number))
+  if (! trio_isfinite(number))
     {
-    case 1:
-      /* Positive infinity */
-      TrioWriteString(self,
-		      (flags & FLAGS_UPPER)
-		      ? INFINITE_UPPER
-		      : INFINITE_LOWER,
-		      flags, width, precision);
-      return;
+      /* Look for infinite numbers and non-a-number first */
+      switch (trio_isinf(number))
+	{
+	case 1:
+	  /* Positive infinity */
+	  TrioWriteString(self,
+			  (flags & FLAGS_UPPER)
+			  ? INFINITE_UPPER
+			  : INFINITE_LOWER,
+			  flags, width, precision);
+	  return;
 
-    case -1:
-      /* Negative infinity */
-      TrioWriteString(self,
-		      (flags & FLAGS_UPPER)
-		      ? "-" INFINITE_UPPER
-		      : "-" INFINITE_LOWER,
-		      flags, width, precision);
-      return;
+	case -1:
+	  /* Negative infinity */
+	  TrioWriteString(self,
+			  (flags & FLAGS_UPPER)
+			  ? "-" INFINITE_UPPER
+			  : "-" INFINITE_LOWER,
+			  flags, width, precision);
+	  return;
 
-    default:
-      /* Finitude */
-      break;
-    }
-  if (trio_isnan(number))
-    {
-      TrioWriteString(self,
-		      (flags & FLAGS_UPPER)
-		      ? NAN_UPPER
-		      : NAN_LOWER,
-		      flags, width, precision);
-      return;
+	default:
+	  if (trio_isnan(number))
+	    {
+	      TrioWriteString(self,
+			      (flags & FLAGS_UPPER)
+			      ? NAN_UPPER
+			      : NAN_LOWER,
+			      flags, width, precision);
+	      return;
+	    }
+	  /* Finitude */
+	  break;
+	}
     }
 
   /* Normal numbers */
@@ -4223,7 +4226,7 @@ trio_print_pointer(void *ref,
        * The subtraction of the null pointer is a workaround
        * to avoid a compiler warning. The performance overhead
        * is negligible (and likely to be removed by an
-       * optimising compiler). The (char *) casting is done
+       * optimizing compiler). The (char *) casting is done
        * to please ANSI C++.
        */
       number = (trio_uintmax_t)((char *)pointer - (char *)0);
@@ -4463,7 +4466,7 @@ TrioGetCharacterClass(TRIO_CONST char *format,
 	    
 		if (internalCollationUnconverted)
 		  {
-		    /* Lazy evalutation of collation array */
+		    /* Lazy evaluation of collation array */
 		    TrioGetCollation();
 		    internalCollationUnconverted = FALSE;
 		  }
