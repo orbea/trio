@@ -816,7 +816,7 @@ TRIO_ARGS1((character),
  * TrioSetLocale
  */
 #if defined(USE_LOCALE)
-TRIO_PUBLIC void
+TRIO_PRIVATE void
 TrioSetLocale(TRIO_NOARGS)
 {
   internalLocaleValues = (struct lconv *)localeconv();
@@ -2349,6 +2349,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   int charsPerThousand;
   int length;
   double number;
+  double undividedNumber;
   double workNumber;
   int integerDigits;
   int fractionDigits;
@@ -2357,6 +2358,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   int exponent;
   unsigned int uExponent = 0;
   double dblBase;
+  double dblExponentBase;
   BOOLEAN_T isNegative;
   BOOLEAN_T isExponentNegative = FALSE;
   BOOLEAN_T isHex;
@@ -2379,7 +2381,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   number = (double)longdoubleNumber;
 
   /* Determine sign and look for special quantities */
-  switch (trio_fpclassign(number, &isNegative))
+  switch (trio_fpclassify_and_signbit(number, &isNegative))
     {
     case TRIO_FP_NAN:
       TrioWriteString(self,
@@ -2426,7 +2428,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   
   if (isNegative)
     number = -number;
-
+  
   if ((flags & FLAGS_FLOAT_G) || isHex)
     {
       if (precision == 0)
@@ -2473,6 +2475,8 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
 	}
     }
 
+  undividedNumber = number;
+  
   /*
    * Truncated number.
    *
@@ -2507,6 +2511,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
 	{
 	  /* Adjust if number was rounded up one digit (ie. 99 to 100) */
 	  integerDigits++;
+	  undividedNumber = floor(undividedNumber + 0.5);
 	}
     }
   
@@ -2514,9 +2519,11 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   numberPointer = &numberBuffer[sizeof(numberBuffer) - 1];
   *numberPointer = NIL;
   hasOnlyZeroes = TRUE;
+  dblExponentBase = dblBase;
   for (i = 0; i < fractionDigits; i++)
     {
-      if (integerDigits > DBL_DIG)
+      if ((integerDigits > DBL_DIG) ||
+	  (i < fractionDigits - DBL_DIG))
 	{
 	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
@@ -2524,8 +2531,9 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
       else
 	{
 	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
-	  number = floor(number / dblBase);
 	}
+      number = floor(number / dblBase);
+      dblExponentBase *= dblBase;
 
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_ALTERNATIVE))
         {
@@ -2551,20 +2559,23 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   /* Insert the integer part and thousand separators */
   charsPerThousand = (int)internalGrouping[0];
   groupingIndex = 1;
+  dblExponentBase = dblBase;
   for (i = 1; i < integerDigits + 1; i++)
     {
       if (i < integerDigits - DBL_DIG)
 	{
 	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
+	  number = floor((undividedNumber / dblExponentBase) + 0.5);
 	}
       else
 	{
 	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
+	  number = floor(undividedNumber / dblExponentBase);
 	}
-      number = floor(number / dblBase);
       if (number < DBL_EPSILON)
 	break;
+      dblExponentBase *= dblBase;
 
       if ((i > 0)
 	  && ((flags & (FLAGS_FLOAT_E | FLAGS_QUOTE)) == FLAGS_QUOTE)
@@ -3865,8 +3876,10 @@ TRIO_ARGS2((callback, name),
   return (trio_pointer_t)def;
 }
 
-/*************************************************************************
- * trio_unregister [public]
+/**
+   Unregister an existing user-defined specifier.
+
+   @param handle
  */
 void
 trio_unregister
