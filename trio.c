@@ -39,6 +39,8 @@
  *    %as or %a[ it is interpreted as the alloc modifier, otherwise as
  *    the C99 hex-float. This means that you cannot scan %as as a hex-float
  *    immediately followed by an 's'.
+ *  - Use h modifier for strings and characters to explictly specify
+ *    non-wide char.
  */
 
 static const char rcsid[] = "@(#)$Id$";
@@ -612,10 +614,12 @@ static char internalGrouping[MAX_LOCALE_GROUPS] = { (char)NO_GROUPING };
 
 static const char internalDigitsLower[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 static const char internalDigitsUpper[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static userdef_T *internalUserDef = NULL;
 static BOOLEAN_T internalDigitsUnconverted = TRUE;
 static int internalDigitArray[128];
 
+static volatile trio_callback_t internalEnterCriticalRegion = NULL;
+static volatile trio_callback_t internalLeaveCriticalRegion = NULL;
+static userdef_T *internalUserDef = NULL;
 
 
 /*************************************************************************
@@ -817,15 +821,22 @@ TrioFindNamespace(const char *name, userdef_T **prev)
 {
   userdef_T *def;
   
+  if (internalEnterCriticalRegion)
+    (void)internalEnterCriticalRegion(NULL);
+  
   for (def = internalUserDef; def; def = def->next)
     {
       /* Case-sensitive string comparison */
       if (StrEqualCase(def->name, name))
-	return def;
+	break;
       
       if (prev)
 	*prev = def;
     }
+  
+  if (internalLeaveCriticalRegion)
+    (void)internalLeaveCriticalRegion(NULL);
+  
   return def;
 }
 
@@ -1637,6 +1648,7 @@ TrioPreprocess(int type,
 		    }
 		  else
 		    {
+		      /* Used for the I<bits> modifiers */
 		      varsize = parameters[i].varsize;
 		    }
 		  parameters[i].flags &= ~FLAGS_ALL_VARSIZES;
@@ -2179,7 +2191,6 @@ TrioWriteDouble(trio_T *self,
   int charsPerThousand;
   int length;
   double number;
-  double precisionPower;
   double workNumber;
   int integerDigits;
   int fractionDigits;
@@ -2202,8 +2213,7 @@ TrioWriteDouble(trio_T *self,
   char *work;
   int i;
   BOOLEAN_T onlyzero;
-
-  int set_precision = precision;
+  int zeroes = 0;
   
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -2255,29 +2265,33 @@ TrioWriteDouble(trio_T *self,
   
   if (precision == NO_PRECISION)
     precision = FLT_DIG;
-  precisionPower = pow(10.0, (double)precision);
   
   isNegative = (number < 0.0);
   if (isNegative)
     number = -number;
 
-  if ((!(flags & FLAGS_FLOAT_G)) && (NO_PRECISION == set_precision))
-    {
-      /* The %f, %F, %e, %E, %a, and %A conversions must use the default
-       * precision if none is provided. Note that we do this check prior
-       * to the G-check as the G-check may set the FLAGS_FLOAT_E bit.
-       */
-      set_precision = FLT_DIG;
-    }
-  
   if ((flags & FLAGS_FLOAT_G) || isHex)
     {
-      if ((number < 1.0e-4) || (number > precisionPower))
-	flags |= FLAGS_FLOAT_E;
-#if TRIO_UNIX98
       if (precision == 0)
 	precision = 1;
-#endif
+
+      if ((number < 1.0e-4) || (number > pow(10.0, (double)precision)))
+	{
+	  /* Use scientific notation */
+	  flags |= FLAGS_FLOAT_E;
+	}
+      else if (number < 1.0)
+	{
+	  /*
+	   * Use normal notation. If the integer part of the number is
+	   * zero, then adjust the precision to include leading fractional
+	   * zeros.
+	   */
+	  workNumber = fabs(guarded_log10(number));
+	  if (workNumber - floor(workNumber) < 0.001)
+	    workNumber--;
+	  zeroes = (int)floor(workNumber);
+	}
     }
 
   if (flags & FLAGS_FLOAT_E)
@@ -2311,11 +2325,13 @@ TrioWriteDouble(trio_T *self,
   integerDigits = (floor(number) > DBL_EPSILON)
     ? 1 + (int)guarded_log10(floor(number))
     : 1;
-  fractionDigits = (flags & FLAGS_FLOAT_G)
+  fractionDigits = ((flags & FLAGS_FLOAT_G) && (zeroes == 0))
     ? precision - integerDigits
-    : precision;
+    : zeroes + precision;
+  
   number = floor(0.5 + number * pow(10.0, (double)fractionDigits));
-  if ((int)guarded_log10(number) + 1 > integerDigits + fractionDigits)
+  workNumber = guarded_log10(number);
+  if ((int)workNumber + 1 > integerDigits + fractionDigits)
     {
       if (flags & FLAGS_FLOAT_E)
 	{
@@ -2340,7 +2356,7 @@ TrioWriteDouble(trio_T *self,
       *(--numberPointer) = digits[(int)fmod(number, dblBase)];
       number = floor(number / dblBase);
 
-      if((set_precision == NO_PRECISION) || (flags & FLAGS_ALTERNATIVE))
+      if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_ALTERNATIVE))
         {
           /* Prune trailing zeroes */
           if (numberPointer[0] != digits[0])
@@ -3404,6 +3420,20 @@ trio_register(trio_callback_t callback,
 
   if (name)
     {
+      /* Handle built-in namespaces */
+      if (name[0] == ':')
+	{
+	  if (StrEqual(name, ":enter"))
+	    {
+	      internalEnterCriticalRegion = callback;
+	    }
+	  else if (StrEqual(name, ":leave"))
+	    {
+	      internalLeaveCriticalRegion = callback;
+	    }
+	  return NULL;
+	}
+      
       /* Bail out if namespace is too long */
       if (StrLength(name) >= MAX_USER_NAME)
 	return NULL;
@@ -3417,6 +3447,9 @@ trio_register(trio_callback_t callback,
   def = (userdef_T *)malloc(sizeof(userdef_T));
   if (def)
     {
+      if (internalEnterCriticalRegion)
+	(void)internalEnterCriticalRegion(NULL);
+      
       if (name)
 	{
 	  /* Link into internal list */
@@ -3431,6 +3464,9 @@ trio_register(trio_callback_t callback,
 	? NULL
 	: StrDuplicate(name);
       def->next = NULL;
+
+      if (internalLeaveCriticalRegion)
+	(void)internalLeaveCriticalRegion(NULL);
     }
   return def;
 }
@@ -3452,10 +3488,16 @@ trio_unregister(void *handle)
       def = TrioFindNamespace(self->name, &prev);
       if (def)
 	{
+	  if (internalEnterCriticalRegion)
+	    (void)internalEnterCriticalRegion(NULL);
+	  
 	  if (prev == NULL)
 	    internalUserDef = NULL;
 	  else
 	    prev->next = def->next;
+	  
+	  if (internalLeaveCriticalRegion)
+	    (void)internalLeaveCriticalRegion(NULL);
 	}
       StrFree(self->name);
     }

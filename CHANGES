@@ -4,15 +4,20 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.x - 2001/05/20
+Version 1.x - 2001/05/24
 ------------------------
 * Added wide character arguments (%ls, %ws, and %S) for both printf and scanf
   (%lc, %C, and %l[] are still missing).
 
+* Added mutex callbacks for user-specified specifiers to enable applications to
+  add thread-safety. These are registered with trio_register, where the
+  namespace is set to either ":enter" to lock a mutex, or ":leave" to unlock a
+  mutex.
+
 * Added the possibility to specify standard support (TRIO_C99 etc.) as compiler
   options.
 
-* Fixed default precision for %f (reported by Jose Ortiz)
+* Fixed default precision for %f and %g (reported by Jose Ortiz)
 
 * Howard Kapustein
   Added the I8, I16, I32, and I64 modifiers.

@@ -259,6 +259,8 @@ int VerifyFormatting(void)
 		    "%16.4e", -2.342E-22);
   nerrors += Verify(__FILE__, __LINE__, "3.141000E-44",
 		    "%E", 3.141e-44);
+  nerrors += Verify(__FILE__, __LINE__, "0",
+		    "%g", 0.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.5",
 		    "%g", 3141.5);
   nerrors += Verify(__FILE__, __LINE__, "3.1415E-06",
@@ -268,17 +270,17 @@ int VerifyFormatting(void)
 		    "%.0f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.000",
 		    "%.3f", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "3141.",
+  nerrors += Verify(__FILE__, __LINE__, "3141.000000",
 		    "%#f", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "0.",
+  nerrors += Verify(__FILE__, __LINE__, "0.0000",
 		    "%#.4f", 0.0);
-  nerrors += Verify(__FILE__, __LINE__, "0.",
+  nerrors += Verify(__FILE__, __LINE__, "0.000",
 		    "%#.4g", 0.0);
-  nerrors += Verify(__FILE__, __LINE__, "3141.",
+  nerrors += Verify(__FILE__, __LINE__, "3141.0000",
 		    "%#.4f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.",
 		    "%#.0f", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "11.",
+  nerrors += Verify(__FILE__, __LINE__, "11.0000",
 		    "%#.4f", 11.0);
   nerrors += Verify(__FILE__, __LINE__, "100.00",
 		    "%.2f", 99.9999);
@@ -288,6 +290,12 @@ int VerifyFormatting(void)
 		    "%#.2g", 99.9999);
   nerrors += Verify(__FILE__, __LINE__, "0.123",
 		    "%0g", 0.123);
+  nerrors += Verify(__FILE__, __LINE__, "1",
+		    "%.2g", 0.9999);
+  nerrors += Verify(__FILE__, __LINE__, "0.01",
+		    "%.2g", 0.01);
+  nerrors += Verify(__FILE__, __LINE__, "0.010",
+		    "%#.2g", 0.01);
   /* Double width, precision, and zero padding */
   nerrors += Verify(__FILE__, __LINE__, "00003.141500e+03",
 		    "%016e", 3141.5);

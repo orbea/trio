@@ -27,5 +27,27 @@ int main()
    compare("*%5f*", .99E-3);
    compare("*%5f*", 3333.0);
 
+   compare("*%5g*", 3.3);
+   compare("*%5g*", 3.0);
+   compare("*%5g*", .999999E-4);
+   compare("*%5g*", .99E-3);
+   compare("*%5g*", 3333.0);
+   compare("*%5g*", 0.01);
+
+   compare("*%5.g*", 3.3);
+   compare("*%5.g*", 3.0);
+   compare("*%5.g*", .999999E-4);
+   compare("*%5.g*", 1.0E-4);
+   compare("*%5.g*", .99E-3);
+   compare("*%5.g*", 3333.0);
+   compare("*%5.g*", 0.01);
+
+   compare("*%5.2g*", 3.3);
+   compare("*%5.2g*", 3.0);
+   compare("*%5.2g*", .999999E-4);
+   compare("*%5.2g*", .99E-3);
+   compare("*%5.2g*", 3333.0);
+   compare("*%5.2g*", 0.01);
+
    return 0;
 }
