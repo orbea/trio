@@ -285,30 +285,34 @@ int main(void)
 /*    rc = trio_sprintf(buffer, "'%!08.6d' '%!d' '%d'", 4, 6, 8); */
 /*    Dump(buffer, rc); */
 
-  {
-    void *argarray[4];
-    int value = 42;
-    double number = 123.456;
-    float small_number = 123.456;
+  rc = trio_sprintf(buffer, "%0g", 0.123);
+  Dump(buffer, rc);
+  
+/*    { */
+/*      void *argarray[4]; */
+/*      int value = 42; */
+/*      double number = 123.456; */
+/*      float small_number = 123.456; */
     
-    argarray[0] = &value;
-    argarray[1] = "my string";
-    rc = trio_sprintfv(buffer, "%d %s", argarray);
-    Dump(buffer, rc);
-    rc = trio_snprintfv(buffer, 8, "%d %s", argarray);
-    Dump(buffer, rc);
+/*      argarray[0] = &value; */
+/*      argarray[1] = "my string"; */
+/*      rc = trio_sprintfv(buffer, "%d %s", argarray); */
+/*      Dump(buffer, rc); */
+/*      rc = trio_snprintfv(buffer, 8, "%d %s", argarray); */
+/*      Dump(buffer, rc); */
 
-    argarray[0] = &num;
-    argarray[1] = text;
-    rc = trio_sscanfv(buffer, "%d %s", argarray);
-    Dump(buffer, rc);
-    printf("num = %d  text = \"%s\"\n", num, text);
+/*      argarray[0] = &num; */
+/*      argarray[1] = text; */
+/*      rc = trio_sscanfv(buffer, "%d %s", argarray); */
+/*      Dump(buffer, rc); */
+/*      printf("num = %d  text = \"%s\"\n", num, text); */
     
-    argarray[0] = &number;
-    argarray[1] = &small_number;
-    rc = trio_sprintfv(buffer, "%f %hf", argarray);
-    Dump(buffer, rc);
-  }
+/*      argarray[0] = &number; */
+/*      argarray[1] = &small_number; */
+/*      rc = trio_sprintfv(buffer, "%f %hf", argarray); */
+/*      Dump(buffer, rc); */
+/*      printf("number = %f  small_number = \"%f\"\n", number, small_number); */
+/*    } */
   
 /*    rc = trio_sprintf(buffer, "abcba"); */
 /*    Dump(buffer, rc); */

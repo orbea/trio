@@ -4,14 +4,22 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version XX
-----------
+Version 1.2 - 2001/04/11
+------------------------
+* Added autoconf integration. If compiled with HAVE_CONFIG_H the following
+  happens. Firstly, <config.h> is included. Secondly, trio will only be
+  compiled if WITH_TRIO is defined herein. Thirdly, if TRIO_REPLACE_STDIO is
+  defined, only stdio functions that have not been detected by autoconf, i.e.
+  those not defined by HAVE_PRINTF or similar, will be replaced by trio
+  functions (suggested by Daniel Veillard).
+
 * Fixed '%m.nf' output. Previously trio did not treat the width properly
-  in all cases. Reported by Gisli Ottarsson.
+  in all cases (reported by Gisli Ottarsson).
 
 * Added explicit promotion for the scanfv family.
 
 * Fixed more C++ compilation warnings.
+
 
 Version 1.1 - 2001/02/25
 ------------------------

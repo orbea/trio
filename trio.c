@@ -41,6 +41,8 @@
  *    immediately followed by an 's'.
  */
 
+#if !defined(WITHOUT_TRIO)
+
 static const char rcsid[] = "@(#)$Id$";
 
 #if defined(unix) || defined(__xlC__) /* AIX xlC workaround */
@@ -1478,13 +1480,13 @@ TrioPreprocess(int type,
                 {
                   if (parameters[i].type == FORMAT_CHAR)
                     parameters[i].data.pointer =
-                      (LONGEST *)(*((char **)argarray[num]));
+                      (LONGEST *)((char *)argarray[num]);
                   else if (parameters[i].flags & FLAGS_SHORT)
                     parameters[i].data.pointer =
-                      (LONGEST *)(*((short **)argarray[num]));
+                      (LONGEST *)((short *)argarray[num]);
                   else
                     parameters[i].data.pointer =
-                      (LONGEST *)(*((int **)argarray[num]));
+                      (LONGEST *)((int *)argarray[num]);
                 }
 	    }
 	  else
@@ -1585,7 +1587,7 @@ TrioPreprocess(int type,
 	      if (parameters[i].flags & FLAGS_LONG)
 		parameters[i].data.longdoublePointer = (arglist != NULL)
 		  ? va_arg(arglist, long double *)
-		  : (long double *)(*((long double **)argarray[num]));
+		  : (long double *)((long double *)argarray[num]);
 	      else
                 {
                   if (arglist != NULL)
@@ -1595,10 +1597,10 @@ TrioPreprocess(int type,
                    {
                      if (parameters[i].flags & FLAGS_SHORT)
                        parameters[i].data.doublePointer =
-                         (double *)(*((float **)argarray[num]));
+                         (double *)((float *)argarray[num]);
                      else
                        parameters[i].data.doublePointer =
-                         (double *)(*((double**)argarray[num]));
+                         (double *)((double *)argarray[num]);
                    }
                 }
 	    }
@@ -1957,7 +1959,7 @@ TrioWriteDouble(trio_T *self,
   int exponentDigits;
   int expectedWidth;
   int exponent;
-  unsigned int uExponent;
+  unsigned int uExponent = 0;
   double dblBase;
   BOOLEAN_T isNegative;
   BOOLEAN_T isExponentNegative = FALSE;
@@ -1968,7 +1970,7 @@ TrioWriteDouble(trio_T *self,
 		   * MAX_LOCALE_GROUPS];
   char *numberPointer;
   char exponentBuffer[MAX_CHARS_IN(double)];
-  char *exponentPointer;
+  char *exponentPointer = NULL;
   int groupingIndex;
   char *work;
   int i;
@@ -2070,7 +2072,7 @@ TrioWriteDouble(trio_T *self,
    * precision is number of significant digits for FLOAT_G
    * and number of fractional digits for others
    */
-  integerDigits = (number > DBL_EPSILON)
+  integerDigits = (floor(number) > DBL_EPSILON)
     ? 1 + (int)log10(floor(number))
     : 1;
   fractionDigits = (flags & FLAGS_FLOAT_G)
@@ -2480,7 +2482,7 @@ TrioFormatProcess(trio_T *data,
 		case FORMAT_USER_DEFINED:
 		  {
 		    reference_T reference;
-		    userdef_T *def;
+		    userdef_T *def = NULL;
 
 		    if (parameters[i].user_name[0] == NIL)
 		      {
@@ -4912,3 +4914,5 @@ trio_sscanfv(const char *buffer,
   
   return TrioScan(&buffer, 0, TrioInStreamString, format, NULL, args);
 }
+
+#endif /* !WITHOUT_TRIO */

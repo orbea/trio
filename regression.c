@@ -281,6 +281,8 @@ int VerifyFormatting(void)
 		    "%.2g", 99.9999);
   nerrors += Verify(__FILE__, __LINE__, "100.",
 		    "%#.2g", 99.9999);
+  nerrors += Verify(__FILE__, __LINE__, "0.123",
+		    "%0g", 0.123);
   /* Double width, precision, and zero padding */
   nerrors += Verify(__FILE__, __LINE__, "00000003.1415e+3",
 		    "%016e", 3141.5);
