@@ -3406,7 +3406,7 @@ trio_aprintf(TRIO_CONST char *format,
       va_end(args);
 
       trio_string_terminate(info);
-      result = trio_string_extract_buffer(info);
+      result = trio_string_extract(info);
       trio_string_destroy(info);
     }
   return result;
@@ -3428,7 +3428,7 @@ trio_vaprintf(TRIO_CONST char *format,
       (void)TrioFormat(info, 0, TrioOutStreamStringDynamic,
 		       format, args, NULL);
       trio_string_terminate(info);
-      result = trio_string_extract_buffer(info);
+      result = trio_string_extract(info);
       trio_string_destroy(info);
     }
   return result;
@@ -3472,10 +3472,10 @@ trio_asprintf(char **result,
 	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
 	      goto error;
 	    }
-	  trio_string_set_buffer(info, work);
+	  trio_string_set(info, work);
 	}
       trio_string_terminate(info);
-      *result = trio_string_extract_buffer(info);
+      *result = trio_string_extract(info);
     error:
       trio_string_destroy(info);
     }
@@ -3511,10 +3511,10 @@ trio_vasprintf(char **result,
 	      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
 	      goto error;
 	    }
-	  trio_string_set_buffer(info, work);
+	  trio_string_set(info, work);
 	}
       trio_string_terminate(info);
-      *result = trio_string_extract_buffer(info);
+      *result = trio_string_extract(info);
     error:
       trio_string_destroy(info);
     }
