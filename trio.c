@@ -31,7 +31,8 @@
  *  - Multibyte characters (done for format parsing, except scan groups)
  *  - Complex numbers? (C99 _Complex)
  *  - Boolean values? (C99 _Bool)
- *  - C99 NaN(n-char-sequence) missing
+ *  - C99 NaN(n-char-sequence) missing. The n-char-sequence can be used
+ *    to print the mantissa, e.g. NaN(0xc000000000000000)
  *  - Should we support the GNU %a alloc modifier? GNU has an ugly hack
  *    for %a, because C99 used %a for other purposes. If specified as
  *    %as or %a[ it is interpreted as the alloc modifier, otherwise as
