@@ -281,6 +281,10 @@ int VerifyFormatting(void)
 		    "%f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.500000",
 		    "%f", 3141.5);
+  nerrors += Verify(__FILE__, __LINE__, "123456789012345700000.000000",
+		    "%f", 1.234567890123456789e20);
+  nerrors += Verify(__FILE__, __LINE__, "0.000000",
+		    "%f", 1.234567890123456789e-20);
   nerrors += Verify(__FILE__, __LINE__, "3.141000e+03",
 		    "%e", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "     -2.3420e-02",
@@ -513,11 +517,173 @@ int VerifyErrors(void)
 /*************************************************************************
  *
  */
+int VerifyScanningOneInteger(const char *file,
+			     int line,
+			     const char *expected,
+			     const char *format,
+			     int original)
+{
+  int number;
+  char data[512];
+  
+  trio_snprintf(data, sizeof(data), format, original);
+  trio_sscanf(data, format, &number);
+  return Verify(file, line, expected, format, number);
+}
+
+int VerifyScanningIntegers(void)
+{
+  int nerrors = 0;
+
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "42",
+				      "%i", 42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "42",
+				      "%d", 42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "-42",
+				      "%d", -42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "2147483647",
+				      "%d", 2147483647);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "42",
+				      "%u", 42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "2a",
+				      "%x", 42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "52",
+				      "%o", 42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "101010",
+				      "%..2i", 42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "0x2a",
+				      "%#x", 42);
+  nerrors += VerifyScanningOneInteger(__FILE__, __LINE__, "052",
+				      "%#o", 42);
+
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
+int VerifyScanningOneFloat(const char *file,
+			   int line,
+			   const char *expected,
+			   const char *format,
+			   double original)
+{
+  double number;
+  char data[512];
+  
+  trio_snprintf(data, sizeof(data), format, original);
+  trio_sscanf(data, format, &number);
+  return Verify(file, line, expected, format, number);
+}
+
+int VerifyScanningFloats(void)
+{
+  int nerrors = 0;
+
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "42.000000",
+				      "%f", 42.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "-42.000000",
+				      "%f", -42.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "4.200000e+01",
+				      "%e", 42.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "4.200000E+01",
+				      "%E", 42.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "42",
+				      "%g", 42.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.23457e+06",
+				      "%g", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.23457e-06",
+				      "%g", 1.234567e-6);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.23457E+06",
+				      "%G", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.234567e+06",
+				      "%12e", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.234500e+00",
+				      "%6e", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.234567e+06",
+				      "%.6e", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.2345670000e+06",
+				      "%.10e", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.23457e+06",
+				      "%.6g", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1234567",
+				      "%.10g", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x2a.000000",
+				      "%a", 42.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0x1.3c0c95p+06",
+				      "%a", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0X1.3C0C95P+06",
+				      "%A", 1234567.0);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.79769e+308",
+				      "%g", 1.79769e+308);
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "nan",
+				      "%f", trio_nan());
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "NAN",
+				      "%F", trio_nan());
+  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "-inf",
+				      "%f", trio_ninf());
+  
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
+int VerifyScanningOneString(const char *file,
+			    int line,
+			    const char *expected,
+			    const char *format,
+			    char *original)
+{
+  char string[512];
+  char data[512];
+  
+  trio_snprintf(data, sizeof(data), "%s", original);
+  trio_sscanf(data, format, string);
+  return Verify(file, line, expected, "%s", string);
+}
+
+int VerifyScanningStrings(void)
+{
+  int nerrors = 0;
+
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",
+				     "%s", "hello");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",
+				     "%s", "hello world");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello world",
+				     "%[^\n]", "hello world");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "(nil)",
+				     "%s", NULL);
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",
+				     "%20s", "hello");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "he",
+				     "%2s", "hello");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "ab",
+				     "%[ab]", "abcba");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
+				     "%[abc]", "abcba");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
+				     "%[a-c]", "abcba");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
+				     "%[[:alpha:]]", "abcba");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "ba",
+				     "%*[ab]c%[^\n]", "abcba");
+
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
 int VerifyScanning(void)
 {
   int nerrors = 0;
 
-  printf("  not implemented yet\n");
+  nerrors += VerifyScanningIntegers();
+  nerrors += VerifyScanningFloats();
+  nerrors += VerifyScanningStrings();
+
   return nerrors;
 }
 
