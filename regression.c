@@ -926,6 +926,6 @@ int main(TRIO_NOARGS)
   else
     printf("Regression test failed in %d instance(s)\n", nerrors);
   
-  return 0;
+  return nerrors ? 1 : 0;
 }
 
