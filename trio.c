@@ -155,7 +155,9 @@ typedef unsigned long trio_flags_t;
 # include <unistd.h>
 # include <signal.h>
 # include <locale.h>
-# define USE_LOCALE
+# if !defined(TRIO_FEATURE_LOCALE)
+#  define USE_LOCALE
+# endif
 #endif /* TRIO_PLATFORM_UNIX */
 #if defined(TRIO_PLATFORM_VMS)
 # include <unistd.h>
@@ -790,10 +792,12 @@ static struct lconv *internalLocaleValues = NULL;
  * UNIX98 says "in a locale where the radix character is not defined,
  * the radix character defaults to a period (.)"
  */
+#if TRIO_FEATURE_FLOAT || TRIO_FEATURE_LOCALE || defined(USE_LOCALE)
 static int internalDecimalPointLength = 1;
 static char internalDecimalPoint = '.';
 static char internalDecimalPointString[MAX_LOCALE_SEPARATOR_LENGTH + 1] = ".";
-#if TRIO_EXTENSION
+#endif
+#if TRIO_FEATURE_QUOTE || TRIO_FEATURE_LOCALE || TRIO_EXTENSION
 static int internalThousandSeparatorLength = 1;
 static char internalThousandSeparator[MAX_LOCALE_SEPARATOR_LENGTH + 1] = ",";
 static char internalGrouping[MAX_LOCALE_GROUPS] = { (char)NO_GROUPING };
@@ -4297,6 +4301,7 @@ TRIO_ARGS4((buffer, max, format, args),
  * Appends the new string to the buffer string overwriting the '\0'
  * character at the end of buffer.
  */
+#if TRIO_EXTENSION
 TRIO_PUBLIC int
 trio_snprintfcat
 TRIO_VARGS4((buffer, max, format, va_alist),
@@ -4323,7 +4328,9 @@ TRIO_VARGS4((buffer, max, format, va_alist),
   *buffer = NIL;
   return status;
 }
+#endif
 
+#if TRIO_EXTENSION
 TRIO_PUBLIC int
 trio_vsnprintfcat
 TRIO_ARGS4((buffer, max, format, args),
@@ -4345,6 +4352,7 @@ TRIO_ARGS4((buffer, max, format, args),
   *buffer = NIL;
   return status;
 }
+#endif
 
 /*************************************************************************
  * trio_aprintf
@@ -5341,6 +5349,7 @@ TRIO_ARGS2((ref, pointer),
  * string to enable multibyte characters. At most MB_LEN_MAX characters
  * will be used.
  */
+#if TRIO_FEATURE_LOCALE
 TRIO_PUBLIC void
 trio_locale_set_decimal_point
 TRIO_ARGS1((decimalPoint),
@@ -5365,13 +5374,14 @@ TRIO_ARGS1((decimalPoint),
 		    decimalPoint);
     }
 }
+#endif
 
 /*************************************************************************
  * trio_locale_set_thousand_separator
  *
  * See trio_locale_set_decimal_point
  */
-#if TRIO_EXTENSION
+#if TRIO_FEATURE_LOCALE || TRIO_EXTENSION
 TRIO_PUBLIC void
 trio_locale_set_thousand_separator
 TRIO_ARGS1((thousandSeparator),
@@ -5402,7 +5412,7 @@ TRIO_ARGS1((thousandSeparator),
  *
  * Same order as the grouping attribute in LC_NUMERIC.
  */
-#if TRIO_EXTENSION
+#if TRIO_FEATURE_LOCALE || TRIO_EXTENSION
 TRIO_PUBLIC void
 trio_locale_set_grouping
 TRIO_ARGS1((grouping),
@@ -7217,12 +7227,12 @@ TRIO_ARGS3((buffer, format, args),
 /*************************************************************************
  * trio_strerror
  */
-#if TRIO_FEATURE_STRERR
 TRIO_PUBLIC TRIO_CONST char *
 trio_strerror
 TRIO_ARGS1((errorcode),
 	   int errorcode)
 {
+#if TRIO_FEATURE_STRERR
   /* Textual versions of the error codes */
   switch (TRIO_ERROR_CODE(errorcode))
     {
@@ -7245,5 +7255,7 @@ TRIO_ARGS1((errorcode),
     default:
       return "Unknown";
     }
+#else
+  return "Unknown";
+#endif
 }
-#endif /* TRIO_FEATURE_STRERR */

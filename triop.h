@@ -133,6 +133,18 @@ extern "C" {
 /*************************************************************************
  * Features
  */
+
+#if defined(TRIO_SNPRINTF_ONLY)
+# define TRIO_FEATURE_SCANF 0
+# define TRIO_FEATURE_FILE 0
+# define TRIO_FEATURE_STDIO 0
+# define TRIO_FEATURE_FD 0
+# define TRIO_FEATURE_DYNAMICSTRING 0
+# define TRIO_FEATURE_CLOSURE 0
+# define TRIO_FEATURE_STRERR 0
+# define TRIO_FEATURE_LOCALE 0
+# define TRIO_MINIMAL 1
+#endif
   
 /*
  * TRIO_FEATURE_SCANF (=0 or =1)
@@ -257,6 +269,18 @@ extern "C" {
 #endif
 
 /*
+ * TRIO_FEATURE_LOCALE (=0 or =1)
+ *
+ * Define this to 0 to disable customized locale support, or define
+ * to 1 to enable it.
+ *
+ * This saves a (small) amount of code.
+ */
+#if !defined(TRIO_FEATURE_LOCALE)
+# define TRIO_FEATURE_LOCALE 1
+#endif
+
+/*
  * TRIO_MINIMAL
  *
  * Define this to disable building the public triostr.h.  If you
@@ -278,13 +302,13 @@ extern "C" {
  */
 
 #if !defined(TRIO_FEATURE_HEXFLOAT)
-# define TRIO_FEATURE_HEXFLOAT (TRIO_C99 & TRIO_FEATURE_FLOAT)
+# define TRIO_FEATURE_HEXFLOAT (TRIO_C99 && TRIO_FEATURE_FLOAT)
 #endif
 
 #if !defined(TRIO_FEATURE_LONGDOUBLE)
 # define TRIO_FEATURE_LONGDOUBLE TRIO_FEATURE_FLOAT
 #endif
-  
+
 #if !defined(TRIO_FEATURE_ERRNO)
 # define TRIO_FEATURE_ERRNO TRIO_GNU
 #endif

@@ -46,7 +46,7 @@
 #if defined(__DECC) || defined(__DECCXX)
 # define TRIO_COMPILER_DECC
 #else
-# if defined(__osf__) && defined(__LANGUAGE_C__)
+# if defined(__osf__) && defined(__LANGUAGE_C__) && !defined(__GNUC__)
 #  define TRIO_COMPILER_DECC /* Workaround for old DEC C compilers */
 # endif
 #endif
@@ -227,15 +227,16 @@ typedef void * trio_pointer_t;
 
 #if defined(TRIO_COMPILER_SUPPORTS_C99) || defined(__cplusplus)
 # define TRIO_INLINE inline
-#endif
-#if defined(TRIO_COMPILER_GCC)
-# define TRIO_INLINE __inline__
-#endif
-#if defined(TRIO_COMPILER_MSVC)
-# define TRIO_INLINE _inline
-#endif
-#if defined(TRIO_COMPILER_BCB)
-# define TRIO_INLINE __inline
+#else
+# if defined(TRIO_COMPILER_GCC)
+#  define TRIO_INLINE __inline__
+# endif
+# if defined(TRIO_COMPILER_MSVC)
+#  define TRIO_INLINE _inline
+# endif
+# if defined(TRIO_COMPILER_BCB)
+#  define TRIO_INLINE __inline
+# endif
 #endif
 #if !defined(TRIO_INLINE)
 # define TRIO_INLINE

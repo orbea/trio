@@ -18,6 +18,7 @@
 #include "trionan.h"
 #if defined(TRIO_MINIMAL)
 # define TRIO_STRING_PUBLIC static
+# define TRIO_FUNC_EQUAL_CASE
 # include "triostr.c"
 #else
 # include "triostr.h"
@@ -770,69 +771,123 @@ VerifyErrors(TRIO_NOARGS)
   /* Error: Invalid argument 1 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%d %r", 42, "text");
 #if TRIO_FEATURE_ERRORCODE
+# if TRIO_FEATURE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 5",
 		    "%s", buffer);
+# else
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d, Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_POSITION(rc));
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2, Pos = 5",
+		    "%s", buffer);
+# endif
 #else
   nerrors += (rc != -1);
 #endif
+  
   /* Error: Invalid argument 2 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%#");
 #if TRIO_FEATURE_ERRORCODE
+# if TRIO_FEATRUE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 3",
 		    "%s", buffer);
+# else
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d, Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_POSITION(rc));
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2, Pos = 3",
+		    "%s", buffer);
+# endif
 #else
   nerrors += (rc != -1);
 #endif
+  
   /* Error: Invalid argument 3 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%hhhd", 42);
 #if TRIO_FEATURE_ERRORCODE
+# if TRIO_FEATRUE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 4",
 		    "%s", buffer);
-#else
-  nerrors += (rc != -1);
-#endif
-  /* Error: Double reference */
-  rc = trio_snprintf(buffer, sizeof(buffer), "hello %1$d %1$d", 31, 32);
-#if TRIO_FEATURE_ERRORCODE
-  trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
-		TRIO_ERROR_CODE(rc),
-		TRIO_ERROR_NAME(rc),
-		TRIO_ERROR_POSITION(rc));
-# if TRIO_UNIX98
-  nerrors += Verify(__FILE__, __LINE__, "Err = 4 (Double reference), Pos = 0",
-		    "%s", buffer);
 # else
-  nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 9",
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d, Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_POSITION(rc));
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2, Pos = 4",
 		    "%s", buffer);
 # endif
 #else
   nerrors += (rc != -1);
 #endif
-  /* Error: Reference gap */
-  rc = trio_snprintf(buffer, sizeof(buffer), "%3$d %1$d", 31, 32, 33);
+  
+  /* Error: Double reference */
+  rc = trio_snprintf(buffer, sizeof(buffer), "hello %1$d %1$d", 31, 32);
 #if TRIO_FEATURE_ERRORCODE
+# if TRIO_FEATRUE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
 		TRIO_ERROR_POSITION(rc));
-# if TRIO_UNIX98
+#  if TRIO_UNIX98
+  nerrors += Verify(__FILE__, __LINE__, "Err = 4 (Double reference), Pos = 0",
+		    "%s", buffer);
+#  else
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 9",
+		    "%s", buffer);
+#  endif
+# else
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d, Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_POSITION(rc));
+#  if TRIO_UNIX98
+  nerrors += Verify(__FILE__, __LINE__, "Err = 4, Pos = 0",
+		    "%s", buffer);
+#  else
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2, Pos = 9",
+		    "%s", buffer);
+#  endif
+# endif
+#else
+  nerrors += (rc != -1);
+#endif
+  
+  /* Error: Reference gap */
+  rc = trio_snprintf(buffer, sizeof(buffer), "%3$d %1$d", 31, 32, 33);
+#if TRIO_FEATURE_ERRORCODE
+# if TRIO_FEATRUE_STRERR
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_NAME(rc),
+		TRIO_ERROR_POSITION(rc));
+#  if TRIO_UNIX98
   nerrors += Verify(__FILE__, __LINE__, "Err = 5 (Reference gap), Pos = 1",
 		    "%s", buffer);
-# else
+#  else
   nerrors += Verify(__FILE__, __LINE__, "Err = 2 (Invalid argument), Pos = 3",
 		    "%s", buffer);
+#  endif
+# else
+  trio_snprintf(buffer, sizeof(buffer), "Err = %d, Pos = %d",
+		TRIO_ERROR_CODE(rc),
+		TRIO_ERROR_POSITION(rc));
+#  if TRIO_UNIX98
+  nerrors += Verify(__FILE__, __LINE__, "Err = 5, Pos = 1",
+		    "%s", buffer);
+#  else
+  nerrors += Verify(__FILE__, __LINE__, "Err = 2, Pos = 3",
+		    "%s", buffer);
+#  endif
 # endif
 #else
   nerrors += (rc != -1);
