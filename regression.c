@@ -397,6 +397,8 @@ VerifyFormatting(TRIO_NOARGS)
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "3142",
+		    "%.0f", 3141.5);
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "12",
@@ -570,6 +572,7 @@ VerifyFormatting(TRIO_NOARGS)
   /* Integer base */
   nerrors += Verify(__FILE__, __LINE__, "Number 42 == 1120 (base 3)",
 		    "Number %d == %..3i (base 3)", 42, 42);
+  /* Integer base (specifier base must be used instead of base modifier) */
   nerrors += Verify(__FILE__, __LINE__, "42",
 		    "%..3d", 42);
   nerrors += Verify(__FILE__, __LINE__, "52",
@@ -577,6 +580,8 @@ VerifyFormatting(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "2a",
 		    "%..3x", 42);
   /* Integer thousand separator */
+  nerrors += Verify(__FILE__, __LINE__, "Number 100",
+		    "Number %'d", 100);
   nerrors += Verify(__FILE__, __LINE__, "Number 1,000,000",
 		    "Number %'d", 1000000);
   /* Float thousand separator */
