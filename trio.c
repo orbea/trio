@@ -1328,6 +1328,7 @@ TrioParse(int type,
 	      usedEntries[width] += 1;
 #endif
 	      parameters[pos].type = FORMAT_PARAMETER;
+	      parameters[pos].flags = 0;
 	      indices[width] = pos;
 	      width = pos++;
 	    }
@@ -1337,6 +1338,7 @@ TrioParse(int type,
 	      usedEntries[precision] += 1;
 #endif
 	      parameters[pos].type = FORMAT_PARAMETER;
+	      parameters[pos].flags = 0;
 	      indices[precision] = pos;
 	      precision = pos++;
 	    }
@@ -1346,6 +1348,7 @@ TrioParse(int type,
 	      usedEntries[base] += 1;
 #endif
 	      parameters[pos].type = FORMAT_PARAMETER;
+	      parameters[pos].flags = 0;
 	      indices[base] = pos;
 	      base = pos++;
 	    }
@@ -1355,6 +1358,7 @@ TrioParse(int type,
 	      usedEntries[varsize] += 1;
 #endif
 	      parameters[pos].type = FORMAT_PARAMETER;
+	      parameters[pos].flags = 0;
 	      indices[varsize] = pos;
 	      varsize = pos++;
 	    }
@@ -1716,8 +1720,8 @@ TrioParse(int type,
 	  else
 	    {
 #if defined(QUALIFIER_VARSIZE) || defined(QUALIFIER_FIXED_SIZE)
-	      if ((parameters[i].flags & FLAGS_VARSIZE_PARAMETER) ||
-		  (parameters[i].flags & FLAGS_FIXED_SIZE))
+	      if (parameters[i].flags
+		  & (FLAGS_VARSIZE_PARAMETER | FLAGS_FIXED_SIZE))
 		{
 		  if (parameters[i].flags & FLAGS_VARSIZE_PARAMETER)
 		    {
