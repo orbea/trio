@@ -141,7 +141,7 @@ static const char rcsid[] = "@(#)$Id$";
 #define VALID(x) (NULL != (x))
 
 /* xlC crashes on log10(0) */
-#define guarded_log10(x) (((x) == 0.0) ? -HUGE_VAL : log10(x))
+#define guarded_log10(x) (((x) == 0.0) ? trio_ninf() : log10(x))
 #define guarded_log16(x) (guarded_log10(x) / log10(16.0))
 
 
