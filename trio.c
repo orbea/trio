@@ -57,6 +57,10 @@
  *
  *************************************************************************/
 
+#include <math.h>
+#include <limits.h>
+#include <float.h>
+
 #if defined(__STDC_ISO_10646__) || defined(MB_LEN_MAX) || defined(USE_MULTIBYTE) || TRIO_WIDECHAR
 # define TRIO_COMPILER_SUPPORTS_MULTIBYTE
 # if !defined(MB_LEN_MAX)
@@ -75,14 +79,12 @@
 #if !(defined(DEBUG) || defined(NDEBUG))
 # define NDEBUG
 #endif
+
 #include <assert.h>
 #include <ctype.h>
 #if !defined(TRIO_COMPILER_SUPPORTS_C99)
 # define isblank(x) (((x)==32) || ((x)==9))
 #endif
-#include <math.h>
-#include <limits.h>
-#include <float.h>
 #if defined(TRIO_COMPILER_ANCIENT)
 # include <varargs.h>
 #else

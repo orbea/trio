@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.10 - 2002/12/29
+Version 1.10 - 2003/01/27
 -------------------------
+* Jose Kahan
+  Moved <limits.h> to avoid redefinition problems.
+
 * Fixed hex-float exponents (reported by Matthias Clasen)
 
 * Fixed handling of negative width and precision via paramters (reported by
