@@ -22,9 +22,11 @@ static const char rcsid[] = "@(#)$Id$";
 /*************************************************************************
  * Platform and compiler support detection
  */
-#if defined(unix)
+#if defined(unix) || defined(__unix__)
 # define PLATFORM_UNIX
 #elif defined(__xlC__) || defined(_AIX)
+# define PLATFORM_UNIX
+#elif defined(__DECC) || defined(__osf__)
 # define PLATFORM_UNIX
 #elif defined(__QNX__)
 # defined PLATFORM_UNIX
@@ -32,6 +34,9 @@ static const char rcsid[] = "@(#)$Id$";
 
 #if defined(_MSC_VER)
 # define COMPILER_MSVC
+#endif
+#if defined(__DECC)
+# define COMPILER_DECC
 #endif
 
 #if defined(__STDC__) && defined(__STDC_VERSION__)
@@ -112,7 +117,7 @@ trio_pinf()
 double
 trio_ninf()
 {
-  return InternalNumberDivide(-1.0, 0.0);
+  return -trio_pinf();
 }
 
 /*************************************************************************
@@ -175,7 +180,15 @@ trio_isnan(double number)
 int
 trio_isinf(double number)
 {
-#if defined(isinf)
+#if defined(COMPILER_DECC)
+  /*
+   * DECC has an isinf() macro, but it works differently than that
+   * of C99, so we use the fp_class() function instead
+   */
+  return ((fp_class(number) == FP_POS_INF)
+	  ? 1
+	  : ((fp_class(number) == FP_NEG_INF) ? -1 : 0));
+#elif defined(isinf)
   /*
    * C99 defines isinf() as a macro
    */
@@ -183,7 +196,7 @@ trio_isinf(double number)
   
 #elif defined(COMPILER_MSVC)
   /*
-   * MSC has an _fpclass() function that can be used to detect infinty
+   * MSVC has an _fpclass() function that can be used to detect infinty
    */
   return ((_fpclass(number) == _FPCLASS_PINF)
 	  ? 1

@@ -9,6 +9,7 @@ static const char rcsid[] = "@(#)$Id$";
 #include <float.h>
 #include "strio.h"
 #include "trio.h"
+#include "trionan.h"
 #undef printf
 
 #if TRIO_WIDECHAR
@@ -314,18 +315,18 @@ int VerifyFormatting(void)
 #endif
   /* Infinite */
   nerrors += Verify(__FILE__, __LINE__, "inf",
-		    "%f", HUGE_VAL);
+		    "%f", trio_pinf());
   nerrors += Verify(__FILE__, __LINE__, "-inf",
-		    "%f", -HUGE_VAL);
+		    "%f", trio_ninf());
   nerrors += Verify(__FILE__, __LINE__, "INF",
-		    "%F", HUGE_VAL);
+		    "%F", trio_pinf());
   nerrors += Verify(__FILE__, __LINE__, "-INF",
-		    "%F", -HUGE_VAL);
+		    "%F", trio_ninf());
   /* These two may fail if NaN is unsupported */
   nerrors += Verify(__FILE__, __LINE__, "nan",
-		    "%f", cos(HUGE_VAL));
+		    "%f", trio_nan());
   nerrors += Verify(__FILE__, __LINE__, "NAN",
-		    "%F", cos(HUGE_VAL));
+		    "%F", trio_nan());
   /* Quote flag */
   nerrors += Verify(__FILE__, __LINE__, "Another \"quoted\" string",
 		   "Another %'s string", "quoted");
