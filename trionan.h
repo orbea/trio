@@ -15,8 +15,8 @@
  *
  ************************************************************************/
 
-#ifndef TRIO_FP_H
-#define TRIO_FP_H
+#ifndef TRIO_TRIONAN_H
+#define TRIO_TRIONAN_H
 
 #include "triodef.h"
 
@@ -24,11 +24,11 @@
 extern "C" {
 #endif
 
-#if !defined(TRIO_NAN_PUBLIC)
+#if !defined(TRIO_PUBLIC_NAN)
 # if !defined(TRIO_PUBLIC)
 #  define TRIO_PUBLIC
 # endif
-# define TRIO_NAN_PUBLIC TRIO_PUBLIC
+# define TRIO_PUBLIC_NAN TRIO_PUBLIC
 #endif
   
 enum {
@@ -59,12 +59,18 @@ enum {
 #  endif
 # endif
 
+# if defined(TRIO_FUNC_NAN)
+#  if !defined(TRIO_FUNC_PINF)
+#   define TRIO_FUNC_PINF
+#  endif
+# endif
+  
 # if defined(TRIO_FUNC_NINF)
 #  if !defined(TRIO_FUNC_PINF)
 #   define TRIO_FUNC_PINF
 #  endif
 # endif
- 
+
 #else
 
 /*
@@ -92,7 +98,7 @@ enum {
  * Return NaN (Not-a-Number).
  */
 #if defined(TRIO_FUNC_NAN)
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_nan
 TRIO_PROTO((void));
 #endif
@@ -101,7 +107,7 @@ TRIO_PROTO((void));
  * Return positive infinity.
  */
 #if defined(TRIO_FUNC_PINF)
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_pinf
 TRIO_PROTO((void));
 #endif
@@ -110,7 +116,7 @@ TRIO_PROTO((void));
  * Return negative infinity.
  */
 #if defined(TRIO_FUNC_NINF)
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_ninf
 TRIO_PROTO((void));
 #endif
@@ -119,7 +125,7 @@ TRIO_PROTO((void));
  * Return negative zero.
  */
 #if defined(TRIO_FUNC_NZERO)
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_nzero
 TRIO_PROTO((TRIO_NOARGS));
 #endif
@@ -128,7 +134,7 @@ TRIO_PROTO((TRIO_NOARGS));
  * If number is a NaN return non-zero, otherwise return zero.
  */
 #if defined(TRIO_FUNC_ISNAN)
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_isnan
 TRIO_PROTO((double number));
 #endif
@@ -138,7 +144,7 @@ TRIO_PROTO((double number));
  * infinity return -1, otherwise return 0.
  */
 #if defined(TRIO_FUNC_ISINF)
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_isinf
 TRIO_PROTO((double number));
 #endif
@@ -147,25 +153,25 @@ TRIO_PROTO((double number));
  * If number is finite return non-zero, otherwise return zero.
  */
 #if defined(TRIO_FUNC_ISFINITE)
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_isfinite
 TRIO_PROTO((double number));
 #endif
 
 #if defined(TRIO_FUNC_SIGNBIT)
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_signbit
 TRIO_PROTO((double number));
 #endif
 
 #if defined(TRIO_FUNC_FPCLASSIFY)
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_fpclassify
 TRIO_PROTO((double number));
 #endif
 
 #if defined(TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT)
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_fpclassify_and_signbit
 TRIO_PROTO((double number, int *is_negative));
 #endif
@@ -174,4 +180,4 @@ TRIO_PROTO((double number, int *is_negative));
 }
 #endif
 
-#endif /* TRIO_FP_H */
+#endif /* TRIO_TRIONAN_H */

@@ -16,7 +16,7 @@
 #include "trio.h"
 #include "triop.h"
 #if defined(TRIO_EMBED_NAN)
-# define TRIO_NAN_PUBLIC static
+# define TRIO_PUBLIC_NAN static
 # define TRIO_FUNC_NINF
 # define TRIO_FUNC_PINF
 # define TRIO_FUNC_NAN
@@ -28,7 +28,7 @@
 #endif
 #include "trionan.h"
 #if defined(TRIO_EMBED_STRING)
-# define TRIO_STRING_PUBLIC static
+# define TRIO_PUBLIC_STRING static
 # define TRIO_FUNC_EQUAL_CASE
 #endif
 #include "triostr.h"

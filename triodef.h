@@ -280,8 +280,8 @@ typedef void * trio_pointer_t;
  * it has been accurately determined what version of the library
  * supports C99.
  */
-#  if defined(TRIO_COMPILER_SUPPORTS_C99)
-#   undef TRIO_COMPILER_SUPPORTS_C99
+#  if defined(PREDEF_STANDARD_C99)
+#   undef PREDEF_STANDARD_C99
 #  endif
 # endif
 #endif

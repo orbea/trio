@@ -49,7 +49,7 @@
 #include "triop.h"
 
 #if defined(TRIO_EMBED_NAN)
-# define TRIO_NAN_PUBLIC static
+# define TRIO_PUBLIC_NAN static
 # if TRIO_FEATURE_FLOAT
 #  define TRIO_FUNC_NAN
 #  define TRIO_FUNC_NINF
@@ -61,7 +61,7 @@
 #include "trionan.h"
 
 #if defined(TRIO_EMBED_STRING)
-# define TRIO_STRING_PUBLIC static
+# define TRIO_PUBLIC_STRING static
 # define TRIO_FUNC_LENGTH
 # define TRIO_FUNC_TO_LONG
 # if TRIO_FEATURE_LOCALE
@@ -78,9 +78,6 @@
 # endif
 # if TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF
 #  define TRIO_FUNC_TO_DOUBLE
-# endif
-# if TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF
-#  define TRIO_FUNC_TO_FLOAT
 # endif
 # if TRIO_FEATURE_DYNAMICSTRING
 #  define TRIO_FUNC_STRING_EXTRACT

@@ -60,11 +60,11 @@
  * Definitions
  */
 
-#if !defined(TRIO_NAN_PUBLIC)
-# define TRIO_NAN_PUBLIC TRIO_PUBLIC
+#if !defined(TRIO_PUBLIC_NAN)
+# define TRIO_PUBLIC_NAN TRIO_PUBLIC
 #endif
-#if !defined(TRIO_NAN_PRIVATE)
-# define TRIO_NAN_PRIVATE TRIO_PRIVATE
+#if !defined(TRIO_PRIVATE_NAN)
+# define TRIO_PRIVATE_NAN TRIO_PRIVATE
 #endif
 
 #define TRIO_TRUE (1 == 1)
@@ -103,10 +103,10 @@
  *     the ability to represent 53 bits wide mantissa.
  */
 #if defined(__STDC_IEC_559__)
-# define USE_IEEE_754
+# define TRIO_IEEE_754
 #else
 # if (FLT_RADIX == 2) && (DBL_MAX_EXP == 1024) && (DBL_MANT_DIG == 53)
-#  define USE_IEEE_754
+#  define TRIO_IEEE_754
 # endif
 #endif
 
@@ -114,7 +114,7 @@
  * Determine which fpclassify_and_sign() function to use.
  */
 #if defined(TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT)
-# if defined(PREDEF_STANDARD_C99)
+# if defined(PREDEF_STANDARD_C99) && defined(fpclassify)
 #  define TRIO_FUNC_C99_FPCLASSIFY_AND_SIGNBIT
 # else
 #  if defined(TRIO_COMPILER_DECC)
@@ -138,22 +138,85 @@
 #endif
 
 /*
+ * Determine how to generate negative zero.
+ */
+#if defined(TRIO_FUNC_NZERO)
+# if defined(TRIO_IEEE_754)
+#  define TRIO_NZERO_IEEE_754
+# else
+#  define TRIO_NZERO_FALLBACK
+# endif
+#endif
+
+/*
+ * Determine how to generate positive infinity.
+ */
+#if defined(TRIO_FUNC_PINF)
+# if defined(INFINITY) && defined(__STDC_IEC_559__)
+#  define TRIO_PINF_C99_MACRO
+# else
+#  if defined(TRIO_IEEE_754)
+#   define TRIO_PINF_IEEE_754
+#  else
+#   define TRIO_PINF_FALLBACK
+#  endif
+# endif
+#endif
+
+/*
+ * Determine how to generate NaN.
+ */
+#if defined(TRIO_FUNC_NAN)
+# if defined(PREDEF_STANDARD_C99) && !defined(TRIO_COMPILER_DECC)
+#  define TRIO_NAN_C99_FUNCTION
+# else
+#  if defined(NAN) && defined(__STDC_IEC_559__)
+#   define TRIO_NAN_C99_MACRO
+#  else
+#   if defined(TRIO_IEEE_754)
+#    define TRIO_NAN_IEEE_754
+#   else
+#    define TRIO_NAN_FALLBACK
+#   endif
+#  endif
+# endif
+#endif
+
+/*
  * Resolve internal dependencies.
  */
 #if defined(TRIO_FUNC_INTERNAL_FPCLASSIFY_AND_SIGNBIT)
 # define TRIO_FUNC_INTERNAL_ISNAN
 # define TRIO_FUNC_INTERNAL_ISINF
-# if defined(USE_IEEE_754)
+# if defined(TRIO_IEEE_754)
 #  define TRIO_FUNC_INTERNAL_IS_SPECIAL_QUANTITY
 #  define TRIO_FUNC_INTERNAL_IS_NEGATIVE
 # endif
 #endif
 
-#if defined(TRIO_FUNC_NZERO) \
- || defined(TRIO_FUNC_PINF) \
- || defined(TRIO_FUNC_NAN)
-# if defined(USE_IEEE_754)
-#  define TRIO_FUNC_INTERNAL_MAKE_DOUBLE
+#if defined(TRIO_NZERO_IEEE_754) \
+ || defined(TRIO_PINF_IEEE_754) \
+ || defined(TRIO_NAN_IEEE_754)
+# define TRIO_FUNC_INTERNAL_MAKE_DOUBLE
+#endif
+
+#if defined(TRIO_FUNC_INTERNAL_ISNAN)
+# if defined(PREDEF_STANDARD_XPG3)
+#  define TRIO_INTERNAL_ISNAN_XPG3
+# else
+#  if defined(TRIO_IEEE_754)
+#   define TRIO_INTERNAL_ISNAN_IEEE_754
+#  else
+#   define TRIO_INTERNAL_ISNAN_FALLBACK
+#  endif
+# endif
+#endif
+
+#if defined(TRIO_FUNC_INTERNAL_ISINF)
+# if defined(TRIO_IEEE_754)
+#  define TRIO_INTERNAL_ISINF_IEEE_754
+# else
+#  define TRIO_INTERNAL_ISINF_FALLBACK
 # endif
 #endif
 
@@ -164,8 +227,6 @@
 #if !defined(TRIO_EMBED_NAN)
 static TRIO_CONST char rcsid[] = "@(#)$Id$";
 #endif
-
-#if defined(USE_IEEE_754)
 
 #if defined(TRIO_FUNC_INTERNAL_MAKE_DOUBLE) \
  || defined(TRIO_FUNC_INTERNAL_IS_SPECIAL_QUANTITY) \
@@ -204,21 +265,21 @@ static TRIO_CONST unsigned char ieee_754_sign_mask[] = {
 };
 #endif
 
-#if defined(TRIO_FUNC_NZERO)
+#if defined(TRIO_NZERO_IEEE_754)
 /* Bit-pattern for negative zero */
 static TRIO_CONST unsigned char ieee_754_negzero_array[] = {
   0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 #endif
 
-#if defined(TRIO_FUNC_PINF)
+#if defined(TRIO_PINF_IEEE_754)
 /* Bit-pattern for infinity */
 static TRIO_CONST unsigned char ieee_754_infinity_array[] = {
   0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 #endif
 
-#if defined(TRIO_FUNC_NAN)
+#if defined(TRIO_NAN_IEEE_754)
 /* Bit-pattern for quiet NaN */
 static TRIO_CONST unsigned char ieee_754_qnan_array[] = {
   0x7F, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -235,7 +296,7 @@ static TRIO_CONST unsigned char ieee_754_qnan_array[] = {
  */
 #if defined(TRIO_FUNC_INTERNAL_MAKE_DOUBLE)
 
-TRIO_NAN_PRIVATE double
+TRIO_PRIVATE_NAN double
 internal_make_double
 TRIO_ARGS1((values),
 	   TRIO_CONST unsigned char *values)
@@ -256,7 +317,7 @@ TRIO_ARGS1((values),
  */
 #if defined(TRIO_FUNC_INTERNAL_IS_SPECIAL_QUANTITY)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN int
 internal_is_special_quantity
 TRIO_ARGS2((number, has_mantissa),
 	   double number,
@@ -284,7 +345,7 @@ TRIO_ARGS2((number, has_mantissa),
  */
 #if defined(TRIO_FUNC_INTERNAL_IS_NEGATIVE)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN int
 internal_is_negative
 TRIO_ARGS1((number),
 	   double number)
@@ -301,12 +362,9 @@ TRIO_ARGS1((number),
 
 #endif
 
-#endif /* USE_IEEE_754 */
-
-
 #if defined(TRIO_FUNC_C99_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN TRIO_INLINE int
 c99_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	   double number,
@@ -331,7 +389,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_DECC_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN TRIO_INLINE int
 decc_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -376,7 +434,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_MS_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN TRIO_INLINE int
 ms_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -448,7 +506,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_HP_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN TRIO_INLINE int
 hp_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -497,7 +555,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_XLC_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN TRIO_INLINE int
 xlc_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -551,19 +609,21 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_INTERNAL_ISNAN)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN TRIO_INLINE int
 internal_isnan
 TRIO_ARGS1((number),
 	   double number)
 {
-# if defined(PREDEF_STANDARD_XPG3)
+# if defined(TRIO_INTERNAL_ISNAN_XPG3)
   /*
    * XPG3 defines isnan() as a function.
    */
   return isnan(number);
 
-# else
-#  if defined(USE_IEEE_754)
+# endif
+  
+# if defined(TRIO_INTERNAL_ISNAN_IEEE_754)
+  
   /*
    * Examine IEEE 754 bit-pattern. A NaN must have a special exponent
    * pattern, and a non-empty mantissa.
@@ -575,16 +635,19 @@ TRIO_ARGS1((number),
   
   return (is_special_quantity && has_mantissa);
   
-#  else
+# endif
+
+# if defined(TRIO_INTERNAL_ISNAN_FALLBACK)
+  
   /*
    * Fallback solution
    */
   int status;
   double integral, fraction;
   
-#   if defined(TRIO_PLATFORM_UNIX)
+#  if defined(TRIO_PLATFORM_UNIX)
   void (*signal_handler)(int) = signal(SIGFPE, SIG_IGN);
-#   endif
+#  endif
   
   status = (/*
 	     * NaN is the only number which does not compare to itself
@@ -597,13 +660,12 @@ TRIO_ARGS1((number),
 	     (fraction = modf(number, &integral),
 	      integral == fraction)));
   
-#   if defined(TRIO_PLATFORM_UNIX)
+#  if defined(TRIO_PLATFORM_UNIX)
   signal(SIGFPE, signal_handler);
-#   endif
+#  endif
   
   return status;
   
-#  endif
 # endif
 }
 
@@ -611,12 +673,12 @@ TRIO_ARGS1((number),
 
 #if defined(TRIO_FUNC_INTERNAL_ISINF)
 
-TRIO_NAN_PRIVATE int
+TRIO_PRIVATE_NAN TRIO_INLINE int
 internal_isinf
 TRIO_ARGS1((number),
 	   double number)
 {
-# if defined(USE_IEEE_754)
+# if defined(TRIO_INTERNAL_ISINF_IEEE_754)
   /*
    * Examine IEEE 754 bit-pattern. Infinity must have a special exponent
    * pattern, and an empty mantissa.
@@ -630,7 +692,10 @@ TRIO_ARGS1((number),
     ? ((number < 0.0) ? -1 : 1)
     : 0;
 
-# else
+# endif
+
+# if defined(TRIO_INTERNAL_ISINF_FALLBACK)
+  
   /*
    * Fallback solution.
    */
@@ -663,7 +728,7 @@ TRIO_ARGS1((number),
 
 #if defined(TRIO_FUNC_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	   double number,
@@ -714,7 +779,7 @@ TRIO_ARGS2((number, is_negative),
      * have to handle this as a special case by examining the sign bit
      * directly.
      */
-# if defined(USE_IEEE_754)
+# if defined(TRIO_IEEE_754)
     *is_negative = internal_is_negative(number);
 # else
     *is_negative = TRIO_FALSE; /* FIXME */
@@ -753,7 +818,7 @@ TRIO_ARGS2((number, is_negative),
 */
 #if defined(TRIO_FUNC_ISNAN)
 
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_isnan
 TRIO_ARGS1((number),
 	   double number)
@@ -773,7 +838,7 @@ TRIO_ARGS1((number),
 */
 #if defined(TRIO_FUNC_ISINF)
 
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_isinf
 TRIO_ARGS1((number),
 	   double number)
@@ -800,7 +865,7 @@ TRIO_ARGS1((number),
 */
 #if defined(TRIO_FUNC_ISFINITE)
 
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_isfinite
 TRIO_ARGS1((number),
 	   double number)
@@ -828,7 +893,7 @@ TRIO_ARGS1((number),
 */
 #if defined(TRIO_FUNC_SIGNBIT)
 
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_signbit
 TRIO_ARGS1((number),
 	   double number)
@@ -849,7 +914,7 @@ TRIO_ARGS1((number),
 */
 #if defined(TRIO_FUNC_FPCLASSIFY)
 
-TRIO_NAN_PUBLIC int
+TRIO_PUBLIC_NAN int
 trio_fpclassify
 TRIO_ARGS1((number),
 	   double number)
@@ -868,16 +933,22 @@ TRIO_ARGS1((number),
 */
 #if defined(TRIO_FUNC_NZERO)
 
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_nzero(TRIO_NOARGS)
 {
-#if defined(USE_IEEE_754)
+# if defined(TRIO_NZERO_IEEE_754)
+  
   return internal_make_double(ieee_754_negzero_array);
-#else
+
+# endif
+  
+# if defined(TRIO_NZERO_FALLBACK)
+  
   TRIO_VOLATILE double zero = 0.0;
 
   return -zero;
-#endif
+  
+# endif
 }
 
 #endif
@@ -889,22 +960,27 @@ trio_nzero(TRIO_NOARGS)
 */
 #if defined(TRIO_FUNC_PINF)
 
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_pinf(TRIO_NOARGS)
 {
   /* Cache the result */
   static double pinf_value = 0.0;
 
   if (pinf_value == 0.0) {
+
+# if defined(TRIO_PINF_C99_MACRO)
     
-#if defined(INFINITY) && defined(__STDC_IEC_559__)
     pinf_value = (double)INFINITY;
 
-#else
-# if defined(USE_IEEE_754)
+# endif
+    
+# if defined(TRIO_PINF_IEEE_754)
+    
     pinf_value = internal_make_double(ieee_754_infinity_array);
 
-# else
+# endif
+
+# if defined(TRIO_PINF_FALLBACK)
     /*
      * If HUGE_VAL is different from DBL_MAX, then HUGE_VAL is used
      * as infinity. Otherwise we have to resort to an overflow
@@ -925,7 +1001,6 @@ trio_pinf(TRIO_NOARGS)
 #  endif
 
 # endif
-#endif
   }
   return pinf_value;
 }
@@ -939,7 +1014,7 @@ trio_pinf(TRIO_NOARGS)
 */
 #if defined(TRIO_FUNC_NINF)
 
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_ninf(TRIO_NOARGS)
 {
   static double ninf_value = 0.0;
@@ -964,7 +1039,7 @@ trio_ninf(TRIO_NOARGS)
 */
 #if defined(TRIO_FUNC_NAN)
 
-TRIO_NAN_PUBLIC double
+TRIO_PUBLIC_NAN double
 trio_nan(TRIO_NOARGS)
 {
   /* Cache the result */
@@ -972,18 +1047,25 @@ trio_nan(TRIO_NOARGS)
 
   if (nan_value == 0.0) {
     
-#if defined(PREDEF_STANDARD_C99)
+# if defined(TRIO_NAN_C99_FUNCTION)
+    
     nan_value = nan("");
 
-#else
-# if defined(NAN) && defined(__STDC_IEC_559__)
+# endif
+    
+# if defined(TRIO_NAN_C99_MACRO)
+    
     nan_value = (double)NAN;
 
-# else
-#  if defined(USE_IEEE_754)
+# endif
+    
+# if defined(TRIO_NAN_IEEE_754)
+    
     nan_value = internal_make_double(ieee_754_qnan_array);
 
-#  else
+# endif
+    
+# if defined(TRIO_NAN_FALLBACK)
     /*
      * There are several ways to generate NaN. The one used here is
      * to divide infinity by infinity. I would have preferred to add
@@ -993,19 +1075,17 @@ trio_nan(TRIO_NOARGS)
      * This may fail if the hardware does not support NaN, or if
      * the Invalid Operation floating-point exception is unmasked.
      */
-#   if defined(TRIO_PLATFORM_UNIX)
+#  if defined(TRIO_PLATFORM_UNIX)
     void (*signal_handler)(int) = signal(SIGFPE, SIG_IGN);
-#   endif
+#  endif
     
     nan_value = trio_pinf() / trio_pinf();
     
-#   if defined(TRIO_PLATFORM_UNIX)
+#  if defined(TRIO_PLATFORM_UNIX)
     signal(SIGFPE, signal_handler);
-#   endif
-    
 #  endif
+
 # endif
-#endif
   }
   return nan_value;
 }

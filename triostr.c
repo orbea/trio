@@ -36,11 +36,11 @@
  * Definitions
  */
 
-#if !defined(TRIO_STRING_PUBLIC)
-# define TRIO_STRING_PUBLIC TRIO_PUBLIC
+#if !defined(TRIO_PUBLIC_STRING)
+# define TRIO_PUBLIC_STRING TRIO_PUBLIC
 #endif
-#if !defined(TRIO_STRING_PRIVATE)
-# define TRIO_STRING_PRIVATE TRIO_PRIVATE
+#if !defined(TRIO_PRIVATE_STRING)
+# define TRIO_PRIVATE_STRING TRIO_PRIVATE
 #endif
 
 #if !defined(NULL)
@@ -154,7 +154,7 @@ static TRIO_CONST char rcsid[] = "@(#)$Id$";
  || defined(TRIO_FUNC_STRING_DUPLICATE) \
  || defined(TRIO_FUNC_XSTRING_DUPLICATE)
 
-TRIO_STRING_PRIVATE char *
+TRIO_PRIVATE_STRING char *
 internal_duplicate_max
 TRIO_ARGS2((source, size),
 	   TRIO_CONST char *source,
@@ -183,7 +183,7 @@ TRIO_ARGS2((source, size),
  || defined(TRIO_FUNC_STRING_DUPLICATE) \
  || defined(TRIO_FUNC_XSTRING_DUPLICATE)
 
-TRIO_STRING_PRIVATE trio_string_t *
+TRIO_PRIVATE_STRING trio_string_t *
 internal_string_alloc(TRIO_NOARGS)
 {
   trio_string_t *self;
@@ -211,7 +211,7 @@ internal_string_alloc(TRIO_NOARGS)
  || defined(TRIO_FUNC_XSTRING_APPEND) \
  || defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
 
-TRIO_STRING_PRIVATE BOOLEAN_T
+TRIO_PRIVATE_STRING BOOLEAN_T
 internal_string_grow
 TRIO_ARGS2((self, delta),
 	   trio_string_t *self,
@@ -235,6 +235,8 @@ TRIO_ARGS2((self, delta),
   return status;
 }
 
+#endif
+
 /*
  * internal_string_grow_to
  *
@@ -242,7 +244,10 @@ TRIO_ARGS2((self, delta),
  * If 'length' is less than the original size, the original size will be
  * used (that is, the size of the string is never decreased).
  */
-TRIO_STRING_PRIVATE BOOLEAN_T
+#if defined(TRIO_FUNC_STRING_APPEND) \
+ || defined(TRIO_FUNC_XSTRING_APPEND)
+
+TRIO_PRIVATE_STRING BOOLEAN_T
 internal_string_grow_to
 TRIO_ARGS2((self, length),
 	   trio_string_t *self,
@@ -265,7 +270,7 @@ TRIO_ARGS2((self, length),
 */
 #if defined(TRIO_FUNC_CREATE)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_create
 TRIO_ARGS1((size),
 	   size_t size)
@@ -282,7 +287,7 @@ TRIO_ARGS1((size),
 */
 #if defined(TRIO_FUNC_DESTROY)
 
-TRIO_STRING_PUBLIC void
+TRIO_PUBLIC_STRING void
 trio_destroy
 TRIO_ARGS1((string),
 	   char *string)
@@ -303,7 +308,7 @@ TRIO_ARGS1((string),
 */
 #if defined(TRIO_FUNC_LENGTH)
 
-TRIO_STRING_PUBLIC size_t
+TRIO_PUBLIC_STRING size_t
 trio_length
 TRIO_ARGS1((string),
 	   TRIO_CONST char *string)
@@ -328,7 +333,7 @@ TRIO_ARGS1((string),
 */
 #if defined(TRIO_FUNC_APPEND)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_append
 TRIO_ARGS2((target, source),
 	   char *target,
@@ -359,7 +364,7 @@ TRIO_ARGS2((target, source),
 */
 #if defined(TRIO_FUNC_APPEND_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_append_max
 TRIO_ARGS3((target, max, source),
 	   char *target,
@@ -391,7 +396,7 @@ TRIO_ARGS3((target, max, source),
 */
 #if defined(TRIO_FUNC_CONTAINS)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_contains
 TRIO_ARGS2((string, substring),
 	   TRIO_CONST char *string,
@@ -420,7 +425,7 @@ TRIO_ARGS2((string, substring),
 */
 #if defined(TRIO_FUNC_COPY)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_copy
 TRIO_ARGS2((target, source),
 	   char *target,
@@ -451,7 +456,7 @@ TRIO_ARGS2((target, source),
 */
 #if defined(TRIO_FUNC_COPY_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_copy_max
 TRIO_ARGS3((target, max, source),
 	   char *target,
@@ -479,7 +484,7 @@ TRIO_ARGS3((target, max, source),
 */
 #if defined(TRIO_FUNC_DUPLICATE)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_duplicate
 TRIO_ARGS1((source),
 	   TRIO_CONST char *source)
@@ -500,7 +505,7 @@ TRIO_ARGS1((source),
 */
 #if defined(TRIO_FUNC_DUPLICATE_MAX)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_duplicate_max
 TRIO_ARGS2((source, max),
 	   TRIO_CONST char *source,
@@ -532,7 +537,7 @@ TRIO_ARGS2((source, max),
 */
 #if defined(TRIO_FUNC_EQUAL)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_equal
 TRIO_ARGS2((first, second),
 	   TRIO_CONST char *first,
@@ -574,7 +579,7 @@ TRIO_ARGS2((first, second),
 */
 #if defined(TRIO_FUNC_EQUAL_CASE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_equal_case
 TRIO_ARGS2((first, second),
 	   TRIO_CONST char *first,
@@ -604,7 +609,7 @@ TRIO_ARGS2((first, second),
 */
 #if defined(TRIO_FUNC_EQUAL_CASE_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_equal_case_max
 TRIO_ARGS3((first, max, second),
 	   TRIO_CONST char *first,
@@ -634,7 +639,7 @@ TRIO_ARGS3((first, max, second),
 */
 #if defined(TRIO_FUNC_EQUAL_LOCALE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_equal_locale
 TRIO_ARGS2((first, second),
 	   TRIO_CONST char *first,
@@ -664,7 +669,7 @@ TRIO_ARGS2((first, second),
 */
 #if defined(TRIO_FUNC_EQUAL_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_equal_max
 TRIO_ARGS3((first, max, second),
 	   TRIO_CONST char *first,
@@ -707,7 +712,7 @@ TRIO_ARGS3((first, max, second),
 */
 #if defined(TRIO_FUNC_ERROR)
 
-TRIO_STRING_PUBLIC TRIO_CONST char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_error
 TRIO_ARGS1((error_number),
 	   int error_number)
@@ -750,7 +755,7 @@ TRIO_ARGS1((error_number),
 */
 #if defined(TRIO_FUNC_FORMAT_DATE_MAX)
 
-TRIO_STRING_PUBLIC size_t
+TRIO_PUBLIC_STRING size_t
 trio_format_date_max
 TRIO_ARGS4((target, max, format, datetime),
 	   char *target,
@@ -780,7 +785,7 @@ TRIO_ARGS4((target, max, format, datetime),
 */
 #if defined(TRIO_FUNC_HASH)
 
-TRIO_STRING_PUBLIC unsigned long
+TRIO_PUBLIC_STRING unsigned long
 trio_hash
 TRIO_ARGS2((string, type),
 	   TRIO_CONST char *string,
@@ -818,7 +823,7 @@ TRIO_ARGS2((string, type),
  */
 #if defined(TRIO_FUNC_INDEX)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_index
 TRIO_ARGS2((string, character),
 	   TRIO_CONST char *string,
@@ -840,7 +845,7 @@ TRIO_ARGS2((string, character),
  */
 #if defined(TRIO_FUNC_INDEX_LAST)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_index_last
 TRIO_ARGS2((string, character),
 	   TRIO_CONST char *string,
@@ -861,7 +866,7 @@ TRIO_ARGS2((string, character),
 */
 #if defined(TRIO_FUNC_LOWER)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_lower
 TRIO_ARGS1((target),
 	   char *target)
@@ -888,7 +893,7 @@ TRIO_ARGS1((target),
 */
 #if defined(TRIO_FUNC_MATCH)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_match
 TRIO_ARGS2((string, pattern),
 	   TRIO_CONST char *string,
@@ -942,7 +947,7 @@ TRIO_ARGS2((string, pattern),
 */
 #if defined(TRIO_FUNC_MATCH_CASE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_match_case
 TRIO_ARGS2((string, pattern),
 	   TRIO_CONST char *string,
@@ -991,7 +996,7 @@ TRIO_ARGS2((string, pattern),
 */
 #if defined(TRIO_FUNC_SPAN_FUNCTION)
 
-TRIO_STRING_PUBLIC size_t
+TRIO_PUBLIC_STRING size_t
 trio_span_function
 TRIO_ARGS3((target, source, Function),
 	   char *target,
@@ -1024,7 +1029,7 @@ TRIO_ARGS3((target, source, Function),
 */
 #if defined(TRIO_FUNC_SUBSTRING)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_substring
 TRIO_ARGS2((string, substring),
 	   TRIO_CONST char *string,
@@ -1049,7 +1054,7 @@ TRIO_ARGS2((string, substring),
 */
 #if defined(TRIO_FUNC_SUBSTRING_MAX)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_substring_max
 TRIO_ARGS3((string, max, substring),
 	   TRIO_CONST char *string,
@@ -1091,7 +1096,7 @@ TRIO_ARGS3((string, max, substring),
 */
 #if defined(TRIO_FUNC_TOKENIZE)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_tokenize
 TRIO_ARGS2((string, delimiters),
 	   char *string,
@@ -1128,7 +1133,7 @@ TRIO_ARGS2((string, delimiters),
 #if defined(TRIO_FUNC_TO_LONG_DOUBLE)
 
 /* FIXME: Add EBNF for hex-floats */
-TRIO_STRING_PUBLIC trio_long_double_t
+TRIO_PUBLIC_STRING trio_long_double_t
 trio_to_long_double
 TRIO_ARGS2((source, endp),
 	   TRIO_CONST char *source,
@@ -1266,7 +1271,7 @@ TRIO_ARGS2((source, endp),
 */
 #if defined(TRIO_FUNC_TO_DOUBLE)
 
-TRIO_STRING_PUBLIC double
+TRIO_PUBLIC_STRING double
 trio_to_double
 TRIO_ARGS2((source, endp),
 	   TRIO_CONST char *source,
@@ -1292,7 +1297,7 @@ TRIO_ARGS2((source, endp),
 */
 #if defined(TRIO_FUNC_TO_FLOAT)
 
-TRIO_STRING_PUBLIC float
+TRIO_PUBLIC_STRING float
 trio_to_float
 TRIO_ARGS2((source, endp),
 	   TRIO_CONST char *source,
@@ -1316,7 +1321,7 @@ TRIO_ARGS2((source, endp),
 */
 #if defined(TRIO_FUNC_TO_LONG)
 
-TRIO_STRING_PUBLIC long
+TRIO_PUBLIC_STRING long
 trio_to_long
 TRIO_ARGS3((string, endp, base),
 	   TRIO_CONST char *string,
@@ -1339,7 +1344,7 @@ TRIO_ARGS3((string, endp, base),
 */
 #if defined(TRIO_FUNC_TO_LOWER)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_to_lower
 TRIO_ARGS1((source),
 	   int source)
@@ -1369,7 +1374,7 @@ TRIO_ARGS1((source),
 */
 #if defined(TRIO_FUNC_TO_UNSIGNED_LONG)
 
-TRIO_STRING_PUBLIC unsigned long
+TRIO_PUBLIC_STRING unsigned long
 trio_to_unsigned_long
 TRIO_ARGS3((string, endp, base),
 	   TRIO_CONST char *string,
@@ -1392,7 +1397,7 @@ TRIO_ARGS3((string, endp, base),
 */
 #if defined(TRIO_FUNC_TO_UPPER)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_to_upper
 TRIO_ARGS1((source),
 	   int source)
@@ -1421,7 +1426,7 @@ TRIO_ARGS1((source),
 */
 #if defined(TRIO_FUNC_UPPER)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_upper
 TRIO_ARGS1((target),
 	   char *target)
@@ -1455,7 +1460,7 @@ TRIO_ARGS1((target),
 */
 #if defined(TRIO_FUNC_STRING_CREATE)
 
-TRIO_STRING_PUBLIC trio_string_t *
+TRIO_PUBLIC_STRING trio_string_t *
 trio_string_create
 TRIO_ARGS1((initial_size),
 	   int initial_size)
@@ -1489,7 +1494,7 @@ TRIO_ARGS1((initial_size),
 */
 #if defined(TRIO_FUNC_STRING_DESTROY)
 
-TRIO_STRING_PUBLIC void
+TRIO_PUBLIC_STRING void
 trio_string_destroy
 TRIO_ARGS1((self),
 	   trio_string_t *self)
@@ -1521,7 +1526,7 @@ TRIO_ARGS1((self),
 */
 #if defined(TRIO_FUNCT_STRING_GET)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_string_get
 TRIO_ARGS2((self, offset),
 	   trio_string_t *self,
@@ -1570,7 +1575,7 @@ TRIO_ARGS2((self, offset),
 */
 #if defined(TRIO_FUNC_STRING_EXTRACT)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_string_extract
 TRIO_ARGS1((self),
 	   trio_string_t *self)
@@ -1603,7 +1608,7 @@ TRIO_ARGS1((self),
 */
 #if defined(TRIO_FUNC_XSTRING_SET)
 
-TRIO_STRING_PUBLIC void
+TRIO_PUBLIC_STRING void
 trio_xstring_set
 TRIO_ARGS2((self, buffer),
 	   trio_string_t *self,
@@ -1622,7 +1627,7 @@ TRIO_ARGS2((self, buffer),
  */
 #if defined(TRIO_FUNC_STRING_SIZE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_size
 TRIO_ARGS1((self),
 	   trio_string_t *self)
@@ -1639,7 +1644,7 @@ TRIO_ARGS1((self),
  */
 #if defined(TRIO_FUNC_STRING_TERMINATE)
 
-TRIO_STRING_PUBLIC void
+TRIO_PUBLIC_STRING void
 trio_string_terminate
 TRIO_ARGS1((self),
 	   trio_string_t *self)
@@ -1658,7 +1663,7 @@ TRIO_ARGS1((self),
 */
 #if defined(TRIO_FUNC_STRING_APPEND)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_append
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1688,7 +1693,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_APPEND)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_append
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1717,7 +1722,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_append_char
 TRIO_ARGS2((self, character),
 	   trio_string_t *self,
@@ -1749,7 +1754,7 @@ TRIO_ARGS2((self, character),
 */
 #if defined(TRIO_FUNC_STRING_CONTAINS)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_contains
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1768,7 +1773,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_CONTAINS)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_contains
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1787,7 +1792,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_STRING_COPY)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_copy
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1808,7 +1813,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_COPY)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_copy
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1828,7 +1833,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_STRING_DUPLICATE)
 
-TRIO_STRING_PUBLIC trio_string_t *
+TRIO_PUBLIC_STRING trio_string_t *
 trio_string_duplicate
 TRIO_ARGS1((other),
 	   trio_string_t *other)
@@ -1861,7 +1866,7 @@ TRIO_ARGS1((other),
  */
 #if defined(TRIO_FUNC_XSTRING_DUPLICATE)
 
-TRIO_STRING_PUBLIC trio_string_t *
+TRIO_PUBLIC_STRING trio_string_t *
 trio_xstring_duplicate
 TRIO_ARGS1((other),
 	   TRIO_CONST char *other)
@@ -1894,7 +1899,7 @@ TRIO_ARGS1((other),
  */
 #if defined(TRIO_FUNC_STRING_EQUAL)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_equal
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1914,7 +1919,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_EQUAL)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_equal
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1933,7 +1938,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_STRING_EQUAL_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_equal_max
 TRIO_ARGS3((self, max, other),
 	   trio_string_t *self,
@@ -1952,7 +1957,7 @@ TRIO_ARGS3((self, max, other),
  */
 #if defined(TRIO_FUNC_XSTRING_EQUAL_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_equal_max
 TRIO_ARGS3((self, max, other),
 	   trio_string_t *self,
@@ -1972,7 +1977,7 @@ TRIO_ARGS3((self, max, other),
  */
 #if defined(TRIO_FUNC_STRING_EQUAL_CASE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_equal_case
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -1991,7 +1996,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_EQUAL_CASE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_equal_case
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -2010,7 +2015,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_STRING_EQUAL_CASE_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_equal_case_max
 TRIO_ARGS3((self, max, other),
 	   trio_string_t *self,
@@ -2030,7 +2035,7 @@ TRIO_ARGS3((self, max, other),
  */
 #if defined(TRIO_FUNC_XSTRING_EQUAL_CASE_MAX)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_equal_case_max
 TRIO_ARGS3((self, max, other),
 	   trio_string_t *self,
@@ -2050,7 +2055,7 @@ TRIO_ARGS3((self, max, other),
  */
 #if defined(TRIO_FUNC_STRING_FORMAT_DATE_MAX)
 
-TRIO_STRING_PUBLIC size_t
+TRIO_PUBLIC_STRING size_t
 trio_string_format_date_max
 TRIO_ARGS4((self, max, format, datetime),
 	   trio_string_t *self,
@@ -2070,7 +2075,7 @@ TRIO_ARGS4((self, max, format, datetime),
  */
 #if defined(TRIO_FUNC_STRING_INDEX)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_string_index
 TRIO_ARGS2((self, character),
 	   trio_string_t *self,
@@ -2088,7 +2093,7 @@ TRIO_ARGS2((self, character),
  */
 #if defined(TRIO_FUNC_STRING_INDEX_LAST)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_string_index_last
 TRIO_ARGS2((self, character),
 	   trio_string_t *self,
@@ -2106,7 +2111,7 @@ TRIO_ARGS2((self, character),
  */
 #if defined(TRIO_FUNC_STRING_LENGTH)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_length
 TRIO_ARGS1((self),
 	   trio_string_t *self)
@@ -2127,7 +2132,7 @@ TRIO_ARGS1((self),
  */
 #if defined(TRIO_FUNC_STRING_LOWER)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_lower
 TRIO_ARGS1((self),
 	   trio_string_t *self)
@@ -2144,7 +2149,7 @@ TRIO_ARGS1((self),
  */
 #if defined(TRIO_FUNC_STRING_MATCH)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_match
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -2163,7 +2168,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_MATCH)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_match
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -2182,7 +2187,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_STRING_MATCH_CASE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_match_case
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -2201,7 +2206,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_MATCH_CASE)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_xstring_match_case
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -2220,7 +2225,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_STRING_SUBSTRING)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_string_substring
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -2239,7 +2244,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_XSTRING_SUBSTRING)
 
-TRIO_STRING_PUBLIC char *
+TRIO_PUBLIC_STRING char *
 trio_xstring_substring
 TRIO_ARGS2((self, other),
 	   trio_string_t *self,
@@ -2258,7 +2263,7 @@ TRIO_ARGS2((self, other),
  */
 #if defined(TRIO_FUNC_STRING_UPPER)
 
-TRIO_STRING_PUBLIC int
+TRIO_PUBLIC_STRING int
 trio_string_upper
 TRIO_ARGS1((self),
 	   trio_string_t *self)
