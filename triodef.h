@@ -161,7 +161,7 @@ typedef void * trio_pointer_t;
 # define TRIO_VARGS4 TRIO_ARGS4
 # define TRIO_VARGS5 TRIO_ARGS5
 # define TRIO_VA_DECL ...
-# define TRIO_VA_START(x,y) va_start((x),(y))
+# define TRIO_VA_START(x,y) va_start(x,y)
 # define TRIO_VA_END(x) va_end(x)
 #endif
 
