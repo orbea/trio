@@ -4407,6 +4407,107 @@ TrioReadString(trio_T *self,
 }
 
 /*************************************************************************
+ * TrioReadWideString [private]
+ */
+#if TRIO_WIDECHAR
+static BOOLEAN_T
+TrioReadWideString(trio_T *self,
+		   wchar_t *target,
+		   int flags,
+		   int width)
+{
+  int i;
+  int j;
+  char ch;
+  wchar_t wch;
+  int size;
+  LONGEST number;
+  char buffer[64];
+  
+  assert(VALID(self));
+  assert(VALID(self->InStream));
+
+  TrioSkipWhitespaces(self);
+
+#if USE_MULTIBYTE
+  mblen(NULL, 0);
+#endif
+  
+  /*
+   * Continue until end of string is reached, a whitespace is encountered,
+   * or width is exceeded
+   */
+  for (i = 0;
+       ((width == NO_WIDTH) || (i < width)) &&
+       (! ((self->current == EOF) || isspace(self->current)));
+       i++)
+    {
+      if (isascii(self->current))
+	{
+	  ch = (char)self->current;
+	  if ((flags & FLAGS_ALTERNATIVE) && (ch == CHAR_BACKSLASH))
+	    {
+	      self->InStream(self, NULL);
+	      switch (self->current)
+		{
+		case '\\': ch = '\\'; break;
+		case 'a': ch = '\a'; break;
+		case 'b': ch = '\b'; break;
+		case 'f': ch = '\f'; break;
+		case 'n': ch = '\n'; break;
+		case 'r': ch = '\r'; break;
+		case 't': ch = '\t'; break;
+		case 'v': ch = '\v'; break;
+		default:
+		  if (isdigit(self->current))
+		    {
+		      /* Read octal number */
+		      if (!TrioReadNumber(self, &number, 0, 3, BASE_OCTAL))
+			return FALSE;
+		      ch = (char)number;
+		    }
+		  else if (toupper(self->current) == 'X')
+		    {
+		      /* Read hexadecimal number */
+		      self->InStream(self, NULL);
+		      if (!TrioReadNumber(self, &number, 0, 2, BASE_HEX))
+			return FALSE;
+		      ch = (char)number;
+		    }
+		  else
+		    {
+		      ch = (char)self->current;
+		    }
+		  break;
+		}
+	    }
+	  buffer[0] = ch;
+	}
+      else
+	{
+	  /* Collect multi-byte characters */
+	  j = 0;
+	  while (!isascii(self->current))
+	    {
+	      buffer[j++] = (char)self->current;
+	      self->InStream(self, NULL);
+	    }
+	}
+      if (target)
+	{
+	  size = mbtowc(&wch, buffer, sizeof(buffer));
+	  if (size > 0)
+	    target[i] = wch;
+	}
+      self->InStream(self, NULL);
+    }
+  if (target)
+    target[i] = L'\0';
+  return TRUE;
+}
+#endif /* TRIO_WIDECHAR */
+
+/*************************************************************************
  * TrioReadGroup [private]
  *
  * FIXME: characterclass does not work with multibyte characters
@@ -4801,13 +4902,28 @@ TrioScan(const void *source,
 	      break; /* FORMAT_INT */
 	      
 	    case FORMAT_STRING:
-	      if (!TrioReadString(data,
-				  (flags & FLAGS_IGNORE)
-				  ? NULL
-				  : parameters[i].data.string,
-				  flags,
-				  width))
-		return assignment;
+#if TRIO_WIDECHAR
+	      if (flags & FLAGS_WIDECHAR)
+		{
+		  if (!TrioReadWideString(data,
+					  (flags & FLAGS_IGNORE)
+					  ? NULL
+					  : parameters[i].data.wstring,
+					  flags,
+					  width))
+		    return assignment;
+		}
+	      else
+#endif
+		{
+		  if (!TrioReadString(data,
+				      (flags & FLAGS_IGNORE)
+				      ? NULL
+				      : parameters[i].data.string,
+				      flags,
+				      width))
+		    return assignment;
+		}
 	      assignment++;
 	      break; /* FORMAT_STRING */
 	      

@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Sat May 19 15:01:56 DST 2001
+.\" Manual page created with latex2man on Sun May 20 13:35:08 DST 2001
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "TRIO_PRINTF" "3" "19 May 2001" "libtrio "
+.TH "TRIO_PRINTF" "3" "20 May 2001" "libtrio "
 .SH NAME
 trio_printf, 
 trio_fprintf, 
@@ -349,7 +349,10 @@ defined to be the largest signed/unsigned integer.
 .TP
 Long (l)
 .br
-The argument is read as an (unsigned) long int.
+An integral argument is read as an (unsigned) long int.
+A string argument is read as a wchar_t *,
+and output as a multi\-byte 
+character sequence. 
 .PP
 .TP
 Long long (ll) [C99, UNIX98, GNU]
@@ -372,6 +375,11 @@ signed integer type of the result of subtracting two pointers.
 Quad (q) [BSD, GNU]
 .br
 Corresponds to the long long modifier (ll). 
+.PP
+.TP
+Wide (w) [MISC]
+.br
+For a string argument this is equivalent to %ls.
 .PP
 .TP
 size_t (z) [C99]
@@ -656,12 +664,14 @@ Prepend 0x
 .PP
 .RE
 .TP
-String (s)
+String (s, S)
 .br
 Output a string. The argument must point to a zero terminated string. If the 
 argument is the NULL
 pointer the text "(nil)" will be used 
-instead. 
+instead. %S
+is equivalent to %ls.
+.PP
 .RS
 .TP
 .B *

@@ -256,7 +256,14 @@ int main(void)
   
   {
     wchar_t *wstring = L"some data";
+    wchar_t wbuffer[512];
+    
     rc = trio_sprintf(buffer, "%ls", wstring);
+    Dump(buffer, rc);
+
+    rc = trio_sscanf(buffer, "%ls", wbuffer);
+    Dump(buffer, rc);
+    rc = trio_sprintf(buffer, "%ls", wbuffer);
     Dump(buffer, rc);
   }
   

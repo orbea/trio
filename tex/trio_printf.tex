@@ -221,7 +221,9 @@ The argument is read as an \texttt{intmax_t}/\texttt{uintmax_t}, which is
 defined to be the largest signed/unsigned integer.
 
 \item Long (l)\\
-The argument is read as an (unsigned) \texttt{long int}.
+An integral argument is read as an (unsigned) \texttt{long int}.
+A string argument is read as a \texttt{wchar_t *}, and output as a multi-byte
+character sequence.
 
 \item Long long (ll) [C99, UNIX98, GNU]\\
 The argument is read as an (unsigned) \texttt{long long int}.
@@ -235,6 +237,9 @@ signed integer type of the result of subtracting two pointers.
 
 \item Quad (q) [BSD, GNU]\\
 Corresponds to the long long modifier (ll).
+
+\item Wide (w) [MISC]\\
+For a string argument this is equivalent to \texttt{\%ls}.
 
 \item size_t (z) [C99]\\
 The argument is read as a \texttt{size_t}, which is defined to be the type
@@ -389,10 +394,11 @@ used instead.
 Prepend 0x
 \end{itemize}
 
-\item String (s)\\
+\item String (s, S)\\
 Output a string. The argument must point to a zero terminated string. If the
 argument is the \texttt{NULL} pointer the text "(nil)" will be used
-instead.
+instead. \texttt{\%S} is equivalent to \texttt{\%ls}.
+
 \begin{itemize}
 \item Quote (') [TRIO]\\
 Quote the string.

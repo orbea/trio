@@ -6,7 +6,8 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.x - 2001/05/20
 ------------------------
-* Added wide character arguments for %ls, %ws, and %S.
+* Added wide character arguments (%ls, %ws, and %S) for both printf and scanf
+  (%lc, %C, and %l[] are still missing).
 
 * Added the possibility to specify standard support (TRIO_C99 etc.) as compiler
   options.
