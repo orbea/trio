@@ -27,24 +27,27 @@
 /*
  * Ctype
  */
-#define TRIO_ISALNUM(x) isalnum(x)
-#define TRIO_ISALPHA(x) isalpha(x)
-#define TRIO_ISCNTRL(x) iscntrl(x)
-#define TRIO_ISDIGIT(x) isdigit(x)
-#define TRIO_ISGRAPH(x) isgraph(x)
-#define TRIO_ISLOWER(x) islower(x)
-#define TRIO_ISPRINT(x) isprint(x)
-#define TRIO_ISPUNCT(x) ispunct(x)
-#define TRIO_ISSPACE(x) isspace(x)
-#define TRIO_ISUPPER(x) isupper(x)
-#define TRIO_ISXDIGIT(x) isxdigit(x)
+#define ISALNUM(x) isalnum(x)
+#define ISALPHA(x) isalpha(x)
+#define ISCNTRL(x) iscntrl(x)
+#define ISDIGIT(x) isdigit(x)
+#define ISGRAPH(x) isgraph(x)
+#define ISLOWER(x) islower(x)
+#define ISPRINT(x) isprint(x)
+#define ISPUNCT(x) ispunct(x)
+#define ISSPACE(x) isspace(x)
+#define ISUPPER(x) isupper(x)
+#define ISXDIGIT(x) isxdigit(x)
+
+#define FPUTC(c,f) fputc((c),(f))
+#define FGETC(f) fgetc((f))
 
 /*
  * Trio strings
  */
 #define TRIO_COPY_MAX(x,n,y) trio_copy_max((x),(n),(y))
 #define TRIO_XCOPY_MAX(x,n,y) trio_copy_max((x),(n),(y))
-#define TRIO_DESCRIPTION(n,x) trio_description((n),(x))
+#define TRIO_DESCRIPTION(m,x,n) trio_description((m),(x),(n))
 #define TRIO_DESTROY(x) trio_destroy((x))
 #define TRIO_DUPLICATE(x) trio_duplicate((x))
 #define TRIO_EQUAL(x,y) trio_equal((x),(y))
