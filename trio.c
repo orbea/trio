@@ -4178,6 +4178,16 @@ TRIO_ARGS2((format, args),
   return result;
 }
 
+/**
+   Allocate and print to string.
+   The memory allocated and returned by @ref result must be freed by the
+   calling application.
+
+   @param result Output string.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of printed characters.
+ */
 TRIO_PUBLIC int
 trio_asprintf
 TRIO_VARGS3((result, format, va_alist),
@@ -4214,6 +4224,16 @@ TRIO_VARGS3((result, format, va_alist),
   return status;
 }
 
+/**
+   Allocate and print to string.
+   The memory allocated and returned by @ref result must be freed by the
+   calling application.
+
+   @param result Output string.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
 TRIO_PUBLIC int
 trio_vasprintf
 TRIO_ARGS3((result, format, args),
@@ -4242,6 +4262,49 @@ TRIO_ARGS3((result, format, args),
 	  trio_string_terminate(info);
 	  *result = trio_string_extract(info);
 	}
+      trio_string_destroy(info);
+    }
+  return status;
+}
+
+/**
+   Allocate and print to string.
+   The memory allocated and returned by @ref result must be freed by the
+   calling application.
+
+   @param result Output string.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of printed characters.
+ */
+TRIO_PUBLIC int
+trio_asprintfv
+TRIO_ARGS3((result, format, args),
+           char **result,
+           TRIO_CONST char *format,
+           trio_pointer_t * args)
+{
+  int status;
+  trio_string_t *info;
+
+  assert(VALID(format));
+
+  *result = NULL;
+
+  info = trio_xstring_duplicate("");
+  if (info == NULL)
+    {
+      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
+    }
+  else
+    {
+      status = TrioFormat(info, 0, TrioOutStreamStringDynamic,
+                          format, NULL, args);
+      if (status >= 0)
+        {
+          trio_string_terminate(info);
+          *result = trio_string_extract(info);
+        }
       trio_string_destroy(info);
     }
   return status;

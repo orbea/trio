@@ -57,8 +57,8 @@ sufficient space, is returned.
 
 @ref trio_snprintfcat appends the formatted text at the end of @p buffer.
 
-@ref trio_asprintf and @ref trio_vasprintf allocates and returns an
-allocated string in @p buffer containing the formatted text.
+@ref trio_asprintf, @ref trio_vasprintf, and @ref trio_asprintfv allocates
+and returns an allocated string in @p buffer containing the formatted text.
 
 @b FORMATTING
 

@@ -6,6 +6,9 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.11 - 2004/12/11
 -------------------------
+* David Byron
+  Added trio_asprintfv.
+
 * Brian Chapman
   Fixed Mac OS X compilation.
 
