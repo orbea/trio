@@ -7,6 +7,10 @@ Bjorn Reese and/or Daniel Stenberg.
 Version 1.11 - 2005/01/15
 -------------------------
 * Karl Bochert
+  Fixed problem with Borland C++, which changes the floating-point precision
+  for certain math functions (log10() and _flclass()).
+
+* Karl Bochert
   Fixed compilation warnings on Borland C++.
 
 * Removed any occurrence of #elif because Borland C++ reports wrong line

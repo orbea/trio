@@ -1136,6 +1136,15 @@ TRIO_ARGS2((number, base),
 	   int base)
 {
   double result;
+#if defined(TRIO_COMPILER_BCB)
+  /*
+   * The floating-point precision may be changed by _fpclass(), so we have
+   * to save and restore the floating-point control mask.
+   */
+  unsigned int oldMask;
+
+  oldMask = _control87(0, 0);
+#endif
 
   if (number <= 0.0)
     {
@@ -1153,6 +1162,10 @@ TRIO_ARGS2((number, base),
 	  result = log10(number) / log10((double)base);
 	}
     }
+#if defined(TRIO_COMPILER_BCB)
+  /* Restore the old mask */
+  (void)_control87(oldMask, ~0);
+#endif
   return result;
 }
 

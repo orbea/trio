@@ -135,10 +135,13 @@ We have received contributions from the following persons (in alphabetic
 order sorted by surname)
 
 @li Craig Berry
+@li Karl Bochert
 @li Stan Boehm
 @li David Byron
+@li Brian Chapman
 @li Robert Collins
 @li Danny Dulai
+@li Bob Friesenhahn
 @li John Fotheringham
 @li Markus Henke
 @li Ken Gibson

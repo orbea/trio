@@ -468,15 +468,39 @@ TRIO_ARGS1((number),
 # else
 #  if defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
   /*
-   * Microsoft Visual C++ and Borland C++ Builder have an _fpclass()
-   * function that can be used to detect infinity.
+   * Microsoft Visual C++ has an _fpclass() function that can be used to
+   * detect infinity.
    */
   return ((_fpclass(number) == _FPCLASS_PINF)
 	  ? 1
 	  : ((_fpclass(number) == _FPCLASS_NINF) ? -1 : 0));
 
 #  else
-#   if defined(USE_IEEE_754)
+#   if defined(TRIO_COMPILER_BCB)
+  /*
+   * Borland C++ Builder has an _fpclass() function that can be used to
+   * detect infinity.
+   *
+   * The floating-point precision may be changed by _fpclass(), so we have
+   * to save and restore the floating-point control mask.
+   */
+  int result;
+  unsigned int oldMask;
+
+  /* Remember the old mask */
+  oldMask = _control87(0, 0);
+  
+  result = ((_fpclass(number) == _FPCLASS_PINF)
+	    ? 1
+	    : ((_fpclass(number) == _FPCLASS_NINF) ? -1 : 0));
+  
+  /* Restore the old mask */
+  (void)_control87(oldMask, ~0);
+  
+  return result;
+
+#   else
+#    if defined(USE_IEEE_754)
   /*
    * Examine IEEE 754 bit-pattern. Infinity must have a special exponent
    * pattern, and an empty mantissa.
@@ -490,15 +514,15 @@ TRIO_ARGS1((number),
     ? ((number < 0.0) ? -1 : 1)
     : 0;
 
-#   else
+#    else
   /*
    * Fallback solution.
    */
   int status;
   
-#    if defined(TRIO_PLATFORM_UNIX)
+#     if defined(TRIO_PLATFORM_UNIX)
   void (*signal_handler)(int) = signal(SIGFPE, SIG_IGN);
-#    endif
+#     endif
   
   double infinity = trio_pinf();
   
@@ -506,16 +530,17 @@ TRIO_ARGS1((number),
 	    ? 1
 	    : ((number == -infinity) ? -1 : 0));
   
-#    if defined(TRIO_PLATFORM_UNIX)
+#     if defined(TRIO_PLATFORM_UNIX)
   signal(SIGFPE, signal_handler);
-#    endif
+#     endif
   
   return status;
 
-#   endif
-#  endif
-# endif
-#endif
+#    endif /* USE_IEEE_754 */
+#   endif /* TRIO_COMPILER_BCB */
+#  endif /* TRIO_COMPILER_MSVC */
+# endif /* isinf */
+#endif /* TRIO_COMPILER_DECC */
 }
 
 
