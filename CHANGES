@@ -4,7 +4,7 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.6 - 2001/12/27
+Version 1.6 - 2002/01/13
 ------------------------
 * Added dynamic string functions.
 
@@ -23,6 +23,10 @@ Version 1.6 - 2001/12/27
 
 * John Fotheringham
   Made trionan compile on OpenVMS.
+
+* Added 'd' and 'D' as exponent letters when using TRIO_MICROSOFT.
+
+* Fixed uninitial memory read for the parameter modifiers.
 
 
 Version 1.5 - 2001/09/08
