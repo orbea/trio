@@ -181,6 +181,6 @@ int trio_sscanfv(const char *buffer, const char *format, void **args);
 #define StrFormatAlloc trio_aprintf
 #define StrFormatAppendMax trio_snprintfcat
 
-#endif /* TRIO_IGNORE */
+#endif /* WITHOUT_TRIO */
 
 #endif /* TRIO_TRIO_H */
