@@ -4121,7 +4121,7 @@ TrioGetCollation()
       for (j = 0; j < MAX_CHARACTER_CLASS; j++)
 	{
 	  second[0] = (char)j;
-	  if (strcoll(first, second) == 0)
+	  if (StrEqualLocale(first, second))
 	    internalCollationArray[i][k++] = (char)j;
 	}
       internalCollationArray[i][k] = NIL;
