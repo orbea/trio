@@ -2349,7 +2349,8 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   int charsPerThousand;
   int length;
   double number;
-  double undividedNumber;
+  double integerNumber;
+  double fractionNumber;
   double workNumber;
   int integerDigits;
   int fractionDigits;
@@ -2475,7 +2476,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
 	}
     }
 
-  undividedNumber = number;
+  integerNumber = fractionNumber = number;
   
   /*
    * Truncated number.
@@ -2484,7 +2485,7 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
    * and number of fractional digits for others
    */
   integerDigits = (floor(number) > DBL_EPSILON)
-    ? 1 + (int)guarded_log10(floor(number))
+    ? 1 + (int)guarded_log10(floor(integerNumber))
     : 1;
   fractionDigits = ((flags & FLAGS_FLOAT_G) && (zeroes == 0))
     ? precision - integerDigits
@@ -2493,11 +2494,13 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   if (!(integerDigits > DBL_DIG))
     {
       /* Within accuracy */
-      number = floor(0.5 + number * pow(dblBase, (double)fractionDigits));
+      fractionNumber = floor(0.5 +
+			     fractionNumber * pow(dblBase,
+						  (double)fractionDigits));
     }
   workNumber = (isHex
-		? guarded_log16(0.5 + number)
-		: guarded_log10(0.5 + number));
+		? guarded_log16(0.5 + fractionNumber)
+		: guarded_log10(0.5 + fractionNumber));
   if ((int)workNumber + 1 > integerDigits + fractionDigits)
     {
       if (flags & FLAGS_FLOAT_E)
@@ -2505,13 +2508,13 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
 	  /* Adjust if number was rounded up one digit (ie. 0.99 to 1.00) */
 	  exponent--;
 	  uExponent -= (isExponentNegative) ? 1 : -1;
-	  number /= dblBase;
+	  fractionNumber /= dblBase;
 	}
       else
 	{
 	  /* Adjust if number was rounded up one digit (ie. 99 to 100) */
 	  integerDigits++;
-	  undividedNumber = floor(undividedNumber + 0.5);
+	  integerNumber = floor(integerNumber + 0.5);
 	}
     }
   
@@ -2519,21 +2522,23 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   numberPointer = &numberBuffer[sizeof(numberBuffer) - 1];
   *numberPointer = NIL;
   hasOnlyZeroes = TRUE;
-  dblExponentBase = dblBase;
-  for (i = 0; i < fractionDigits; i++)
+  number = fractionNumber;
+  for (i = 0, dblExponentBase = dblBase;
+       i < fractionDigits;
+       i++, dblExponentBase *= dblBase)
     {
       if ((integerDigits > DBL_DIG) ||
 	  (i < fractionDigits - DBL_DIG))
 	{
 	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
+	  number = floor((fractionNumber / dblExponentBase) + 0.5);
 	}
       else
 	{
 	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
+	  number = floor(fractionNumber / dblExponentBase);
 	}
-      number = floor(number / dblBase);
-      dblExponentBase *= dblBase;
 
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_ALTERNATIVE))
         {
@@ -2560,22 +2565,23 @@ TRIO_ARGS6((self, longdoubleNumber, flags, width, precision, base),
   charsPerThousand = (int)internalGrouping[0];
   groupingIndex = 1;
   dblExponentBase = dblBase;
-  for (i = 1; i < integerDigits + 1; i++)
+  for (i = 1, dblExponentBase = dblBase;
+       i < integerDigits + 1;
+       i++, dblExponentBase *= dblBase)
     {
       if (i < integerDigits - DBL_DIG)
 	{
 	  /* Beyond accuracy */
 	  *(--numberPointer) = digits[0];
-	  number = floor((undividedNumber / dblExponentBase) + 0.5);
+	  number = floor((integerNumber / dblExponentBase) + 0.5);
 	}
       else
 	{
 	  *(--numberPointer) = digits[(int)fmod(number, dblBase)];
-	  number = floor(undividedNumber / dblExponentBase);
+	  number = floor(integerNumber / dblExponentBase);
 	}
       if (number < DBL_EPSILON)
 	break;
-      dblExponentBase *= dblBase;
 
       if ((i > 0)
 	  && ((flags & (FLAGS_FLOAT_E | FLAGS_QUOTE)) == FLAGS_QUOTE)
