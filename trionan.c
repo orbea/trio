@@ -250,9 +250,9 @@ trio_nzero(void)
 #if defined(USE_IEEE_754)
   return trio_make_double(ieee_754_negzero_array);
 #else
-  TRIO_VOLATILE double number = 0.0;
+  TRIO_VOLATILE double zero = 0.0;
 
-  return -number;
+  return -zero;
 #endif
 }
 
