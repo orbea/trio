@@ -114,16 +114,16 @@ typedef double trio_long_double_t;
 typedef char * trio_pointer_t;
 # define TRIO_PROTO(x) ()
 # define TRIO_NOARGS
-# define TRIO_ARGS1(list,a1) (list) a1;
-# define TRIO_ARGS2(list,a1,a2) (list) a1; a2;
-# define TRIO_ARGS3(list,a1,a2,a3) (list) a1; a2; a3;
-# define TRIO_ARGS4(list,a1,a2,a3,a4) (list) a1; a2; a3; a4;
-# define TRIO_ARGS5(list,a1,a2,a3,a4,a5) (list) a1; a2; a3; a4; a5;
-# define TRIO_ARGS5(list,a1,a2,a3,a4,a5,a6) (list) a1; a2; a3; a4; a5; a6;
-# define TRIO_VARGS2(list,a1,a2) (list) a1; a2
-# define TRIO_VARGS3(list,a1,a2,a3) (list) a1; a2; a3
-# define TRIO_VARGS4(list,a1,a2,a3,a4) (list) a1; a2; a3; a4
-# define TRIO_VARGS5(list,a1,a2,a3,a4,a5) (list) a1; a2; a3; a4; a5
+# define TRIO_ARGS1(list,a1) list a1;
+# define TRIO_ARGS2(list,a1,a2) list a1; a2;
+# define TRIO_ARGS3(list,a1,a2,a3) list a1; a2; a3;
+# define TRIO_ARGS4(list,a1,a2,a3,a4) list a1; a2; a3; a4;
+# define TRIO_ARGS5(list,a1,a2,a3,a4,a5) list a1; a2; a3; a4; a5;
+# define TRIO_ARGS6(list,a1,a2,a3,a4,a5,a6) list a1; a2; a3; a4; a5; a6;
+# define TRIO_VARGS2(list,a1,a2) list a1; a2
+# define TRIO_VARGS3(list,a1,a2,a3) list a1; a2; a3
+# define TRIO_VARGS4(list,a1,a2,a3,a4) list a1; a2; a3; a4
+# define TRIO_VARGS5(list,a1,a2,a3,a4,a5) list a1; a2; a3; a4; a5
 # define TRIO_VA_DECL va_dcl
 # define TRIO_VA_START(x,y) va_start((x))
 # define TRIO_VA_END(x) va_end(x)
