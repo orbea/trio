@@ -158,6 +158,24 @@ trio_append_max(char *target,
 
 
 /**
+   Determine if a string contains a substring.
+
+   @param string String to be searched.
+   @param substring String to be found.
+   @return Boolean value indicating success or failure.
+*/
+TRIO_PUBLIC TRIO_INLINE int
+trio_contains(const char *string,
+	      const char *substring)
+{
+  assert(string);
+  assert(substring);
+  
+  return (0 != strstr(string, substring));
+}
+
+
+/**
    Copy @p source to @p target.
    
    @param target Target string.
@@ -208,6 +226,34 @@ trio_copy_max(char *target,
   (void)strncpy(target, source, max - 1);
   target[max - 1] = (char)0;
   return TRUE;
+}
+
+
+/**
+   Create new string.
+
+   @param size Size of new string.
+   @return Pointer to string, or NULL if allocation failed.
+*/
+TRIO_PUBLIC TRIO_INLINE char *
+trio_create(size_t size)
+{
+  return (char *)TRIO_MALLOC(size);
+}
+
+
+/**
+   Destroy string.
+
+   @param string String to be freed.
+*/
+TRIO_PUBLIC TRIO_INLINE void
+trio_destroy(char *string)
+{
+  if (string)
+    {
+      TRIO_FREE(string);
+    }
 }
 
 
@@ -290,9 +336,15 @@ trio_equal(const char *first,
 }
 
 
-/*
- * trio_equal_case
- */
+/**
+   Compare if two strings are equal.
+   
+   @param first First string.
+   @param second Second string.
+   @return Boolean indicating whether the two strings are equal or not.
+   
+   Case-sensitive comparison.
+*/
 TRIO_PUBLIC int
 trio_equal_case(const char *first,
 		const char *second)
@@ -308,9 +360,16 @@ trio_equal_case(const char *first,
 }
 
 
-/*
- * trio_equal_case_max
- */
+/**
+   Compare if two strings up until the first @p max characters are equal.
+   
+   @param first First string.
+   @param max Maximum number of characters to compare.
+   @param second Second string.
+   @return Boolean indicating whether the two strings are equal or not.
+   
+   Case-sensitive comparison.
+*/
 TRIO_PUBLIC int
 trio_equal_case_max(const char *first,
 		    size_t max,
@@ -327,9 +386,15 @@ trio_equal_case_max(const char *first,
 }
 
 
-/*
- * trio_equal_locale
- */
+/**
+   Compare if two strings are equal.
+   
+   @param first First string.
+   @param second Second string.
+   @return Boolean indicating whether the two strings are equal or not.
+
+   Collating characters are considered equal.
+*/
 TRIO_PUBLIC int
 trio_equal_locale(const char *first,
 		  const char *second)
@@ -345,9 +410,16 @@ trio_equal_locale(const char *first,
 }
 
 
-/*
- * trio_equal_max
- */
+/**
+   Compare if two strings up until the first @p max characters are equal.
+   
+   @param first First string.
+   @param max Maximum number of characters to compare.
+   @param second Second string.
+   @return Boolean indicating whether the two strings are equal or not.
+   
+   Case-insensitive comparison.
+*/
 TRIO_PUBLIC int
 trio_equal_max(const char *first,
 	       size_t max,
@@ -380,23 +452,35 @@ trio_equal_max(const char *first,
 }
 
 
-/*
- * trio_error
- */
+/**
+   Provide a textual description of an error code (errno).
+
+   @param error_number Error number.
+   @return Textual description of @p error_number.
+*/
 TRIO_PUBLIC const char *
-trio_error(int errorNumber)
+trio_error(int error_number)
 {
 #if defined(USE_STRERROR)
-  return strerror(errorNumber);
+  return strerror(error_number);
 #else
   return "unknown";
 #endif
 }
 
 
-/*
- * trio_format_date_max
- */
+/**
+   Format the date/time according to @p format.
+
+   @param target Target string.
+   @param max Maximum number of characters to format.
+   @param format Formatting string.
+   @param datetime Date/time structure.
+   @return Number of formatted characters.
+
+   The formatting string accepts the same specifiers as the standard C
+   function strftime.
+*/
 TRIO_PUBLIC size_t
 trio_format_date_max(char *target,
 		     size_t max,
@@ -412,9 +496,16 @@ trio_format_date_max(char *target,
 }
 
 
-/*
- * trio_hash
- */
+/**
+   Calculate a hash value for a string.
+
+   @param string String to be calculated on.
+   @param type Hash function.
+   @return Calculated hash value.
+
+   @p type can be one of the following
+   @li @c TRIO_HASH_PLAIN Plain hash function.
+*/
 TRIO_PUBLIC unsigned long
 trio_hash(const char *string,
 	  int type)
@@ -441,10 +532,60 @@ trio_hash(const char *string,
 }
 
 
-/*
- * trio_lower
+/**
+   Find first occurrence of a character in a string.
+
+   @param string String to be searched.
+   @param character Character to be found.
+   @param A pointer to the found character, or NULL if character was not found.
  */
-TRIO_PUBLIC int
+TRIO_PUBLIC TRIO_INLINE char *
+trio_index(const char *string,
+	   char character)
+{
+  assert(string);
+
+  return strchr(string, character);
+}
+
+
+/**
+   Find last occurrence of a character in a string.
+
+   @param string String to be searched.
+   @param character Character to be found.
+   @param A pointer to the found character, or NULL if character was not found.
+ */
+TRIO_PUBLIC TRIO_INLINE char *
+trio_index_last(const char *string,
+		char character)
+{
+  assert(string);
+
+  return strchr(string, character);
+}
+
+
+/**
+   Count the number of characters in a string.
+
+   @param string String to measure.
+   @return Number of characters in @string.
+*/
+TRIO_PUBLIC TRIO_INLINE size_t
+trio_length(const char *string)
+{
+  return strlen(string);
+}
+
+
+/**
+   Convert the alphabetic letters in the string to lower-case.
+
+   @param target String to be converted.
+   @return Number of processed characters (converted or not).
+*/
+TRIO_PUBLIC TRIO_INLINE int
 trio_lower(char *target)
 {
   assert(target);
@@ -453,9 +594,19 @@ trio_lower(char *target)
 }
 
 
-/*
- * trio_match
- */
+/**
+   Compare two strings using wildcards.
+
+   @param string String to be searched.
+   @param pattern Pattern, including wildcards, to search for.
+   @return Boolean value indicating success or failure.
+
+   Case-insensitive comparison.
+   
+   The following wildcards can be used
+   @li @c * Match any number of characters.
+   @li @c ? Match a single character.
+*/
 TRIO_PUBLIC int
 trio_match(const char *string,
 	   const char *pattern)
@@ -492,9 +643,19 @@ trio_match(const char *string,
 }
 
 
-/*
- * trio_match_case
- */
+/**
+   Compare two strings using wildcards.
+
+   @param string String to be searched.
+   @param pattern Pattern, including wildcards, to search for.
+   @return Boolean value indicating success or failure.
+
+   Case-sensitive comparison.
+   
+   The following wildcards can be used
+   @li @c * Match any number of characters.
+   @li @c ? Match a single character.
+*/
 TRIO_PUBLIC int
 trio_match_case(const char *string,
 		const char *pattern)
@@ -531,11 +692,14 @@ trio_match_case(const char *string,
 }
 
 
-/*
- * trio_span_function
- *
- * Untested
- */
+/**
+   Execute a function on each character in string.
+
+   @param target Target string.
+   @param source Source string.
+   @param Function Function to be executed.
+   @return Number of processed characters.
+*/
 TRIO_PUBLIC size_t
 trio_span_function(char *target,
 		   const char *source,
@@ -556,27 +720,52 @@ trio_span_function(char *target,
 }
 
 
-/*
- * trio_substring_max
- */
+/**
+   Search for a substring in a string.
+
+   @param string String to be searched.
+   @param substring String to be found.
+   @return Pointer to first occurrence of @p substring in @p string, or NULL
+   if no match was found.
+*/
+TRIO_PUBLIC TRIO_INLINE char *
+trio_substring(const char *string,
+	       const char *substring)
+{
+  assert(string);
+  assert(substring);
+
+  return strstr(string, substring);
+}
+
+
+/**
+   Search for a substring in the first @p max characters of a string.
+
+   @param string String to be searched.
+   @param max Maximum characters to be searched.
+   @param substring String to be found.
+   @return Pointer to first occurrence of @p substring in @p string, or NULL
+   if no match was found.
+*/
 TRIO_PUBLIC char *
 trio_substring_max(const char *string,
 		   size_t max,
-		   const char *find)
+		   const char *substring)
 {
   size_t count;
   size_t size;
   char *result = NULL;
 
   assert(string);
-  assert(find);
+  assert(substring);
   
-  size = trio_length(find);
+  size = trio_length(substring);
   if (size <= max)
     {
       for (count = 0; count <= max - size; count++)
 	{
-	  if (trio_equal_max(find, size, &string[count]))
+	  if (trio_equal_max(substring, size, &string[count]))
 	    {
 	      result = (char *)&string[count];
 	      break;
@@ -587,21 +776,46 @@ trio_substring_max(const char *string,
 }
 
 
-/*
- * trio_to_double
- *
- * @internal
- * double ::= [ <sign> ]
- *            ( <number> |
- *              <number> <decimal_point> <number> |
- *              <decimal_point> <number> )
- *            [ <exponential> [ <sign> ] <number> ]
- * number ::= 1*( <digit> )
- * digit ::= ( '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' )
- * exponential ::= ( 'e' | 'E' )
- * sign ::= ( '-' | '+' )
- * decimal_point ::= '.'
- */
+/**
+   Tokenize string.
+
+   @param string String to be tokenized.
+   @param tokens String containing list of delimiting characters.
+   @return Start of new token.
+
+   @warning @p string will be destroyed.
+*/
+TRIO_PUBLIC TRIO_INLINE char *
+trio_tokenize(char *string, const char *delimiters)
+{
+  assert(delimiters);
+  
+  return strtok(string, delimiters);
+}
+
+
+/**
+   Convert string to floating-point number.
+
+   @param source String to be converted.
+   @param endp Pointer to end of the converted string.
+   @return A floating-point number.
+
+   The following Extended Backus-Naur form is used
+   @verbatim
+   double        ::= [ <sign> ]
+                     ( <number> |
+                       <number> <decimal_point> <number> |
+                       <decimal_point> <number> )
+                     [ <exponential> [ <sign> ] <number> ]
+   number        ::= 1*( <digit> )
+   digit         ::= ( '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' )
+   exponential   ::= ( 'e' | 'E' )
+   sign          ::= ( '-' | '+' )
+   decimal_point ::= '.'
+   @endverbatim
+*/
+/* FIXME: Add EBNF for hex-floats */
 TRIO_PUBLIC double
 trio_to_double(const char *source,
 	       const char **endp)
@@ -722,10 +936,16 @@ trio_to_double(const char *source,
 }
 
 
-/*
- * trio_to_float
- */
-TRIO_PUBLIC float
+/**
+   Convert string to floating-point number.
+
+   @param source String to be converted.
+   @param endp Pointer to end of the converted string.
+   @return A floating-point number.
+
+   See @ref trio_to_double.
+*/
+TRIO_PUBLIC TRIO_INLINE float
 trio_to_float(const char *source,
 	      const char **endp)
 {
@@ -737,10 +957,51 @@ trio_to_float(const char *source,
 }
 
 
-/*
- * trio_upper
- */
-TRIO_PUBLIC int
+/**
+   Convert string to signed integer.
+
+   @param string String to be converted.
+   @param endp Pointer to end of converted string.
+   @param base Radix number of number.
+*/
+TRIO_PUBLIC TRIO_INLINE long
+trio_to_long(const char *string,
+	     char **endp,
+	     int base)
+{
+  assert(string);
+  assert((base >= 2) && (base <= 36));
+  
+  return strtol(string, endp, base);
+}
+
+
+/**
+   Convert string to unsigned integer.
+
+   @param string String to be converted.
+   @param endp Pointer to end of converted string.
+   @param base Radix number of number.
+*/
+TRIO_PUBLIC TRIO_INLINE unsigned long
+trio_to_unsigned_long(const char *string,
+		      char **endp,
+		      int base)
+{
+  assert(string);
+  assert((base >= 2) && (base <= 36));
+  
+  return strtoul(string, endp, base);
+}
+
+
+/**
+   Convert the alphabetic letters in the string to upper-case.
+
+   @param target The string to be converted.
+   @return The number of processed characters (converted or not).
+*/
+TRIO_PUBLIC TRIO_INLINE int
 trio_upper(char *target)
 {
   assert(target);

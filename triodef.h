@@ -109,4 +109,10 @@
 # define TRIO_PROTO(x) ()
 #endif
 
+#if defined(TRIO_COMPILER_SUPPORTS_C99) || defined(__cplusplus)
+# define TRIO_INLINE inline
+#else
+# define TRIO_INLINE
+#endif
+
 #endif /* TRIO_TRIODEF_H */

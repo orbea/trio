@@ -35,68 +35,13 @@ enum {
  * String functions
  */
 
-#if defined(NDEBUG) || defined(TRIO_COMPILER_DECC)
-#define trio_create(n) ((char *)TRIO_MALLOC(n))
-#define trio_destroy(x) if ((x)) TRIO_FREE(x)
-#define trio_contains(x,y) (0 != strstr((x), (y)))
-#define trio_index(x,y) strchr((x), (y))
-#define trio_index_last(x,y) strrchr((x), (y))
-#define trio_length(x) strlen((x))
-#define trio_substring(x,y) strstr((x), (y))
-#define trio_tokenize(x,y) strtok((x), (y))
-#define trio_to_long(x,y,n) strtol((x), (y), (n))
-#define trio_to_unsigned_long(x,y,n) strtoul((x), (y), (n))
-#else /* DEBUG */
- /*
-  * To be able to use these macros everywhere, including in
-  * if() sentences, the assertions are put first in a comma
-  * seperated list.
-  *
-  * Unfortunately the DECC compiler does not seem to like this
-  * so it will use the un-asserted functions above for the
-  * debugging case too.
-  */
-#define trio_create(n) \
-     (assert((n) > 0),\
-      (char *)TRIO_MALLOC(n))
-#define trio_destroy(x) \
-     if ((x)) TRIO_FREE(x)
-#define trio_contains(x,y) \
-     (assert((x) != NULL),\
-      assert((y) != NULL),\
-      (0 != strstr((x), (y))))
-#define trio_index(x,c) \
-     (assert((x) != NULL),\
-      strchr((x), (c)))
-#define trio_index_last(x,c) \
-     (assert((x) != NULL),\
-      strrchr((x), (c)))
-#define trio_length(x) \
-     (assert((x) != NULL),\
-      strlen((x)))
-#define trio_substring(x,y) \
-     (assert((x) != NULL),\
-      assert((y) != NULL),\
-      strstr((x), (y)))
-#define trio_tokenize(x,y) \
-     (assert((y) != NULL),\
-      strtok((x), (y)))
-#define trio_to_long(x,y,n) \
-     (assert((x) != NULL),\
-      assert((y) != NULL),\
-      assert((n) >= 2 && (n) <= 36),\
-      strtol((x), (y), (n)))
-#define trio_to_unsigned_long(x,y,n) \
-     (assert((x) != NULL),\
-      assert((y) != NULL),\
-      assert((n) >= 2 && (n) <= 36),\
-      strtoul((x), (y), (n)))
-#endif /* DEBUG */
-
 int trio_append(char *target, const char *source);
 int trio_append_max(char *target, size_t max, const char *source);
+int trio_contains(const char *string, const char *substring);
 int trio_copy(char *target, const char *source);
 int trio_copy_max(char *target, size_t max, const char *source);
+char *trio_create(size_t size);
+void trio_destroy(char *string);
 char *trio_duplicate(const char *source);
 char *trio_duplicate_max(const char *source, size_t max);
 int trio_equal(const char *first, const char *second);
@@ -107,13 +52,20 @@ int trio_equal_max(const char *first, size_t max, const char *second);
 const char *trio_error(int);
 size_t trio_format_date_max(char *target, size_t max, const char *format, const struct tm *datetime);
 unsigned long trio_hash(const char *string, int type);
+char *trio_index(const char *string, char character);
+char *trio_index_last(const char *string, char character);
+size_t trio_length(const char *string);
 int trio_lower(char *target);
 int trio_match(const char *string, const char *pattern);
 int trio_match_case(const char *string, const char *pattern);
 size_t trio_span_function(char *target, const char *source, int (*Function)(int));
-char *trio_substring_max(const char *string, size_t max, const char *find);
-float trio_to_float(const char *source, const char **target);
-double trio_to_double(const char *source, const char **target);
+char *trio_substring(const char *string, const char *substring);
+char *trio_substring_max(const char *string, size_t max, const char *substring);
+char *trio_tokenize(char *string, const char *delimiters);
+float trio_to_float(const char *source, const char **endp);
+double trio_to_double(const char *source, const char **endp);
+long trio_to_long(const char *source, char **endp, int base);
+unsigned long trio_to_unsigned_long(const char *source, char **endp, int base);
 int trio_upper(char *target);
 
 /*************************************************************************
