@@ -73,6 +73,12 @@
 # define TRIO_PLATFORM_AIX
 #elif defined(__hpux)
 # define TRIO_PLATFORM_HPUX
+#elif defined(sun) || defined(__sun__)
+# if defined(__SVR4) || defined(__svr4__)
+#  define TRIO_PLATFORM_SOLARIS
+# else
+#  define TRIO_PLATFORM_SUNOS
+# endif
 #endif
 
 #if defined(__STDC__) || defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)

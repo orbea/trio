@@ -5467,12 +5467,12 @@ TRIO_ARGS5((self, target, flags, width, base),
 	      if (self->current)
 		{
 		  if ((base == BASE_HEX) &&
-		      (toupper(self->current) == 'X'))
+		      (trio_to_upper(self->current) == 'X'))
 		    {
 		      self->InStream(self, NULL);
 		    }
 		  else if ((base == BASE_BINARY) &&
-			   (toupper(self->current) == 'B'))
+			   (trio_to_upper(self->current) == 'B'))
 		    {
 		      self->InStream(self, NULL);
 		    }
@@ -5574,7 +5574,7 @@ TRIO_ARGS4((self, target, flags, width),
 		    return 0;
 		  ch = (char)number;
 		}
-	      else if (toupper(self->current) == 'X')
+	      else if (trio_to_upper(self->current) == 'X')
 		{
 		  /* Read hexadecimal number */
 		  self->InStream(self, NULL);
@@ -5881,7 +5881,7 @@ TRIO_ARGS4((self, target, flags, width),
     case '0':
       doubleString[index++] = (char)ch;
       self->InStream(self, &ch);
-      if (toupper(ch) == 'X')
+      if (trio_to_upper(ch) == 'X')
 	{
 	  isHex = TRUE;
 	  doubleString[index++] = (char)ch;
@@ -5930,7 +5930,7 @@ TRIO_ARGS4((self, target, flags, width),
 	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
-      if (isHex ? (toupper(ch) == 'P') : (toupper(ch) == 'E'))
+      if (isHex ? (trio_to_upper(ch) == 'P') : (trio_to_upper(ch) == 'E'))
 	{
 	  /* Exponent */
 	  doubleString[index++] = (char)ch;
