@@ -16,6 +16,9 @@ static const char rcsid[] = "@(#)$Id$";
 # include <wchar.h>
 #endif
 
+#define DOUBLE_EQUAL(x,y) (((x)>(y)-DBL_EPSILON) && ((x)<(y)+DBL_EPSILON))
+#define FLOAT_EQUAL(x,y) (((x)>(y)-FLT_EPSILON) && ((x)<(y)+FLT_EPSILON))
+
 /*************************************************************************
  *
  */
@@ -430,8 +433,14 @@ int VerifyStrings(void)
 {
   int nerrors = 0;
   char buffer[512];
+  double dnumber;
+  float fnumber;
+  char *end;
 
-  sprintf(buffer, "Find me now");
+  /* Comparison */
+  trio_copy(buffer, "Find me now");
+  if (trio_length(buffer) != sizeof("Find me now") - 1)
+    nerrors++;
   if (!trio_equal(buffer, "Find me now"))
     nerrors++;
   if (!trio_equal_case(buffer, "Find me now"))
@@ -452,12 +461,50 @@ int VerifyStrings(void)
     nerrors++;
   if (trio_match_case(buffer, "* ME *"))
     nerrors++;
+  if (trio_index(buffer, 'n') == NULL)
+    nerrors++;
+  if (trio_index(buffer, '_') != NULL)
+    nerrors++;
+  if (trio_index_last(buffer, 'n') == NULL)
+    nerrors++;
 
+  /* Append */
+  trio_copy(buffer, "Find me now");
+  if (!trio_append(buffer, " and again"))
+    nerrors++;
+  if (!trio_equal(buffer, "Find me now and again"))
+    nerrors++;
+  if (!trio_append_max(buffer, 0, "should not appear"))
+    nerrors++;
+  if (!trio_equal(buffer, "Find me now and again"))
+    nerrors++;
+
+  /* To upper/lower */
+  trio_copy(buffer, "Find me now");
   trio_upper(buffer);
   if (!trio_equal_case(buffer, "FIND ME NOW"))
     nerrors++;
   trio_lower(buffer);
   if (!trio_equal_case(buffer, "find me now"))
+    nerrors++;
+
+  /* Double conversion */
+  trio_copy(buffer, "3.1415");
+  dnumber = trio_to_double(buffer, NULL);
+  if (!DOUBLE_EQUAL(dnumber, 3.1415))
+    nerrors++;
+  fnumber = trio_to_float(buffer, NULL);
+  if (!FLOAT_EQUAL(fnumber, 3.1415))
+    nerrors++;
+
+  /* Long conversion */
+  trio_copy(buffer, "3.1415");
+  if (trio_to_long(buffer, NULL, 10) != 3L)
+    nerrors++;
+  if (trio_to_long(buffer, NULL, 4) != 3L)
+    nerrors++;
+  trio_to_long(buffer, &end, 2);
+  if (end != buffer)
     nerrors++;
   
   return nerrors;
