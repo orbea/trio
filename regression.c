@@ -251,13 +251,17 @@ int VerifyFormatting(void)
 		    "%f", 3141.0);
   nerrors += Verify(__FILE__, __LINE__, "3141.5",
 		    "%f", 3141.5);
-  nerrors += Verify(__FILE__, __LINE__, "3.141e+3",
+  nerrors += Verify(__FILE__, __LINE__, "3.141000e+03",
 		    "%e", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "3.141E-44",
+  nerrors += Verify(__FILE__, __LINE__, "     -2.3420e-02",
+		    "%16.4e", -2.342E-02);
+  nerrors += Verify(__FILE__, __LINE__, "     -2.3420e-22",
+		    "%16.4e", -2.342E-22);
+  nerrors += Verify(__FILE__, __LINE__, "3.141000E-44",
 		    "%E", 3.141e-44);
   nerrors += Verify(__FILE__, __LINE__, "3141.5",
 		    "%g", 3141.5);
-  nerrors += Verify(__FILE__, __LINE__, "3.1415E-6",
+  nerrors += Verify(__FILE__, __LINE__, "3.1415E-06",
 		    "%G", 3.1415e-6);
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
@@ -285,13 +289,13 @@ int VerifyFormatting(void)
   nerrors += Verify(__FILE__, __LINE__, "0.123",
 		    "%0g", 0.123);
   /* Double width, precision, and zero padding */
-  nerrors += Verify(__FILE__, __LINE__, "00000003.1415e+3",
+  nerrors += Verify(__FILE__, __LINE__, "00003.141500e+03",
 		    "%016e", 3141.5);
-  nerrors += Verify(__FILE__, __LINE__, "       3.1415e+3",
+  nerrors += Verify(__FILE__, __LINE__, "    3.141500e+03",
 		    "%16e", 3141.5);
-  nerrors += Verify(__FILE__, __LINE__, "3.1415e+3       ",
+  nerrors += Verify(__FILE__, __LINE__, "3.141500e+03    ",
 		    "%-16e", 3141.5);
-  nerrors += Verify(__FILE__, __LINE__, "003.142e+3",
+  nerrors += Verify(__FILE__, __LINE__, "03.142e+03",
 		    "%010.3e", 3141.5);
 #if 0 /* The output depends on the locale settings */
   nerrors += Verify(__FILE__, __LINE__, "31,415.200000",

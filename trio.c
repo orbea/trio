@@ -2040,6 +2040,16 @@ TrioWriteDouble(trio_T *self,
   isNegative = (number < 0.0);
   if (isNegative)
     number = -number;
+
+  if((flags & FLAGS_FLOAT_E) && (NO_PRECISION == set_precision))
+    {
+      /* The %e convertions are different, they should get the
+       * default precision width no matter what. Note that we do
+       * this check prior to the G-check as the G-check may set
+       * the FLAGS_FLOAT_E bit.
+       */
+      set_precision = FLT_DIG;
+    }
   
   if ((flags & FLAGS_FLOAT_G) || isHex)
     {
@@ -2101,13 +2111,14 @@ TrioWriteDouble(trio_T *self,
       *(--numberPointer) = digits[(int)fmod(number, dblBase)];
       number = floor(number / dblBase);
 
-      if((set_precision == NO_PRECISION) || (flags & FLAGS_ALTERNATIVE)) {
-        /* Prune trailing zeroes */
-        if (numberPointer[0] != digits[0])
-          onlyzero = FALSE;
-        else if (onlyzero && (numberPointer[0] == digits[0]))
-          numberPointer++;
-      }
+      if((set_precision == NO_PRECISION) || (flags & FLAGS_ALTERNATIVE))
+        {
+          /* Prune trailing zeroes */
+          if (numberPointer[0] != digits[0])
+            onlyzero = FALSE;
+          else if (onlyzero && (numberPointer[0] == digits[0]))
+            numberPointer++;
+        }
       else
         onlyzero = FALSE;
     }
@@ -2190,9 +2201,12 @@ TrioWriteDouble(trio_T *self,
   if (isNegative || (flags & FLAGS_SHOWSIGN))
     expectedWidth += sizeof("-") - 1;
   if (exponentDigits > 0)
-    expectedWidth += exponentDigits + sizeof("E+") - 1;
+    expectedWidth += exponentDigits +
+      (exponentDigits>1?sizeof("E+"):sizeof("E+0")) - 1;
+#if 0
   if (isExponentNegative)
-    expectedWidth += sizeof('-') - 1;
+    expectedWidth += sizeof("-") - 1;
+#endif
   if (isHex)
     expectedWidth += sizeof("0X") - 1;
   
@@ -2250,6 +2264,12 @@ TrioWriteDouble(trio_T *self,
 		      ? ((flags & FLAGS_UPPER) ? 'P' : 'p')
 		      : ((flags & FLAGS_UPPER) ? 'E' : 'e'));
       self->OutStream(self, (isExponentNegative) ? '-' : '+');
+
+      /* For some reason, "they" want single-digit exponents to be
+         zero-prefixed! */
+      if(exponentDigits == 1)
+        self->OutStream(self, '0');
+
       for (i = 0; i < exponentDigits; i++)
 	{
 	  self->OutStream(self, exponentPointer[i + 1]);
