@@ -6,8 +6,11 @@ static const char rcsid[] = "@(#)$Id$";
 
 #include <stdarg.h>
 #include <math.h>
+#include <limits.h>
 #include <float.h>
+#include <errno.h>
 #include "trio.h"
+#include "triop.h"
 #include "trionan.h"
 #include "triostr.h"
 #undef printf
@@ -15,6 +18,8 @@ static const char rcsid[] = "@(#)$Id$";
 #if TRIO_WIDECHAR
 # include <wchar.h>
 #endif
+
+#define QUOTE(x) #x
 
 #define DOUBLE_EQUAL(x,y) (((x)>(y)-DBL_EPSILON) && ((x)<(y)+DBL_EPSILON))
 #define FLOAT_EQUAL(x,y) (((x)>(y)-FLT_EPSILON) && ((x)<(y)+FLT_EPSILON))
@@ -181,6 +186,7 @@ int VerifyAllocate()
 int VerifyFormatting(void)
 {
   int nerrors = 0;
+  char buffer[256];
 
   /* Normal text */
   nerrors += Verify(__FILE__, __LINE__, "Hello world",
@@ -189,7 +195,9 @@ int VerifyFormatting(void)
   nerrors += Verify(__FILE__, __LINE__, "Hello world",
 		   "%s", "Hello world");
   /* Pointer */
-  /* It is ok, if this fails on 64 bit machines */
+  nerrors += Verify(__FILE__, __LINE__, "Pointer (nil)",
+		   "Pointer %p", 0);
+  /* This may fail on 64 bit machines */
   nerrors += Verify(__FILE__, __LINE__, "Pointer 0x01234567",
 		   "Pointer %p", 0x1234567);
   /* Nil pointer */
@@ -198,6 +206,12 @@ int VerifyFormatting(void)
   /* Integer */
   nerrors += Verify(__FILE__, __LINE__, "Number 42",
 		   "Number %d", 42);
+  nerrors += Verify(__FILE__, __LINE__, "Number -42",
+		   "Number %d", -42);
+  nerrors += Verify(__FILE__, __LINE__, "Number 42",
+		   "Number %ld", 42L);
+  nerrors += Verify(__FILE__, __LINE__, "Number -42",
+		   "Number %ld", -42L);
   /* Integer width */
   nerrors += Verify(__FILE__, __LINE__, "  1234",
 		    "%6d", 1234);
@@ -222,6 +236,10 @@ int VerifyFormatting(void)
   /* Integer sign, zero-padding, and width */
   nerrors += Verify(__FILE__, __LINE__, "+01234",
 		    "%+06d", 1234);
+  nerrors += Verify(__FILE__, __LINE__, " 01234",
+		    "% 06d", 1234);
+  nerrors += Verify(__FILE__, __LINE__, "+01234",
+		    "% +06d", 1234);
   /* Integer adjust, zero-padding, and width */
   nerrors += Verify(__FILE__, __LINE__, "12      ",
 		    "%-08d", 12);
@@ -234,24 +252,29 @@ int VerifyFormatting(void)
 		    "Number %'d", 1000000);
 #endif
   /* Integer base */
-  nerrors += Verify(__FILE__, __LINE__, "Number 42 == 1120 (base 3)",
-		    "Number %d == %..3i (base 3)", 42, 42);
-  /* Ignoring integer base */
   nerrors += Verify(__FILE__, __LINE__, "42",
-		    "%..3d", 42);
+		   "%u", 42);
+  nerrors += Verify(__FILE__, __LINE__, "-1",
+		   "%d", -1);
   nerrors += Verify(__FILE__, __LINE__, "52",
-		    "%..3o", 42);
-  nerrors += Verify(__FILE__, __LINE__, "2a",
-		    "%..3x", 42);
-  /* Octal */
+		   "%o", 42);
   nerrors += Verify(__FILE__, __LINE__, "052",
 		   "%#o", 42);
-  /* Hex */
+  nerrors += Verify(__FILE__, __LINE__, "2a",
+		    "%x", 42);
+  nerrors += Verify(__FILE__, __LINE__, "2A",
+		    "%X", 42);
+  nerrors += Verify(__FILE__, __LINE__, "0x2a",
+		   "%#x", 42);
   nerrors += Verify(__FILE__, __LINE__, "0X2A",
 		   "%#X", 42);
   nerrors += Verify(__FILE__, __LINE__, "0x00c ",
 		   "%-#6.3x", 12);
-  nerrors += Verify(__FILE__, __LINE__, "ffffffff",
+  sprintf(buffer, "%u", UINT_MAX);
+  nerrors += Verify(__FILE__, __LINE__, buffer,
+		   "%u", -1);
+  sprintf(buffer, "%x", UINT_MAX);
+  nerrors += Verify(__FILE__, __LINE__, buffer,
 		    "%x", -1);
   /* Double */
   nerrors += Verify(__FILE__, __LINE__, "3141.000000",
@@ -272,6 +295,10 @@ int VerifyFormatting(void)
 		    "%g", 3141.5);
   nerrors += Verify(__FILE__, __LINE__, "3.1415E-06",
 		    "%G", 3.1415e-6);
+  nerrors += Verify(__FILE__, __LINE__, "+3141.000000",
+		    "%+f", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "-3141.000000",
+		    "%+f", -3141.0);
   /* Double decimal point */
   nerrors += Verify(__FILE__, __LINE__, "3141",
 		    "%.0f", 3141.0);
@@ -316,7 +343,11 @@ int VerifyFormatting(void)
   nerrors += Verify(__FILE__, __LINE__, "31,415.200000",
 		    "%'f", 31415.2);
 #endif
-  /* Infinite */
+  /* Special cases */
+  nerrors += Verify(__FILE__, __LINE__, "1.00",
+		    "%.2f", 0.999);
+  nerrors += Verify(__FILE__, __LINE__, "100",
+		    "%.0f", 99.9);
   nerrors += Verify(__FILE__, __LINE__, "inf",
 		    "%f", trio_pinf());
   nerrors += Verify(__FILE__, __LINE__, "-inf",
@@ -325,29 +356,62 @@ int VerifyFormatting(void)
 		    "%F", trio_pinf());
   nerrors += Verify(__FILE__, __LINE__, "-INF",
 		    "%F", trio_ninf());
-  /* These two may fail if NaN is unsupported */
+  /* May fail if NaN is unsupported */
   nerrors += Verify(__FILE__, __LINE__, "nan",
 		    "%f", trio_nan());
   nerrors += Verify(__FILE__, __LINE__, "NAN",
 		    "%F", trio_nan());
-  /* Quote flag */
-  nerrors += Verify(__FILE__, __LINE__, "Another \"quoted\" string",
-		   "Another %'s string", "quoted");
   /* Char width alignment */
   nerrors += Verify(__FILE__, __LINE__, "Char X   .",
 	 "Char %-4c.", 'X');
-  /* String precision */
+  /* String width / precision */
+  nerrors += Verify(__FILE__, __LINE__, " testing",
+		    "%8s", "testing");
+  nerrors += Verify(__FILE__, __LINE__, "testing ",
+		    "%-8s", "testing");
+  nerrors += Verify(__FILE__, __LINE__, " testing",
+		    "%*s", 8, "testing");
+  nerrors += Verify(__FILE__, __LINE__, "test",
+		    "%.4s", "testing");
   nerrors += Verify(__FILE__, __LINE__, "test",
 		    "%.*s", 4, "testing");
-  /* Non-printable */
-  nerrors += Verify(__FILE__, __LINE__, "NonPrintable \\x01 \\a \\\\",
-		    "NonPrintable %#s", "\01 \07 \\");
+  /* Quote flag */
+  nerrors += Verify(__FILE__, __LINE__, "Another \"quoted\" string",
+		   "Another %'s string", "quoted");
   /* Positional */
   nerrors += Verify(__FILE__, __LINE__, "222 111",
 		    "%2$s %1$s", "111", "222");
   nerrors += Verify(__FILE__, __LINE__, "123456    12345 0001234  00123",
 		    "%4$d %3$*8$d %2$.*7$d %1$*6$.*5$d",
 		    123, 1234, 12345, 123456, 5, 6, 7, 8);
+
+#if TRIO_GNU
+  nerrors += Verify(__FILE__, __LINE__, "256",
+		    "%Zd", sizeof(buffer));
+  errno = EINTR;
+  nerrors += Verify(__FILE__, __LINE__, "Interrupted system call",
+		    "%m");
+#endif
+  
+#if TRIO_BSD || TRIO_GNU
+  nerrors += Verify(__FILE__, __LINE__, "42",
+		    "%qd", 42LL);
+#endif
+
+#if TRIO_C99
+  nerrors += Verify(__FILE__, __LINE__, "0xc45.000000",
+		    "%a", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "0XC45.000000",
+		    "%A", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "0x3.241893p-2c",
+		    "%a", 3.141e-44);
+  nerrors += Verify(__FILE__, __LINE__, "256",
+		    "%zd", sizeof(buffer));
+  nerrors += Verify(__FILE__, __LINE__, "42",
+		    "%td", 42);
+  nerrors += Verify(__FILE__, __LINE__, "42",
+		    "%jd", 42LL);
+#endif
 
 #if TRIO_WIDECHAR
   nerrors += Verify(__FILE__, __LINE__, "Hello World",
@@ -359,6 +423,37 @@ int VerifyFormatting(void)
   nerrors += Verify(__FILE__, __LINE__, "\\a",
 		    "%#lc", L'\a');
 #endif
+
+#if TRIO_MICROSOFT
+  nerrors += Verify(__FILE__, __LINE__, "42",
+		    "%I8d", 42);
+  nerrors += Verify(__FILE__, __LINE__, "ffffffff",
+		    "%I16x", -1);
+#endif
+  
+#if TRIO_EXTENSION
+  nerrors += Verify(__FILE__, __LINE__, "  42   86",
+		    "%!4d %d", 42, 86);
+  nerrors += Verify(__FILE__, __LINE__, "0042 0086",
+		    "%!04d %d", 42, 86);
+  nerrors += Verify(__FILE__, __LINE__, "42",
+		    "%&d", sizeof(long), 42L);
+  /* Non-printable string */
+  nerrors += Verify(__FILE__, __LINE__, "NonPrintable \\x01 \\a \\\\",
+		    "NonPrintable %#s", "\01 \07 \\");
+  nerrors += Verify(__FILE__, __LINE__, "\\a \\b \\t \\n \\v \\f \\r",
+		    "%#s", "\007 \010 \011 \012 \013 \014 \015");
+  /* Integer base */
+  nerrors += Verify(__FILE__, __LINE__, "Number 42 == 1120 (base 3)",
+		    "Number %d == %..3i (base 3)", 42, 42);
+  nerrors += Verify(__FILE__, __LINE__, "42",
+		    "%..3d", 42);
+  nerrors += Verify(__FILE__, __LINE__, "52",
+		    "%..3o", 42);
+  nerrors += Verify(__FILE__, __LINE__, "2a",
+		    "%..3x", 42);
+#endif
+  
   return nerrors;
 }
 
