@@ -899,16 +899,18 @@ TRIO_ARGS2((source, endp),
   unsigned long integer = 0;
   unsigned long fraction = 0;
   unsigned long exponent = 0;
+  int base;
   double fracdiv = 1.0;
   double value = 0.0;
 
   /* First try hex-floats */
   if ((source[0] == '0') && ((source[1] == 'x') || (source[1] == 'X')))
     {
+      base = 16;
       source += 2;
       while (isxdigit((int)*source))
 	{
-	  integer *= 16;
+	  integer *= base;
 	  integer += (isdigit((int)*source)
 		      ? (*source - '0')
 		      : 10 + (toupper((int)*source) - 'A'));
@@ -919,11 +921,11 @@ TRIO_ARGS2((source, endp),
 	  source++;
 	  while (isxdigit((int)*source))
 	    {
-	      fraction *= 16;
+	      fraction *= base;
 	      fraction += (isdigit((int)*source)
 			   ? (*source - '0')
 			   : 10 + (toupper((int)*source) - 'A'));
-	      fracdiv *= 16.0;
+	      fracdiv *= (double)base;
 	      source++;
 	    }
 	  if ((*source == 'p') || (*source == 'P'))
@@ -936,7 +938,7 @@ TRIO_ARGS2((source, endp),
 		}
 	      while (isdigit((int)*source))
 		{
-		  exponent *= 10;
+		  exponent *= base;
 		  exponent += (*source - '0');
 		  source++;
 		}
@@ -945,6 +947,7 @@ TRIO_ARGS2((source, endp),
     }
   else /* Then try normal decimal floats */
     {
+      base = 10;
       isNegative = (*source == '-');
       /* Skip sign */
       if ((*source == '+') || (*source == '-'))
@@ -953,7 +956,7 @@ TRIO_ARGS2((source, endp),
       /* Integer part */
       while (isdigit((int)*source))
 	{
-	  integer *= 10;
+	  integer *= base;
 	  integer += (*source - '0');
 	  source++;
 	}
@@ -963,9 +966,9 @@ TRIO_ARGS2((source, endp),
 	  source++; /* skip decimal point */
 	  while (isdigit((int)*source))
 	    {
-	      fraction *= 10;
+	      fraction *= base;
 	      fraction += (*source - '0');
-	      fracdiv *= 10.0;
+	      fracdiv *= (double)base;
 	      source++;
 	    }
 	}
@@ -983,7 +986,7 @@ TRIO_ARGS2((source, endp),
 	    source++;
 	  while (isdigit((int)*source))
 	    {
-	      exponent *= 10;
+	      exponent *= base;
 	      exponent += (*source - '0');
 	      source++;
 	    }
@@ -998,9 +1001,9 @@ TRIO_ARGS2((source, endp),
   if (exponent != 0)
     {
       if (isExponentNegative)
-	value /= pow((double)10, (double)exponent);
+	value /= pow((double)base, (double)exponent);
       else
-	value *= pow((double)10, (double)exponent);
+	value *= pow((double)base, (double)exponent);
     }
   if (isNegative)
     value = -value;
