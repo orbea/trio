@@ -293,7 +293,7 @@ int StrMatch(char *string, char *pattern)
 	{
 	  return (NIL == *pattern);
 	}
-      if ((toupper(*string) != toupper(*pattern))
+      if ((toupper((int)*string) != toupper((int)*pattern))
 	  && ('?' != *pattern))
 	{
 	  return FALSE;
@@ -554,7 +554,7 @@ int StrToUpper(char *target)
   
   while (NIL != *target)
     {
-      *target = toupper(*target);
+      *target = toupper((int)*target);
       target++;
       i++;
     }

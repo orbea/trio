@@ -182,6 +182,7 @@ int VerifyFormatting(void)
   nerrors += Verify(__FILE__, __LINE__, "Hello world",
 		   "%s", "Hello world");
   /* Pointer */
+  /* It is ok, if this fails on 64 bit machines */
   nerrors += Verify(__FILE__, __LINE__, "Pointer 0x01234567",
 		   "Pointer %p", 0x1234567);
   /* Nil pointer */

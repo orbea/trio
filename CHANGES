@@ -4,6 +4,15 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.? - 2001/04/24
+------------------------
+* Igor Zlatkovic
+  Fixed compilation of dprintf, which uses read/write, for MSCC.
+
+* Fixed various compilation problems on Digital Unix (mainly associated with
+  va_list).
+
+
 Version 1.2 - 2001/04/11
 ------------------------
 * Added autoconf integration. If compiled with HAVE_CONFIG_H the following

@@ -18,10 +18,13 @@
 #ifndef TRIO_STRIO_H
 #define TRIO_STRIO_H
 
+#if !(defined(DEBUG) || defined(NDEBUG))
+# define NDEBUG
+#endif
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "assert.h"
 
 /*
  * StrAppend(target, source)
@@ -122,7 +125,7 @@
 enum {
   STRIO_HASH_NONE = 0,
   STRIO_HASH_PLAIN,
-  STRIO_HASH_TWOSIGNED,
+  STRIO_HASH_TWOSIGNED
 };
 
 #if !defined(DEBUG) || defined(__DECC)
