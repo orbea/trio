@@ -73,6 +73,29 @@
 # define TRIO_COMPILER_SUPPORTS_MSVC_INT
 #endif
 
+#if defined(TRIO_COMPILER_SUPPORTS_C99) \
+ || defined(TRIO_COMPILER_SUPPORTS_UNIX01)
+# if !defined(HAVE_FLOORL)
+#  define HAVE_FLOORL
+# endif
+# if !defined(HAVE_POWL)
+#  define HAVE_POWL
+# endif
+# if !defined(HAVE_FMODL)
+#  define HAVE_FMODL
+# endif
+#elif defined(TRIO_COMPILER_MSVC)
+# if defined(floorl)
+#  define HAVE_FLOORL
+# endif
+# if defined(powl)
+#  define HAVE_POWL
+# endif
+# if defined(fmodl)
+#  define HAVE_FMODL
+# endif
+#endif
+
 /*************************************************************************
  * Generic definitions
  */
@@ -243,10 +266,13 @@ typedef trio_longlong_t trio_int64_t;
 # endif
 #endif
 
-#if !(defined(TRIO_COMPILER_SUPPORTS_C99) \
- || defined(TRIO_COMPILER_SUPPORTS_UNIX01))
+#if !defined(HAVE_FLOORL)
 # define floorl(x) floor((double)(x))
+#endif
+#if !defined(HAVE_FMODL)
 # define fmodl(x,y) fmod((double)(x),(double)(y))
+#endif
+#if !defined(HAVE_POWL)
 # define powl(x,y) pow((double)(x),(double)(y))
 #endif
 
