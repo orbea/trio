@@ -6,6 +6,9 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.8 - 2002/05/20
 ------------------------
+* Jacob Navia
+  Enabled the L modifier for formatting.
+
 * Added TRIO_MINIMAL to build trio without the string functions.
 
 * Added the R modifier to print rounded floating-point numbers.

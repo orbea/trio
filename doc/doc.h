@@ -146,6 +146,7 @@ order sorted by surname)
 @li Howard Kapustein
 @li Alexander Lukyanov
 @li Emmanuel Mogenet
+@li Jacob Navia
 @li Jose Ortiz
 @li Joe Orton
 @li Gisli Ottarsson
