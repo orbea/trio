@@ -1509,6 +1509,10 @@ TrioParse(type, format, parameters, arglist, argarray)
 	      break;
 
 	    case SPECIFIER_POINTER:
+	      if (sizeof(trio_pointer_t) == sizeof(trio_ulonglong_t))
+		flags |= FLAGS_QUAD;
+	      else if (sizeof(trio_pointer_t) == sizeof(long))
+		flags |= FLAGS_LONG;
 	      parameters[pos].type = FORMAT_POINTER;
 	      break;
 

@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.7 - 2002/04/07
+Version 1.7 - 2002/04/14
 ------------------------
+* Joe Orton
+  Fixed %p on 64-bit platforms.
+
 * Made trio compile with K&R compilers.
 
 * Emmanuel Mogenet

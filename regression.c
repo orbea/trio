@@ -216,11 +216,16 @@ int VerifyFormatting(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "Hello world",
 		   "%s", "Hello world");
   /* Pointer */
-  nerrors += Verify(__FILE__, __LINE__, "Pointer (nil)",
-		   "Pointer %p", 0);
-  /* This may fail on 64 bit machines */
-  nerrors += Verify(__FILE__, __LINE__, "Pointer 0x01234567",
-		   "Pointer %p", 0x1234567);
+  if (sizeof(void *) == 4)
+    {
+      nerrors += Verify(__FILE__, __LINE__, "Pointer 0x01234567",
+			"Pointer %p", 0x1234567);
+    }
+  else if (sizeof(void *) == 8)
+    {
+      nerrors += Verify(__FILE__, __LINE__, "Pointer 0x0123456789012345",
+			"Pointer %p", 0x123456789012345);
+    }
   /* Nil pointer */
   nerrors += Verify(__FILE__, __LINE__, "Pointer (nil)",
 		   "Pointer %p", NULL);
