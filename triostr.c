@@ -116,6 +116,15 @@
 # endif
 #endif
 
+#if defined(TRIO_FUNC_TO_UPPER) \
+ || (defined(TRIO_FUNC_EQUAL) && !defined(USE_STRCASECMP)) \
+ || (defined(TRIO_FUNC_EQUAL_MAX) && !defined(USE_STRNCASECMP)) \
+ || defined(TRIO_FUNC_MATCH) \
+ || defined(TRIO_FUNC_TO_LONG_DOUBLE) \
+ || defined(TRIO_FUNC_UPPER)
+# define TRIO_FUNC_INTERNAL_TO_UPPER
+#endif
+
 /*************************************************************************
  * Structures
  */
@@ -257,6 +266,29 @@ TRIO_ARGS2((self, length),
   return (self->allocated < length)
     ? internal_string_grow(self, length - self->allocated)
     : TRUE;
+}
+
+#endif
+
+#if defined(TRIO_FUNC_INTERNAL_TO_UPPER)
+
+TRIO_PUBLIC_STRING TRIO_INLINE int
+internal_to_upper
+TRIO_ARGS1((source),
+	   int source)
+{
+# if defined(USE_TOUPPER)
+  
+  return toupper(source);
+  
+# else
+
+  /* Does not handle locales or non-contiguous alphabetic characters */
+  return ((source >= (int)'a') && (source <= (int)'z'))
+    ? source - 'a' + 'A'
+    : source;
+  
+# endif
 }
 
 #endif
@@ -553,7 +585,7 @@ TRIO_ARGS2((first, second),
 # else
       while ((*first != NIL) && (*second != NIL))
 	{
-	  if (trio_to_upper(*first) != trio_to_upper(*second))
+	  if (internal_to_upper(*first) != internal_to_upper(*second))
 	    {
 	      break;
 	    }
@@ -688,7 +720,7 @@ TRIO_ARGS3((first, max, second),
       size_t cnt = 0;
       while ((*first != NIL) && (*second != NIL) && (cnt <= max))
 	{
-	  if (trio_to_upper(*first) != trio_to_upper(*second))
+	  if (internal_to_upper(*first) != internal_to_upper(*second))
 	    {
 	      break;
 	    }
@@ -908,7 +940,7 @@ TRIO_ARGS2((string, pattern),
 	{
 	  return (NIL == *pattern);
 	}
-      if ((trio_to_upper((int)*string) != trio_to_upper((int)*pattern))
+      if ((internal_to_upper((int)*string) != internal_to_upper((int)*pattern))
 	  && ('?' != *pattern))
 	{
 	  return FALSE;
@@ -1161,7 +1193,7 @@ TRIO_ARGS2((source, endp),
 	  integer *= base;
 	  integer += (isdigit((int)*source)
 		      ? (*source - '0')
-		      : 10 + (trio_to_upper((int)*source) - 'A'));
+		      : 10 + (internal_to_upper((int)*source) - 'A'));
 	  source++;
 	}
       if (*source == '.')
@@ -1172,7 +1204,7 @@ TRIO_ARGS2((source, endp),
 	      fracdiv /= base;
 	      fraction += fracdiv * (isdigit((int)*source)
 				     ? (*source - '0')
-				     : 10 + (trio_to_upper((int)*source) - 'A'));
+				     : 10 + (internal_to_upper((int)*source) - 'A'));
 	      source++;
 	    }
 	  if ((*source == 'p') || (*source == 'P'))
@@ -1402,18 +1434,7 @@ trio_to_upper
 TRIO_ARGS1((source),
 	   int source)
 {
-# if defined(USE_TOUPPER)
-  
-  return toupper(source);
-  
-# else
-
-  /* Does not handle locales or non-contiguous alphabetic characters */
-  return ((source >= (int)'a') && (source <= (int)'z'))
-    ? source - 'a' + 'A'
-    : source;
-  
-# endif
+  return internal_to_upper(source);
 }
 
 #endif
@@ -1433,7 +1454,7 @@ TRIO_ARGS1((target),
 {
   assert(target);
 
-  return trio_span_function(target, target, trio_to_upper);
+  return trio_span_function(target, target, internal_to_upper);
 }
 
 #endif

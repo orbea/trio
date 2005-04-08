@@ -84,9 +84,10 @@ enum {
 # endif
 
 # if defined(TRIO_FUNC_STRING_DESTROY) \
-  || defined(TRIO_FUNC_XSTRING_SET) \
-  || TRIO_FEATURE_USER_DEFINED
-#  define TRIO_FUNC_DESTROY
+  || defined(TRIO_FUNC_XSTRING_SET)
+#  if !defined(TRIO_FUNC_DESTROY)
+#   define TRIO_FUNC_DESTROY
+#  endif
 # endif
 
 # if defined(TRIO_FUNC_EQUAL_LOCALE) \
@@ -107,25 +108,16 @@ enum {
 
 # if defined(TRIO_FUNC_SUBSTRING_MAX) \
   || defined(TRIO_FUNC_STRING_EQUAL_MAX) \
-  || defined(TRIO_FUNC_XSTRING_EQUAL_MAX) \
-  || (TRIO_EXTENSION && TRIO_FEATURE_SCANF)
-#  define TRIO_FUNC_EQUAL_MAX
+  || defined(TRIO_FUNC_XSTRING_EQUAL_MAX)
+#  if !defined(TRIO_FUNC_EQUAL_MAX)
+#   define TRIO_FUNC_EQUAL_MAX
+#  endif
 # endif
 
 # if defined(TRIO_FUNC_TO_DOUBLE) \
   || defined(TRIO_FUNC_TO_FLOAT)
 #  if !defined(TRIO_FUNC_TO_LONG_DOUBLE)
 #   define TRIO_FUNC_TO_LONG_DOUBLE
-#  endif
-# endif
-
-# if defined(TRIO_FUNC_EQUAL) \
-  || defined(TRIO_FUNC_EQUAL_MAX) \
-  || defined(TRIO_FUNC_MATCH) \
-  || defined(TRIO_FUNC_TO_LONG_DOUBLE) \
-  || defined(TRIO_FUNC_UPPER)
-#  if !defined(TRIO_FUNC_TO_UPPER)
-#   define TRIO_FUNC_TO_UPPER
 #  endif
 # endif
 
