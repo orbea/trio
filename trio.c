@@ -91,6 +91,9 @@
 # if TRIO_FEATURE_DYNAMICSTRING
 #  define TRIO_FUNC_STRING_DESTROY
 # endif
+# if TRIO_FEATURE_USER_DEFINED
+#  define TRIO_FUNC_DESTROY
+# endif
 # if TRIO_FEATURE_USER_DEFINED || (TRIO_FEATURE_FLOAT && TRIO_FEATURE_SCANF)
 #  define TRIO_FUNC_EQUAL
 # endif
@@ -1211,15 +1214,6 @@ TRIO_ARGS2((number, base),
 	   int base)
 {
   double result;
-# if defined(TRIO_COMPILER_BCB)
-  /*
-   * The floating-point precision may be changed by _fpclass(), so we have
-   * to save and restore the floating-point control mask.
-   */
-  unsigned int oldMask;
-
-  oldMask = _control87(0, 0);
-# endif
 
   if (number <= 0.0)
     {
@@ -1237,10 +1231,6 @@ TRIO_ARGS2((number, base),
 	  result = log10(number) / log10((double)base);
 	}
     }
-# if defined(TRIO_COMPILER_BCB)
-  /* Restore the old mask */
-  (void)_control87(oldMask, ~0);
-# endif
   return result;
 }
 #endif /* TRIO_FEATURE_FLOAT */
@@ -6416,12 +6406,18 @@ TRIO_ARGS3((self, target, flags),
 		     POINTER_WIDTH,
 		     BASE_HEX))
     {
-      /*
-       * The strange assignment of number is a workaround for a compiler
-       * warning
-       */
       if (target)
-	*target = (char *)0 + number;
+	{
+#if defined(TRIO_COMPILER_GCC)
+	  /*
+	   * The strange assignment of number is a workaround for a compiler
+	   * warning
+	   */
+	  *target = (trio_pointer_t)0 + number;
+#else
+	  *target = (trio_pointer_t)number;
+#endif
+	}
       return TRUE;
     }
   else if (TrioReadString(self,

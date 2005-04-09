@@ -495,8 +495,8 @@ TRIO_ARGS2((number, is_negative),
   }
   
 # if defined(TRIO_COMPILER_BCB)
-  /* Restore the old mask */
-  (void)_control87(mask, ~0);
+  /* Restore the old precision */
+  (void)_control87(mask, MCW_PC);
 # endif
   
   return result;

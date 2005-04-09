@@ -4,8 +4,12 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2005/03/24
+Version 1.11 - 2005/04/09
 -------------------------
+* Karl Bochert
+  Fixed trio_fpclassify_and_signbit to only restore the floating-point
+  precision.
+
 * Fixed detection of need for ieee option on FreeBSD/Alpha.
 
 * Added TRIO_SNPRINTF_ONLY compilation.
@@ -28,7 +32,7 @@ Version 1.11 - 2005/03/24
 
 * Karl Bochert
   Fixed problem with Borland C++, which changes the floating-point precision
-  for certain math functions (log10() and _flclass()).
+  for certain math functions (log10() and _fpclass()).
 
 * Karl Bochert
   Fixed compilation warnings on Borland C++.
