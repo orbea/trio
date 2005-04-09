@@ -556,8 +556,6 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%#11.2g", 0.99e4);
   nerrors += Verify(__FILE__, __LINE__, "    9.9e+04",
 		    "%#11.2g", 0.99e5);
-/*   nerrors += Verify(__FILE__, __LINE__, "", */
-/* 		    ""); */
   /* Double width, precision, and zero padding */
   nerrors += Verify(__FILE__, __LINE__, "00003.141500e+03",
 		    "%016e", 3141.5);
