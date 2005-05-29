@@ -40,7 +40,9 @@
 #include <math.h>
 #include <string.h>
 #include <limits.h>
-#include <float.h>
+#if !defined(TRIO_PLATFORM_SYMBIAN)
+# include <float.h>
+#endif
 #if defined(TRIO_PLATFORM_UNIX)
 # include <signal.h>
 #endif
@@ -105,7 +107,7 @@
 #if defined(__STDC_IEC_559__)
 # define TRIO_IEEE_754
 #else
-# if (FLT_RADIX == 2) && (DBL_MAX_EXP == 1024) && (DBL_MANT_DIG == 53)
+# if (FLT_RADIX - 0 == 2) && (DBL_MAX_EXP - 0 == 1024) && (DBL_MANT_DIG - 0 == 53)
 #  define TRIO_IEEE_754
 # endif
 #endif
@@ -120,7 +122,7 @@
 #  if defined(TRIO_COMPILER_DECC)
 #   define TRIO_FUNC_DECC_FPCLASSIFY_AND_SIGNBIT
 #  else
-#   if defined(TRIO_COMPILER_MSVC) || defined(TRIO_COMPILER_BCB)
+#   if defined(TRIO_COMPILER_VISUALC) || defined(TRIO_COMPILER_BORLAND)
 #    define TRIO_FUNC_MS_FPCLASSIFY_AND_SIGNBIT
 #   else
 #    if defined(TRIO_COMPILER_HP) && defined(FP_PLUS_NORM)
@@ -434,13 +436,14 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_MS_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_PRIVATE_NAN TRIO_INLINE int
+TRIO_PRIVATE_NAN int
 ms_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
 	  int *is_negative)
 {
-# if defined(TRIO_COMPILER_BCB)
+  int result;
+# if defined(TRIO_COMPILER_BORLAND)
   /*
    * The floating-point precision may be changed by the Borland _fpclass()
    * function, so we have to save and restore the floating-point control mask.
@@ -494,7 +497,7 @@ TRIO_ARGS2((number, is_negative),
     break;
   }
   
-# if defined(TRIO_COMPILER_BCB)
+# if defined(TRIO_COMPILER_BORLAND)
   /* Restore the old precision */
   (void)_control87(mask, MCW_PC);
 # endif
@@ -614,7 +617,7 @@ internal_isnan
 TRIO_ARGS1((number),
 	   double number)
 {
-# if defined(TRIO_INTERNAL_ISNAN_XPG3)
+# if defined(TRIO_INTERNAL_ISNAN_XPG3) || defined(TRIO_PLATFORM_SYMBIAN)
   /*
    * XPG3 defines isnan() as a function.
    */
@@ -678,6 +681,12 @@ internal_isinf
 TRIO_ARGS1((number),
 	   double number)
 {
+# if defined(TRIO_PLATFORM_SYMBIAN)
+
+  return isinf(number);
+
+# endif
+
 # if defined(TRIO_INTERNAL_ISINF_IEEE_754)
   /*
    * Examine IEEE 754 bit-pattern. Infinity must have a special exponent
@@ -790,7 +799,8 @@ TRIO_ARGS2((number, is_negative),
     *is_negative = TRIO_FALSE;
     return TRIO_FP_NAN;
   }
-  if ((rc = internal_isinf(number))) {
+  rc = internal_isinf(number);
+  if (rc != 0) {
     *is_negative = (rc == -1);
     return TRIO_FP_INFINITE;
   }
@@ -1047,7 +1057,7 @@ trio_nan(TRIO_NOARGS)
 
   if (nan_value == 0.0) {
     
-# if defined(TRIO_NAN_C99_FUNCTION)
+# if defined(TRIO_NAN_C99_FUNCTION) || defined(TRIO_PLATFORM_SYMBIAN)
     
     nan_value = nan("");
 
@@ -1058,7 +1068,7 @@ trio_nan(TRIO_NOARGS)
     nan_value = (double)NAN;
 
 # endif
-    
+
 # if defined(TRIO_NAN_IEEE_754)
     
     nan_value = internal_make_double(ieee_754_qnan_array);
