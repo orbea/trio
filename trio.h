@@ -115,6 +115,7 @@ char *trio_vaprintf TRIO_PROTO((TRIO_CONST char *format, va_list args));
 
 int trio_asprintf TRIO_PROTO((char **ret, TRIO_CONST char *format, ...));
 int trio_vasprintf TRIO_PROTO((char **ret, TRIO_CONST char *format, va_list args));
+int trio_asprintfv TRIO_PROTO((char **result, TRIO_CONST char *format, trio_pointer_t * args));
 
 /*************************************************************************
  * Scan Functions

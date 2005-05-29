@@ -131,8 +131,8 @@
 # endif
 #endif
 
-#if (defined(TRIO_COMPILER_MSVC) && (_MSC_VER >= 1100)) || defined(TRIO_COMPILER_BCB)
-# define TRIO_COMPILER_SUPPORTS_MSVC_INT
+#if (TRIO_COMPILER_VISUALC - 0 >= 1100) || defined(TRIO_COMPILER_BORLAND)
+# define TRIO_COMPILER_SUPPORTS_VISUALC_INT
 #endif
 
 #if TRIO_FEATURE_FLOAT
@@ -148,7 +148,7 @@
 #   define HAVE_FMODL
 #  endif
 # endif
-# if defined(TRIO_COMPILER_MSVC)
+# if defined(TRIO_COMPILER_VISUALC)
 #  if defined(floorl)
 #   define HAVE_FLOORL
 #  endif
@@ -264,7 +264,7 @@ typedef int trio_wint_t;
 /* Support for long long */
 #ifndef __cplusplus
 # if !defined(USE_LONGLONG)
-#  if defined(TRIO_COMPILER_GCC) && !defined(__STRICT_ANSI__)
+#  if defined(TRIO_COMPILER_GCC) && defined(PREDEF_STANDARD_C90) && !defined(__STRICT_ANSI__)
 #   define USE_LONGLONG
 #  else
 #   if defined(TRIO_COMPILER_SUNPRO)
@@ -283,7 +283,7 @@ typedef int trio_wint_t;
 typedef signed long long int trio_longlong_t;
 typedef unsigned long long int trio_ulonglong_t;
 #else
-# if defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
+# if defined(TRIO_COMPILER_SUPPORTS_VISUALC_INT)
 typedef signed __int64 trio_longlong_t;
 typedef unsigned __int64 trio_ulonglong_t;
 # else
@@ -311,7 +311,7 @@ typedef int16_t trio_int16_t;
 typedef int32_t trio_int32_t;
 typedef int64_t trio_int64_t;
 # else
-#  if defined(TRIO_COMPILER_SUPPORTS_MSVC_INT)
+#  if defined(TRIO_COMPILER_SUPPORTS_VISUALC_INT)
 typedef trio_longlong_t trio_intmax_t;
 typedef trio_ulonglong_t trio_uintmax_t;
 typedef __int8 trio_int8_t;
@@ -1878,7 +1878,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	      break;
 #endif
 
-#if defined(TRIO_COMPILER_MSVC)
+#if defined(TRIO_COMPILER_VISUALC)
 # pragma warning( push )
 # pragma warning( disable : 4127 ) /* Conditional expression is constant */
 #endif
@@ -1889,7 +1889,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		flags |= FLAGS_LONG;
 	      parameters[pos].type = FORMAT_POINTER;
 	      break;
-#if defined(TRIO_COMPILER_MSVC)
+#if defined(TRIO_COMPILER_VISUALC)
 # pragma warning( pop )
 #endif
 
@@ -5941,7 +5941,7 @@ TRIO_ARGS5((self, target, flags, width, base),
     return FALSE;
   
   if (target)
-    *target = (isNegative) ? -((trio_intmax_t)number) : number;
+    *target = (isNegative) ? (trio_uintmax_t)(-((trio_intmax_t)number)) : number;
   return TRUE;
 }
 
@@ -6609,8 +6609,6 @@ TRIO_ARGS3((data, format, parameters),
 #if TRIO_FEATURE_FLOAT
 	    case FORMAT_DOUBLE:
 	      {
-		trio_pointer_t pointer;
-
 		if (flags & FLAGS_IGNORE)
 		  {
 		    pointer = NULL;
