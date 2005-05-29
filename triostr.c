@@ -58,16 +58,21 @@
 #endif
 
 #if TRIO_FEATURE_FLOAT && defined(PREDEF_STANDARD_C99)
-# if !defined(TRIO_COMPILER_DECC) || (__DECC_VER - 0 > 70000000)
+# if defined(TRIO_COMPILER_DECC)
+#  if (TRIO_COMPILER_DECC - 0 > 80000000)
 /*
  * The OSF/1 runtime that comes with the DECC compiler does not support
  * hexfloats conversion.
  */
+#   define USE_STRTOD
+#   define USE_STRTOF
+#  endif
+# else
 #  define USE_STRTOD
 #  define USE_STRTOF
 # endif
 #else
-# if defined(TRIO_COMPILER_MSVC)
+# if defined(TRIO_COMPILER_VISUALC)
 #  define USE_STRTOD
 # endif
 #endif
@@ -104,7 +109,7 @@
    || defined(PREDEF_STANDARD_UNIX03)
 #   define HAVE_POWL
 #  else
-#   if defined(TRIO_COMPILER_MSVC)
+#   if defined(TRIO_COMPILER_VISUALC)
 #    if defined(powl)
 #     define HAVE_POWL
 #    endif
