@@ -223,31 +223,31 @@ enum {
 #if defined(TRIO_FUNC_APPEND)
 TRIO_PUBLIC_STRING int
 trio_append
-TRIO_PROTO((char *target, const char *source));
+TRIO_PROTO((char *target, TRIO_CONST char *source));
 #endif
 
 #if defined(TRIO_FUNC_APPEND_MAX)
 TRIO_PUBLIC_STRING int
 trio_append_max
-TRIO_PROTO((char *target, size_t max, const char *source));
+TRIO_PROTO((char *target, size_t max, TRIO_CONST char *source));
 #endif
 
 #if defined(TRIO_FUNC_CONTAINS)
 TRIO_PUBLIC_STRING int
 trio_contains
-TRIO_PROTO((const char *string, const char *substring));
+TRIO_PROTO((TRIO_CONST char *string, TRIO_CONST char *substring));
 #endif
 
 #if defined(TRIO_FUNC_COPY)
 TRIO_PUBLIC_STRING int
 trio_copy
-TRIO_PROTO((char *target, const char *source));
+TRIO_PROTO((char *target, TRIO_CONST char *source));
 #endif
 
 #if defined(TRIO_FUNC_COPY_MAX)
 TRIO_PUBLIC_STRING int
 trio_copy_max
-TRIO_PROTO((char *target, size_t max, const char *source));
+TRIO_PROTO((char *target, size_t max, TRIO_CONST char *source));
 #endif
 
 #if defined(TRIO_FUNC_CREATE)
@@ -265,43 +265,43 @@ TRIO_PROTO((char *string));
 #if defined(TRIO_FUNC_DUPLICATE)
 TRIO_PUBLIC_STRING char *
 trio_duplicate
-TRIO_PROTO((const char *source));
+TRIO_PROTO((TRIO_CONST char *source));
 #endif
 
 #if defined(TRIO_FUNC_DUPLICATE_MAX)
 TRIO_PUBLIC_STRING char *
 trio_duplicate_max
-TRIO_PROTO((const char *source, size_t max));
+TRIO_PROTO((TRIO_CONST char *source, size_t max));
 #endif
 
 #if defined(TRIO_FUNC_EQUAL)
 TRIO_PUBLIC_STRING int
 trio_equal
-TRIO_PROTO((const char *first, const char *second));
+TRIO_PROTO((TRIO_CONST char *first, TRIO_CONST char *second));
 #endif
 
 #if defined(TRIO_FUNC_EQUAL_CASE)
 TRIO_PUBLIC_STRING int
 trio_equal_case
-TRIO_PROTO((const char *first, const char *second));
+TRIO_PROTO((TRIO_CONST char *first, TRIO_CONST char *second));
 #endif
 
 #if defined(TRIO_FUNC_EQUAL_CASE_MAX)
 TRIO_PUBLIC_STRING int
 trio_equal_case_max
-TRIO_PROTO((const char *first, size_t max, const char *second));
+TRIO_PROTO((TRIO_CONST char *first, size_t max, TRIO_CONST char *second));
 #endif
 
 #if defined(TRIO_FUNC_EQUAL_LOCALE)
 TRIO_PUBLIC_STRING int
 trio_equal_locale
-TRIO_PROTO((const char *first, const char *second));
+TRIO_PROTO((TRIO_CONST char *first, TRIO_CONST char *second));
 #endif
 
 #if defined(TRIO_FUNC_EQUAL_MAX)
 TRIO_PUBLIC_STRING int
 trio_equal_max
-TRIO_PROTO((const char *first, size_t max, const char *second));
+TRIO_PROTO((TRIO_CONST char *first, size_t max, TRIO_CONST char *second));
 #endif
 
 #if defined(TRIO_FUNC_ERROR)
@@ -313,31 +313,31 @@ TRIO_PROTO((int));
 #if defined(TRIO_FUNC_FORMAT_DATE_MAX)
 TRIO_PUBLIC_STRING size_t
 trio_format_date_max
-TRIO_PROTO((char *target, size_t max, const char *format, const struct tm *datetime));
+TRIO_PROTO((char *target, size_t max, TRIO_CONST char *format, TRIO_CONST struct tm *datetime));
 #endif
 
 #if defined(TRIO_FUNC_HASH)
 TRIO_PUBLIC_STRING unsigned long
 trio_hash
-TRIO_PROTO((const char *string, int type));
+TRIO_PROTO((TRIO_CONST char *string, int type));
 #endif
 
 #if defined(TRIO_FUNC_INDEX)
 TRIO_PUBLIC_STRING char *
 trio_index
-TRIO_PROTO((const char *string, int character));
+TRIO_PROTO((TRIO_CONST char *string, int character));
 #endif
 
 #if defined(TRIO_FUNC_INDEX_LAST)
 TRIO_PUBLIC_STRING char *
 trio_index_last
-TRIO_PROTO((const char *string, int character));
+TRIO_PROTO((TRIO_CONST char *string, int character));
 #endif
 
 #if defined(TRIO_FUNC_LENGTH)
 TRIO_PUBLIC_STRING size_t
 trio_length
-TRIO_PROTO((const char *string));
+TRIO_PROTO((TRIO_CONST char *string));
 #endif
 
 #if defined(TRIO_FUNC_LOWER)
@@ -349,49 +349,49 @@ TRIO_PROTO((char *target));
 #if defined(TRIO_FUNC_MATCH)
 TRIO_PUBLIC_STRING int
 trio_match
-TRIO_PROTO((const char *string, const char *pattern));
+TRIO_PROTO((TRIO_CONST char *string, TRIO_CONST char *pattern));
 #endif
 
 #if defined(TRIO_FUNC_MATCH_CASE)
 TRIO_PUBLIC_STRING int
 trio_match_case
-TRIO_PROTO((const char *string, const char *pattern));
+TRIO_PROTO((TRIO_CONST char *string, TRIO_CONST char *pattern));
 #endif
 
 #if defined(TRIO_FUNC_SPAN_FUNCTION)
 TRIO_PUBLIC_STRING size_t
 trio_span_function
-TRIO_PROTO((char *target, const char *source, int (*Function) TRIO_PROTO((int))));
+TRIO_PROTO((char *target, TRIO_CONST char *source, int (*Function) TRIO_PROTO((int))));
 #endif
 
 #if defined(TRIO_FUNC_SUBSTRING)
 TRIO_PUBLIC_STRING char *
 trio_substring
-TRIO_PROTO((const char *string, const char *substring));
+TRIO_PROTO((TRIO_CONST char *string, TRIO_CONST char *substring));
 #endif
 
 #if defined(TRIO_FUNC_SUBSTRING_MAX)
 TRIO_PUBLIC_STRING char *
 trio_substring_max
-TRIO_PROTO((const char *string, size_t max, const char *substring));
+TRIO_PROTO((TRIO_CONST char *string, size_t max, TRIO_CONST char *substring));
 #endif
 
 #if defined(TRIO_FUNC_TO_DOUBLE)
 TRIO_PUBLIC_STRING double
 trio_to_double
-TRIO_PROTO((const char *source, char **endp));
+TRIO_PROTO((TRIO_CONST char *source, char **endp));
 #endif
 
 #if defined(TRIO_FUNC_TO_FLOAT)
 TRIO_PUBLIC_STRING float
 trio_to_float
-TRIO_PROTO((const char *source, char **endp));
+TRIO_PROTO((TRIO_CONST char *source, char **endp));
 #endif
 
 #if defined(TRIO_FUNC_TO_LONG)
 TRIO_PUBLIC_STRING long
 trio_to_long
-TRIO_PROTO((const char *source, char **endp, int base));
+TRIO_PROTO((TRIO_CONST char *source, char **endp, int base));
 #endif
 
 #if defined(TRIO_FUNC_TO_LOWER)
@@ -403,13 +403,13 @@ TRIO_PROTO((int source));
 #if defined(TRIO_FUNC_TO_LONG_DOUBLE)
 TRIO_PUBLIC_STRING trio_long_double_t
 trio_to_long_double
-TRIO_PROTO((const char *source, char **endp));
+TRIO_PROTO((TRIO_CONST char *source, char **endp));
 #endif
 
 #if defined(TRIO_FUNC_TO_UNSIGNED_LONG)
 TRIO_PUBLIC_STRING unsigned long
 trio_to_unsigned_long
-TRIO_PROTO((const char *source, char **endp, int base));
+TRIO_PROTO((TRIO_CONST char *source, char **endp, int base));
 #endif
 
 #if defined(TRIO_FUNC_TO_UPPER)
@@ -421,7 +421,7 @@ TRIO_PROTO((int source));
 #if defined(TRIO_FUNC_TOKENIZE)
 TRIO_PUBLIC_STRING char *
 trio_tokenize
-TRIO_PROTO((char *string, const char *delimiters));
+TRIO_PROTO((char *string, TRIO_CONST char *delimiters));
 #endif
 
 #if defined(TRIO_FUNC_UPPER)
@@ -509,7 +509,7 @@ TRIO_PROTO((trio_string_t *self));
 #if defined(TRIO_FUNC_STRING_FORMAT_DATE_MAX)
 TRIO_PUBLIC_STRING size_t
 trio_string_format_date_max
-TRIO_PROTO((trio_string_t *self, size_t max, const char *format, const struct tm *datetime));
+TRIO_PROTO((trio_string_t *self, size_t max, TRIO_CONST char *format, TRIO_CONST struct tm *datetime));
 #endif
 
 #if defined(TRIO_FUNC_STRING_GET)
@@ -581,7 +581,7 @@ TRIO_PROTO((trio_string_t *self));
 #if defined(TRIO_FUNC_XSTRING_APPEND)
 TRIO_PUBLIC_STRING int
 trio_xstring_append
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
@@ -593,55 +593,55 @@ TRIO_PROTO((trio_string_t *self, char character));
 #if defined(TRIO_FUNC_XSTRING_CONTAINS)
 TRIO_PUBLIC_STRING int
 trio_xstring_contains
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_COPY)
 TRIO_PUBLIC_STRING int
 trio_xstring_copy
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_DUPLICATE)
 TRIO_PUBLIC_STRING trio_string_t *
 trio_xstring_duplicate
-TRIO_PROTO((const char *other));
+TRIO_PROTO((TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_EQUAL)
 TRIO_PUBLIC_STRING int
 trio_xstring_equal
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_EQUAL_MAX)
 TRIO_PUBLIC_STRING int
 trio_xstring_equal_max
-TRIO_PROTO((trio_string_t *self, size_t max, const char *other));
+TRIO_PROTO((trio_string_t *self, size_t max, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_EQUAL_CASE)
 TRIO_PUBLIC_STRING int
 trio_xstring_equal_case
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_EQUAL_CASE_MAX)
 TRIO_PUBLIC_STRING int
 trio_xstring_equal_case_max
-TRIO_PROTO((trio_string_t *self, size_t max, const char *other));
+TRIO_PROTO((trio_string_t *self, size_t max, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_MATCH)
 TRIO_PUBLIC_STRING int
 trio_xstring_match
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_MATCH_CASE)
 TRIO_PUBLIC_STRING int
 trio_xstring_match_case
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_SET)
@@ -653,7 +653,7 @@ TRIO_PROTO((trio_string_t *self, char *buffer));
 #if defined(TRIO_FUNC_XSTRING_SUBSTRING)
 TRIO_PUBLIC_STRING char *
 trio_xstring_substring
-TRIO_PROTO((trio_string_t *self, const char *other));
+TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
 
 #ifdef __cplusplus
