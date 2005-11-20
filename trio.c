@@ -264,7 +264,7 @@ typedef int trio_wint_t;
 /* Support for long long */
 #ifndef __cplusplus
 # if !defined(USE_LONGLONG)
-#  if defined(TRIO_COMPILER_GCC) && defined(PREDEF_STANDARD_C90) && !defined(__STRICT_ANSI__)
+#  if defined(TRIO_COMPILER_GCC) && !defined(__STRICT_ANSI__)
 #   define USE_LONGLONG
 #  else
 #   if defined(TRIO_COMPILER_SUNPRO)
@@ -2768,7 +2768,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   unsigned int uExponent = 0;
   int exponentBase;
   trio_long_double_t dblBase;
-  trio_long_double_t dblIntegerBase;
   trio_long_double_t dblFractionBase;
   trio_long_double_t integerAdjust;
   trio_long_double_t fractionAdjust;
@@ -3187,11 +3186,10 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
   
   /* Output the integer part and thousand separators */
-  dblIntegerBase = 1.0 / TrioPower(base, integerDigits - 1);
   for (i = 0; i < integerDigits; i++)
     {
       workNumber = trio_floorl(((integerNumber + integerAdjust)
-				* dblIntegerBase));
+				/ TrioPower(base, integerDigits - i - 1)));
       if (i > integerThreshold)
 	{
 	  /* Beyond accuracy */
@@ -3201,7 +3199,6 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  self->OutStream(self, digits[(int)trio_fmodl(workNumber, dblBase)]);
 	}
-      dblIntegerBase *= dblBase;
 
 #if TRIO_FEATURE_QUOTE
       if (((flags & (FLAGS_FLOAT_E | FLAGS_QUOTE)) == FLAGS_QUOTE)
