@@ -28,7 +28,10 @@
 #include <ctype.h>
 #include "triodef.h"
 #include "triostr.h"
-#if TRIO_FEATURE_FLOAT || defined(TRIO_FUNC_TO_LONG_DOUBLE)
+#if defined(TRIO_FUNC_TO_LONG_DOUBLE)
+# define USE_MATH
+#endif
+#if defined(USE_MATH)
 # include <math.h>
 #endif
 
@@ -57,24 +60,26 @@
 # define BOOLEAN_T int
 #endif
 
-#if TRIO_FEATURE_FLOAT && defined(PREDEF_STANDARD_C99)
-# if defined(TRIO_COMPILER_DECC)
-#  if (TRIO_COMPILER_DECC - 0 > 80000000)
+#if defined(USE_MATH)
+# if defined(PREDEF_STANDARD_C99)
+#  if defined(TRIO_COMPILER_DECC)
+#   if (TRIO_COMPILER_DECC - 0 > 80000000)
 /*
  * The OSF/1 runtime that comes with the DECC compiler does not support
  * hexfloats conversion.
  */
+#    define USE_STRTOD
+#    define USE_STRTOF
+#   endif
+#  else
 #   define USE_STRTOD
 #   define USE_STRTOF
 #  endif
 # else
-#  define USE_STRTOD
-#  define USE_STRTOF
-# endif
-#else
-# if defined(TRIO_COMPILER_VISUALC)
-#  define USE_STRTOD
-# endif
+#  if defined(TRIO_COMPILER_VISUALC)
+#   define USE_STRTOD
+#  endif
+#endif
 #endif
 
 #if defined(TRIO_PLATFORM_UNIX)
@@ -103,7 +108,7 @@
 # define USE_TOUPPER
 #endif
 
-#if TRIO_FEATURE_FLOAT
+#if defined(USE_MATH)
 # if !defined(HAVE_POWL)
 #  if defined(PREDEF_STANDARD_C99) \
    || defined(PREDEF_STANDARD_UNIX03)
@@ -116,9 +121,12 @@
 #   endif
 #  endif
 # endif
-# if !defined(HAVE_POWL)
-#  define powl(x,y) pow((double)(x),(double)(y))
-# endif
+#endif
+
+#if defined(HAVE_POWL)
+# define trio_powl(x,y) powl((x),(y))
+#else
+# define trio_powl(x,y) pow((double)(x),(double)(y))
 #endif
 
 #if defined(TRIO_FUNC_TO_UPPER) \
@@ -1282,9 +1290,9 @@ TRIO_ARGS2((source, endp),
   if (exponent != 0)
     {
       if (isExponentNegative)
-	value /= powl(base, (trio_long_double_t)exponent);
+	value /= trio_powl(base, (trio_long_double_t)exponent);
       else
-	value *= powl(base, (trio_long_double_t)exponent);
+	value *= trio_powl(base, (trio_long_double_t)exponent);
     }
   if (isNegative)
     value = -value;

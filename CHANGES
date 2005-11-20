@@ -6,6 +6,9 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.11 - 2005/11/20
 -------------------------
+* Fixed compilation of trio_to_long_double and TRIO_FEATURE_FLOAT (reported by
+  David Byron)
+
 * Fixed precision of large floating-point numbers (bug item #1314524)
 
 * Karl Bochert
