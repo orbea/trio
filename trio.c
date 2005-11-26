@@ -4476,7 +4476,7 @@ TRIO_ARGS2((format, args),
 
 /**
    Allocate and print to string.
-   The memory allocated and returned by @ref result must be freed by the
+   The memory allocated and returned by @p result must be freed by the
    calling application.
 
    @param result Output string.
@@ -4524,7 +4524,7 @@ TRIO_VARGS3((result, format, va_alist),
 
 /**
    Allocate and print to string.
-   The memory allocated and returned by @ref result must be freed by the
+   The memory allocated and returned by @p result must be freed by the
    calling application.
 
    @param result Output string.
@@ -4569,7 +4569,7 @@ TRIO_ARGS3((result, format, args),
 
 /**
    Allocate and print to string.
-   The memory allocated and returned by @ref result must be freed by the
+   The memory allocated and returned by @p result must be freed by the
    calling application.
 
    @param result Output string.
@@ -6410,7 +6410,7 @@ TRIO_ARGS3((self, target, flags),
 	   * The strange assignment of number is a workaround for a compiler
 	   * warning
 	   */
-	  *target = (trio_pointer_t)0 + number;
+	  *target = &((char *)0)[number];
 #else
 	  *target = (trio_pointer_t)number;
 #endif

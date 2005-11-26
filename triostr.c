@@ -285,7 +285,7 @@ TRIO_ARGS2((self, length),
 
 #if defined(TRIO_FUNC_INTERNAL_TO_UPPER)
 
-TRIO_PUBLIC_STRING TRIO_INLINE int
+TRIO_PRIVATE_STRING TRIO_INLINE int
 internal_to_upper
 TRIO_ARGS1((source),
 	   int source)
@@ -349,7 +349,7 @@ TRIO_ARGS1((string),
    Count the number of characters in a string.
 
    @param string String to measure.
-   @return Number of characters in @string.
+   @return Number of characters in @p string.
 */
 #if defined(TRIO_FUNC_LENGTH)
 

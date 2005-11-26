@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2005/11/20
+Version 1.11 - 2005/11/26
 -------------------------
+* David Byron
+  Fixed more compiler warnings.
+
 * Fixed compilation of trio_to_long_double and TRIO_FEATURE_FLOAT (reported by
   David Byron)
 
