@@ -1143,6 +1143,14 @@ VerifyScanningRegression(TRIO_NOARGS)
 		    "%d %.18Lf", rc, ldnumber);
 # endif
 #endif
+#if TRIO_FEATURE_FLOAT
+  rc = trio_sscanf("1.e-6", "%g", &dnumber);
+  nerrors += Verify(__FILE__, __LINE__, "1e-06",
+		    "%g", dnumber);
+  rc = trio_sscanf("1e-6", "%g", &dnumber);
+  nerrors += Verify(__FILE__, __LINE__, "1e-06",
+		    "%g", dnumber);
+#endif
   return nerrors;
 }
 #endif
