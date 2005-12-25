@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2005/11/26
+Version 1.11 - 2005/12/25
 -------------------------
+* Glen Davidson
+  Fixed scanning of floating-point numbers without a decimal-point.
+
 * David Byron
   Fixed more compiler warnings.
 

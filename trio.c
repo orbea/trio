@@ -6347,21 +6347,21 @@ TRIO_ARGS4((self, target, flags, width),
 	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
-      if (isHex ? (trio_to_upper(ch) == 'P') : (trio_to_upper(ch) == 'E'))
+    }
+  if (isHex ? (trio_to_upper(ch) == 'P') : (trio_to_upper(ch) == 'E'))
+    {
+      /* Exponent */
+      doubleString[index++] = (char)ch;
+      self->InStream(self, &ch);
+      if ((ch == '+') || (ch == '-'))
 	{
-	  /* Exponent */
 	  doubleString[index++] = (char)ch;
 	  self->InStream(self, &ch);
-	  if ((ch == '+') || (ch == '-'))
-	    {
-	      doubleString[index++] = (char)ch;
-	      self->InStream(self, &ch);
-	    }
-	  while (isdigit(ch) && (index - start < width))
-	    {
-	      doubleString[index++] = (char)ch;
-	      self->InStream(self, &ch);
-	    }
+	}
+      while (isdigit(ch) && (index - start < width))
+	{
+	  doubleString[index++] = (char)ch;
+	  self->InStream(self, &ch);
 	}
     }
 
