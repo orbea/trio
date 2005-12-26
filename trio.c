@@ -3244,7 +3244,16 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  fractionNumber *= dblBase;
 	  fractionAdjust *= dblBase;
 	  workNumber = trio_floorl(fractionNumber + fractionAdjust);
-	  fractionNumber -= workNumber;
+	  if (workNumber > fractionNumber)
+	    {
+	      /* fractionNumber should never become negative */
+	      fractionNumber = 0.0;
+	      fractionAdjust = 0.0;
+	    }
+	  else
+	    {
+	      fractionNumber -= workNumber;
+	    }
 	  index = (int)trio_fmodl(workNumber, dblBase);
 	  if (index == 0)
 	    {
