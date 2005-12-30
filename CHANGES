@@ -4,8 +4,10 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2005/12/26
+Version 1.11 - 2005/12/30
 -------------------------
+* Fixed compilation with Sun Workshop 6 (reported by Matthias Andree).
+
 * Fixed accuracy for denormalized numbers (bug item #758327).
 
 * Glen Davidson

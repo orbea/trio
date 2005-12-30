@@ -26,13 +26,12 @@
 # define TRIO_COMPILER_GCC
 #endif
 
-#if defined(__SUNPRO_C)
-# define TRIO_COMPILER_SUNPRO
-#endif
-
 #if defined(__SUNPRO_CC)
-# define TRIO_COMPILER_SUNPRO
-# define __SUNPRO_C __SUNPRO_CC
+# define TRIO_COMPILER_SUNPRO __SUNPRO_CC
+#else
+# if defined(__SUNPRO_C)
+#  define TRIO_COMPILER_SUNPRO __SUNPRO_C
+# endif
 #endif
 
 #if defined(__xlC__) || defined(__IBMC__) || defined(__IBMCPP__)
