@@ -2937,7 +2937,11 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       else
 	{
 	  exponent = (int)trio_floorl(workNumber);
-	  number /= trio_powl(dblBase, (trio_long_double_t)exponent);
+	  /*
+	   * The expression A * 10^-B is equivalent to A / 10^B but the former
+	   * gives better accuracy.
+	   */
+	  number *= trio_powl(dblBase, (trio_long_double_t)-exponent);
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
 	  if (isHex)

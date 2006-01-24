@@ -240,10 +240,9 @@ VerifyAllocate(TRIO_NOARGS)
  *
  */
 int
-VerifyFormatting(TRIO_NOARGS)
+VerifyFormattingStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
-  char buffer[256];
 
   /* Normal text */
   nerrors += Verify(__FILE__, __LINE__, "Hello world",
@@ -251,20 +250,19 @@ VerifyFormatting(TRIO_NOARGS)
   /* String */
   nerrors += Verify(__FILE__, __LINE__, "Hello world",
 		   "%s", "Hello world");
-  /* Pointer */
-  if (sizeof(void *) == 4)
-    {
-      nerrors += Verify(__FILE__, __LINE__, "Pointer 0x01234567",
-			"Pointer %p", 0x1234567);
-    }
-  else if (sizeof(void *) == 8)
-    {
-      nerrors += Verify(__FILE__, __LINE__, "Pointer 0x0123456789012345",
-			"Pointer %p", 0x123456789012345);
-    }
-  /* Nil pointer */
-  nerrors += Verify(__FILE__, __LINE__, "Pointer (nil)",
-		   "Pointer %p", NULL);
+
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
+int
+VerifyFormattingIntegers(TRIO_NOARGS)
+{
+  int nerrors = 0;
+  char buffer[256];
+  
   /* Integer */
   nerrors += Verify(__FILE__, __LINE__, "Number 42",
 		   "Number %d", 42);
@@ -359,6 +357,18 @@ VerifyFormatting(TRIO_NOARGS)
   sprintf(buffer, "%x", UINT_MAX);
   nerrors += Verify(__FILE__, __LINE__, buffer,
 		    "%x", -1);
+
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
+int
+VerifyFormattingFloats(TRIO_NOARGS)
+{
+  int nerrors = 0;
+
 #if TRIO_FEATURE_FLOAT
   /* Double */
   nerrors += Verify(__FILE__, __LINE__, "3141.000000",
@@ -589,7 +599,76 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%f", trio_nan());
   nerrors += Verify(__FILE__, __LINE__, "NAN",
 		    "%F", trio_nan());
+  
+# if TRIO_FEATURE_HEXFLOAT
+  nerrors += Verify(__FILE__, __LINE__, "0x2.ap+4",
+		    "%a", 42.0);
+  nerrors += Verify(__FILE__, __LINE__, "-0x2.ap+4",
+		    "%a", -42.0);
+  nerrors += Verify(__FILE__, __LINE__, "0x1.8p+0",
+		    "%a", 1.5);
+  nerrors += Verify(__FILE__, __LINE__, "0x1.6666666666666p+0",
+		    "%a", 1.4);
+  nerrors += Verify(__FILE__, __LINE__, "0xc.45p+8",
+		    "%a", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "0XC.45P+8",
+		    "%A", 3141.0);
+  nerrors += Verify(__FILE__, __LINE__, "0xb.351c434a98fa8p-148",
+		    "%a", 3.141e-44);
+# endif
+  
 #endif /* TRIO_FEATURE_FLOAT */
+  
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
+int
+VerifyFormattingRegression(TRIO_NOARGS)
+{
+  int nerrors = 0;
+
+#if TRIO_FEATURE_FLOAT
+  /* 0.6 was formatted as 0.600000e+00 */
+  nerrors += Verify(__FILE__, __LINE__, "5.000000e-01",
+		    "%e", 0.5);
+  nerrors += Verify(__FILE__, __LINE__, "6.000000e-01",
+		    "%e", 0.6);
+#endif
+
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
+int
+VerifyFormatting(TRIO_NOARGS)
+{
+  int nerrors = 0;
+  char buffer[256];
+
+  nerrors += VerifyFormattingStrings();
+  nerrors += VerifyFormattingIntegers();
+  nerrors += VerifyFormattingFloats();
+  nerrors += VerifyFormattingRegression();
+  
+  /* Pointer */
+  if (sizeof(void *) == 4)
+    {
+      nerrors += Verify(__FILE__, __LINE__, "Pointer 0x01234567",
+			"Pointer %p", 0x1234567);
+    }
+  else if (sizeof(void *) == 8)
+    {
+      nerrors += Verify(__FILE__, __LINE__, "Pointer 0x0123456789012345",
+			"Pointer %p", 0x123456789012345);
+    }
+  /* Nil pointer */
+  nerrors += Verify(__FILE__, __LINE__, "Pointer (nil)",
+		   "Pointer %p", NULL);
   
   /* Char width alignment */
   nerrors += Verify(__FILE__, __LINE__, "Char X   .",
@@ -636,25 +715,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%qd", 42LL);
 # endif
 #endif
-  
-#if TRIO_FEATURE_FLOAT
-# if TRIO_FEATURE_HEXFLOAT
-  nerrors += Verify(__FILE__, __LINE__, "0x2.ap+4",
-		    "%a", 42.0);
-  nerrors += Verify(__FILE__, __LINE__, "-0x2.ap+4",
-		    "%a", -42.0);
-  nerrors += Verify(__FILE__, __LINE__, "0x1.8p+0",
-		    "%a", 1.5);
-  nerrors += Verify(__FILE__, __LINE__, "0x1.6666666666666p+0",
-		    "%a", 1.4);
-  nerrors += Verify(__FILE__, __LINE__, "0xc.45p+8",
-		    "%a", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "0XC.45P+8",
-		    "%A", 3141.0);
-  nerrors += Verify(__FILE__, __LINE__, "0xb.351c434a98fa8p-148",
-		    "%a", 3.141e-44);
-# endif
-#endif
+
 #if TRIO_FEATURE_SIZE_T
   nerrors += Verify(__FILE__, __LINE__, "256",
 		    "%zd", sizeof(buffer));
