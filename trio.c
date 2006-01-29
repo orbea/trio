@@ -147,6 +147,9 @@
 #  if !defined(HAVE_FMODL)
 #   define HAVE_FMODL
 #  endif
+#  if !defined(HAVE_LOG10L)
+#   define HAVE_LOG10L
+#  endif
 # endif
 # if defined(TRIO_COMPILER_VISUALC)
 #  if defined(floorl)
@@ -157,6 +160,9 @@
 #  endif
 #  if defined(fmodl)
 #   define HAVE_FMODL
+#  endif
+#  if defined(log10l)
+#   define HAVE_LOG10L
 #  endif
 # endif
 #endif
@@ -361,6 +367,12 @@ typedef trio_longlong_t trio_int64_t;
 # define trio_powl(x,y) powl((x),(y))
 #else
 # define trio_powl(x,y) pow((double)(x),(double)(y))
+#endif
+
+#if defined(HAVE_LOG10L)
+# define trio_log10l(x) log10l((x))
+#else
+# define trio_log10l(x) log10((double)(x))
 #endif
 
 #if TRIO_FEATURE_FLOAT
@@ -1207,13 +1219,13 @@ TRIO_ARGS2((number, exponent),
  * TrioLogarithm
  */
 #if TRIO_FEATURE_FLOAT
-TRIO_PRIVATE double
+TRIO_PRIVATE trio_long_double_t
 TrioLogarithm
 TRIO_ARGS2((number, base),
-	   double number,
+	   trio_long_double_t number,
 	   int base)
 {
-  double result;
+  trio_long_double_t result;
 
   if (number <= 0.0)
     {
@@ -1224,11 +1236,11 @@ TRIO_ARGS2((number, base),
     {
       if (base == 10)
 	{
-	  result = log10(number);
+	  result = trio_log10l(number);
 	}
       else
 	{
-	  result = log10(number) / log10((double)base);
+	  result = trio_log10l(number) / trio_log10l((double)base);
 	}
     }
   return result;
@@ -2760,6 +2772,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   int integerDigits;
   int fractionDigits;
   int exponentDigits;
+  int workDigits;
   int baseDigits;
   int integerThreshold;
   int fractionThreshold;
@@ -3000,15 +3013,26 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       
       if (flags & FLAGS_FLOAT_E)
 	{
-	  /* Adjust if number was rounded up one digit (ie. 0.99 to 1.00) */
-	  exponent++;
-	  isExponentNegative = (exponent < 0);
-	  uExponent = (isExponentNegative) ? -exponent : exponent;
-	  if (isHex)
-	    uExponent *= 4; /* log16(2) */
-	  workNumber = (number + 0.5 / dblFractionBase) / dblBase;
-	  integerNumber = trio_floorl(workNumber);
-	  fractionNumber = workNumber - integerNumber;
+	  workDigits = 1 + TrioLogarithm(trio_floorl(workNumber), base);
+	  if (integerDigits == workDigits)
+	    {
+	      /* Adjust if the same number of digits are used */
+	      number += 0.5 / dblFractionBase;
+	      integerNumber = trio_floorl(number);
+	      fractionNumber = number - integerNumber;
+	    }
+	  else
+	    {
+	      /* Adjust if number was rounded up one digit (ie. 0.99 to 1.00) */
+	      exponent++;
+	      isExponentNegative = (exponent < 0);
+	      uExponent = (isExponentNegative) ? -exponent : exponent;
+	      if (isHex)
+		uExponent *= 4; /* log16(2) */
+	      workNumber = (number + 0.5 / dblFractionBase) / dblBase;
+	      integerNumber = trio_floorl(workNumber);
+	      fractionNumber = workNumber - integerNumber;
+	    }
 	}
       else
 	{
