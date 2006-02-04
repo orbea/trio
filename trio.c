@@ -4769,7 +4769,7 @@ TRIO_ARGS1((handle),
 	    (void)internalEnterCriticalRegion(NULL);
 	  
 	  if (prev == NULL)
-	    internalUserDef = NULL;
+	    internalUserDef = internalUserDef->next;
 	  else
 	    prev->next = def->next;
 	  
