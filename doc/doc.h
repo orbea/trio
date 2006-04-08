@@ -160,6 +160,7 @@ order sorted by surname)
 @li Jose Ortiz
 @li Joe Orton
 @li Gisli Ottarsson
+@li Mark Pickelmann
 @li Shaun Tancheff
 @li Marc Werwerft
 @li Igor Zlatkovic
