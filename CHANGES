@@ -4,7 +4,7 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.11 - 2006/02/04
+Version 1.11 - 2006/04/08
 -------------------------
 * Mark Pickelmann
   Fixed trio_unregister. If the first element was removed, the remaining
