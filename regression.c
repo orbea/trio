@@ -866,7 +866,7 @@ VerifyErrors(TRIO_NOARGS)
   /* Error: Invalid argument 2 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%#");
 #if TRIO_FEATURE_ERRORCODE
-# if TRIO_FEATRUE_STRERR
+# if TRIO_FEATURE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
@@ -887,7 +887,7 @@ VerifyErrors(TRIO_NOARGS)
   /* Error: Invalid argument 3 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%hhhd", 42);
 #if TRIO_FEATURE_ERRORCODE
-# if TRIO_FEATRUE_STRERR
+# if TRIO_FEATURE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
@@ -908,7 +908,7 @@ VerifyErrors(TRIO_NOARGS)
   /* Error: Double reference */
   rc = trio_snprintf(buffer, sizeof(buffer), "hello %1$d %1$d", 31, 32);
 #if TRIO_FEATURE_ERRORCODE
-# if TRIO_FEATRUE_STRERR
+# if TRIO_FEATURE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
@@ -939,7 +939,7 @@ VerifyErrors(TRIO_NOARGS)
   /* Error: Reference gap */
   rc = trio_snprintf(buffer, sizeof(buffer), "%3$d %1$d", 31, 32, 33);
 #if TRIO_FEATURE_ERRORCODE
-# if TRIO_FEATRUE_STRERR
+# if TRIO_FEATURE_STRERR
   trio_snprintf(buffer, sizeof(buffer), "Err = %d (%s), Pos = %d",
 		TRIO_ERROR_CODE(rc),
 		TRIO_ERROR_NAME(rc),
