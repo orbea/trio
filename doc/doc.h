@@ -161,6 +161,7 @@ order sorted by surname)
 @li Joe Orton
 @li Gisli Ottarsson
 @li Mark Pickelmann
+@li Olli Savia
 @li Shaun Tancheff
 @li Marc Werwerft
 @li Igor Zlatkovic

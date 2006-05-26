@@ -755,7 +755,7 @@ typedef struct {
   /* The size for the variable size qualifier */
   int varsize;
   /* The marker of the end of the specifier */
-  int indexAfterSpecifier;
+  int offsetAfterSpecifier;
   /* The data from the argument list */
   union {
     char *string;
@@ -1091,20 +1091,20 @@ TRIO_ARGS1((position),
  */
 TRIO_PRIVATE int
 TrioGetPosition
-TRIO_ARGS2((format, indexPointer),
+TRIO_ARGS2((format, offsetPointer),
 	   TRIO_CONST char *format,
-	   int *indexPointer)
+	   int *offsetPointer)
 {
 #if TRIO_FEATURE_POSITIONAL
   char *tmpformat;
   int number = 0;
-  int index = *indexPointer;
+  int offset = *offsetPointer;
 
-  number = (int)trio_to_long(&format[index], &tmpformat, BASE_DECIMAL);
-  index = (int)(tmpformat - format);
-  if ((number != 0) && (QUALIFIER_POSITION == format[index++]))
+  number = (int)trio_to_long(&format[offset], &tmpformat, BASE_DECIMAL);
+  offset = (int)(tmpformat - format);
+  if ((number != 0) && (QUALIFIER_POSITION == format[offset++]))
     {
-      *indexPointer = index;
+      *offsetPointer = offset;
       /*
        * number is decreased by 1, because n$ starts from 1, whereas
        * the array it is indexing starts from 0.
@@ -1294,7 +1294,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   int precision;
   int varsize;
   int base;
-  int index;  /* Index into formatting string */
+  int offset;  /* Offset into formatting string */
   int dots;  /* Count number of dots in modifier part */
   BOOLEAN_T positional;  /* Does the specifier have a positional? */
   BOOLEAN_T gotSticky = FALSE;  /* Are there any sticky modifiers at all? */
@@ -1321,37 +1321,37 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   memset(usedEntries, 0, sizeof(usedEntries));
 
   save_errno = errno;
-  index = 0;
+  offset = 0;
   parameterPosition = 0;
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   (void)mblen(NULL, 0);
 #endif
   
-  while (format[index])
+  while (format[offset])
     {
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-      if (! isascii(format[index]))
+      if (! isascii(format[offset]))
 	{
 	  /*
 	   * Multibyte characters cannot be legal specifiers or
 	   * modifiers, so we skip over them.
 	   */
-	  charlen = mblen(&format[index], MB_LEN_MAX);
-	  index += (charlen > 0) ? charlen : 1;
+	  charlen = mblen(&format[offset], MB_LEN_MAX);
+	  offset += (charlen > 0) ? charlen : 1;
 	  continue; /* while */
 	}
 #endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
-      if (CHAR_IDENTIFIER == format[index++])
+      if (CHAR_IDENTIFIER == format[offset++])
 	{
-	  if (CHAR_IDENTIFIER == format[index])
+	  if (CHAR_IDENTIFIER == format[offset])
 	    {
-	      index++;
+	      offset++;
 	      continue; /* while */
 	    }
 
 	  flags = FLAGS_NEW;
 	  dots = 0;
-	  currentParam = TrioGetPosition(format, &index);
+	  currentParam = TrioGetPosition(format, &offset);
 	  positional = (NO_POSITION != currentParam);
 	  if (!positional)
 	    {
@@ -1361,7 +1361,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
           if(currentParam >= MAX_PARAMETERS)
 	    {
 	      /* Bail out completely to make the error more obvious */
-	      return TRIO_ERROR_RETURN(TRIO_ETOOMANY, index);
+	      return TRIO_ERROR_RETURN(TRIO_ETOOMANY, offset);
 	    }
 
 	  if (currentParam > maxParam)
@@ -1373,9 +1373,9 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	  base = NO_BASE;
 	  varsize = NO_SIZE;
 
-	  while (TrioIsQualifier(format[index]))
+	  while (TrioIsQualifier(format[offset]))
 	    {
-	      ch = format[index++];
+	      ch = format[offset++];
 
 	      switch (ch)
 		{
@@ -1402,21 +1402,21 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		      dots++;
 
 		      /* Skip if no precision */
-		      if (QUALIFIER_DOT == format[index])
+		      if (QUALIFIER_DOT == format[offset])
 			break;
 		      
 		      /* After the first dot we have the precision */
 		      flags |= FLAGS_PRECISION;
-		      if ((QUALIFIER_STAR == format[index])
+		      if ((QUALIFIER_STAR == format[offset])
 #if defined(QUALIFIER_PARAM)
-			  || (QUALIFIER_PARAM == format[index])
+			  || (QUALIFIER_PARAM == format[offset])
 #endif
 			  )
 			{
-			  index++;
+			  offset++;
 			  flags |= FLAGS_PRECISION_PARAMETER;
 
-			  precision = TrioGetPosition(format, &index);
+			  precision = TrioGetPosition(format, &offset);
 			  if (precision == NO_POSITION)
 			    {
 			      parameterPosition++;
@@ -1440,10 +1440,10 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 			}
 		      else
 			{
-			  precision = trio_to_long(&format[index],
+			  precision = trio_to_long(&format[offset],
 						   &tmpformat,
 						   BASE_DECIMAL);
-			  index = (int)(tmpformat - format);
+			  offset = (int)(tmpformat - format);
 			}
 		    }
 		  else if (dots == 1) /* Base */
@@ -1452,15 +1452,15 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		      
 		      /* After the second dot we have the base */
 		      flags |= FLAGS_BASE;
-		      if ((QUALIFIER_STAR == format[index])
+		      if ((QUALIFIER_STAR == format[offset])
 #if defined(QUALIFIER_PARAM)
-			  || (QUALIFIER_PARAM == format[index])
+			  || (QUALIFIER_PARAM == format[offset])
 #endif
 			  )
 			{
-			  index++;
+			  offset++;
 			  flags |= FLAGS_BASE_PARAMETER;
-			  base = TrioGetPosition(format, &index);
+			  base = TrioGetPosition(format, &offset);
 			  if (base == NO_POSITION)
 			    {
 			      parameterPosition++;
@@ -1484,17 +1484,17 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 			}
 		      else
 			{
-			  base = trio_to_long(&format[index],
+			  base = trio_to_long(&format[offset],
 					      &tmpformat,
 					      BASE_DECIMAL);
 			  if (base > MAX_BASE)
-			    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
-			  index = (int)(tmpformat - format);
+			    return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
+			  offset = (int)(tmpformat - format);
 			}
 		    }
 		  else
 		    {
-		      return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		      return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 		    }
 		  break; /* QUALIFIER_DOT */
 
@@ -1509,7 +1509,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		    {
 		      /* Read with from parameter */
 		      flags |= (FLAGS_WIDTH | FLAGS_WIDTH_PARAMETER);
-		      width = TrioGetPosition(format, &index);
+		      width = TrioGetPosition(format, &offset);
 		      if (width == NO_POSITION)
 			{
 			  parameterPosition++;
@@ -1547,18 +1547,18 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 		  flags |= FLAGS_WIDTH;
-		  /* &format[index - 1] is used to "rewind" the read
+		  /* &format[offset - 1] is used to "rewind" the read
 		   * character from format
 		   */
-		  width = trio_to_long(&format[index - 1],
+		  width = trio_to_long(&format[offset - 1],
 				       &tmpformat,
 				       BASE_DECIMAL);
-		  index = (int)(tmpformat - format);
+		  offset = (int)(tmpformat - format);
 		  break;
 
 		case QUALIFIER_SHORT:
 		  if (flags & FLAGS_SHORTSHORT)
-		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 		  else if (flags & FLAGS_SHORT)
 		    flags |= FLAGS_SHORTSHORT;
 		  else
@@ -1567,7 +1567,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 
 		case QUALIFIER_LONG:
 		  if (flags & FLAGS_QUAD)
-		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 		  else if (flags & FLAGS_LONG)
 		    flags |= FLAGS_QUAD;
 		  else
@@ -1620,39 +1620,39 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 #if TRIO_FEATURE_FIXED_SIZE
 		case QUALIFIER_FIXED_SIZE:
 		  if (flags & FLAGS_FIXED_SIZE)
-		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 
 		  if (flags & (FLAGS_ALL_SIZES |
 			       FLAGS_LONGDOUBLE |
 			       FLAGS_WIDECHAR |
 			       FLAGS_VARSIZE_PARAMETER))
-		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 
-		  if ((format[index] == '6') &&
-		      (format[index + 1] == '4'))
+		  if ((format[offset] == '6') &&
+		      (format[offset + 1] == '4'))
 		    {
 		      varsize = sizeof(trio_int64_t);
-		      index += 2;
+		      offset += 2;
 		    }
-		  else if ((format[index] == '3') &&
-			   (format[index + 1] == '2'))
+		  else if ((format[offset] == '3') &&
+			   (format[offset + 1] == '2'))
 		    {
 		      varsize = sizeof(trio_int32_t);
-		      index += 2;
+		      offset += 2;
 		    }
-		  else if ((format[index] == '1') &&
-			   (format[index + 1] == '6'))
+		  else if ((format[offset] == '1') &&
+			   (format[offset + 1] == '6'))
 		    {
 		      varsize = sizeof(trio_int16_t);
-		      index += 2;
+		      offset += 2;
 		    }
-		  else if (format[index] == '8')
+		  else if (format[offset] == '8')
 		    {
 		      varsize = sizeof(trio_int8_t);
-		      index++;
+		      offset++;
 		    }
 		  else
-		    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		    return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 		  
 		  flags |= FLAGS_FIXED_SIZE;
 		  break;
@@ -1706,7 +1706,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 
 		default:
 		  /* Bail out completely to make the error more obvious */
-                  return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+                  return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 		}
 	    } /* while qualifier */
 
@@ -1749,7 +1749,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	  
 	  indices[currentParam] = pos;
 	  
-	  switch (format[index++])
+	  switch (format[offset++])
 	    {
 #if defined(SPECIFIER_CHAR_UPPER)
 	    case SPECIFIER_CHAR_UPPER:
@@ -1783,28 +1783,28 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		{
 		  int depth = 1;
 		  parameters[pos].type = FORMAT_GROUP;
-		  if (format[index] == QUALIFIER_CIRCUMFLEX)
-		    index++;
-		  if (format[index] == SPECIFIER_UNGROUP)
-		    index++;
-		  if (format[index] == QUALIFIER_MINUS)
-		    index++;
+		  if (format[offset] == QUALIFIER_CIRCUMFLEX)
+		    offset++;
+		  if (format[offset] == SPECIFIER_UNGROUP)
+		    offset++;
+		  if (format[offset] == QUALIFIER_MINUS)
+		    offset++;
 		  /* Skip nested brackets */
-		  while (format[index] != NIL)
+		  while (format[offset] != NIL)
 		    {
-		      if (format[index] == SPECIFIER_GROUP)
+		      if (format[offset] == SPECIFIER_GROUP)
 			{
 			  depth++;
 			}
-		      else if (format[index] == SPECIFIER_UNGROUP)
+		      else if (format[offset] == SPECIFIER_UNGROUP)
 			{
 			  if (--depth <= 0)
 			    {
-			      index++;
+			      offset++;
 			      break;
 			    }
 			}
-		      index++;
+		      offset++;
 		    }
 		}
 	      break;
@@ -1933,18 +1933,18 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		
 		parameters[pos].type = FORMAT_USER_DEFINED;
 		parameters[pos].user_name[0] = NIL;
-		tmpformat = (char *)&format[index];
+		tmpformat = (char *)&format[offset];
 	      
-		while ((ch = format[index]) != NIL)
+		while ((ch = format[offset]) != NIL)
 		  {
-		    index++;
+		    offset++;
 		    if (ch == SPECIFIER_USER_DEFINED_END)
 		      {
 			if (without_namespace)
 			  {
 			    /* We must get the handle first */
 			    parameters[pos].type = FORMAT_PARAMETER;
-			    parameters[pos].indexAfterSpecifier = index;
+			    parameters[pos].offsetAfterSpecifier = offset;
 			    parameters[pos].flags = FLAGS_USER_DEFINED;
 			    /* Adjust parameters for insertion of new one */
 			    pos++;
@@ -1956,7 +1956,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 			      maxParam = currentParam;
 			  }
 			/* Copy the user data */
-			max = (unsigned int)(&format[index] - tmpformat);
+			max = (unsigned int)(&format[offset] - tmpformat);
 			if (max > MAX_USER_DATA)
 			  max = MAX_USER_DATA;
 			trio_copy_max(parameters[pos].user_data,
@@ -1968,24 +1968,24 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		      {
 			without_namespace = FALSE;
 			/* Copy the namespace for later looking-up */
-			max = (int)(&format[index] - tmpformat);
+			max = (int)(&format[offset] - tmpformat);
 			if (max > MAX_USER_NAME)
 			  max = MAX_USER_NAME;
 			trio_copy_max(parameters[pos].user_name,
 				      max,
 				      tmpformat);
-			tmpformat = (char *)&format[index];
+			tmpformat = (char *)&format[offset];
 		      }
 		  }
 		if (ch != SPECIFIER_USER_DEFINED_END)
-		  return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		  return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 	      }
 	      break;
 #endif /* TRIO_FEATURE_USER_DEFINED */
 	      
 	    default:
 	      /* Bail out completely to make the error more obvious */
-              return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+              return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 	    }
 
 	  /*  Count the number of times this entry has been used */
@@ -2014,7 +2014,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 		}
 	    }
 	  
-	  parameters[pos].indexAfterSpecifier = index;
+	  parameters[pos].offsetAfterSpecifier = offset;
 	  parameters[pos].flags = flags;
 	  parameters[pos].width = width;
 	  parameters[pos].precision = precision;
@@ -2325,7 +2325,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   char *p;
 #endif
   int count;
-  int digitIndex;
+  int digitOffset;
 
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -2365,8 +2365,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   *pointer-- = NIL;
   for (i = 1; i < (int)sizeof(buffer); i++)
     {
-      digitIndex = number % base;
-      *pointer-- = digits[digitIndex];
+      digitOffset = number % base;
+      *pointer-- = digits[digitOffset];
       number /= base;
       if (number == 0)
 	break;
@@ -2796,7 +2796,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   char *groupingPointer;
 # endif
   int i;
-  int index;
+  int offset;
   BOOLEAN_T hasOnlyZeroes;
   int leadingFractionZeroes = 0;
   register int trailingZeroes;
@@ -3115,8 +3115,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  workFractionAdjust *= dblBase;
 	  workNumber = trio_floorl(workFractionNumber + workFractionAdjust);
 	  workFractionNumber -= workNumber;
-	  index = (int)trio_fmodl(workNumber, dblBase);
-	  if (index == 0)
+	  offset = (int)trio_fmodl(workNumber, dblBase);
+	  if (offset == 0)
 	    {
 	      trailingZeroes++;
 	    }
@@ -3282,8 +3282,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	    {
 	      fractionNumber -= workNumber;
 	    }
-	  index = (int)trio_fmodl(workNumber, dblBase);
-	  if (index == 0)
+	  offset = (int)trio_fmodl(workNumber, dblBase);
+	  if (offset == 0)
 	    {
 	      trailingZeroes++;
 	    }
@@ -3295,7 +3295,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 		  self->OutStream(self, digits[0]);
 		  trailingZeroes--;
 		}
-	      self->OutStream(self, digits[index]);
+	      self->OutStream(self, digits[offset]);
 	    }
 	}
     }
@@ -3367,20 +3367,20 @@ TRIO_ARGS3((data, format, parameters),
   int width;
   int precision;
   int base;
-  int index;
+  int offset;
   
-  index = 0;
+  offset = 0;
   i = 0;
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   (void)mblen(NULL, 0);
 #endif
   
-  while (format[index])
+  while (format[offset])
     {
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-      if (! isascii(format[index]))
+      if (! isascii(format[offset]))
 	{
-	  charlen = mblen(&format[index], MB_LEN_MAX);
+	  charlen = mblen(&format[offset], MB_LEN_MAX);
 	  /*
 	   * Only valid multibyte characters are handled here. Invalid
 	   * multibyte characters (charlen == -1) are handled as normal
@@ -3390,18 +3390,18 @@ TRIO_ARGS3((data, format, parameters),
 	    {
 	      while (charlen-- > 0)
 		{
-		  data->OutStream(data, format[index++]);
+		  data->OutStream(data, format[offset++]);
 		}
 	      continue; /* while characters left in formatting string */
 	    }
 	}
 #endif /* TRIO_COMPILER_SUPPORTS_MULTIBYTE */
-      if (CHAR_IDENTIFIER == format[index])
+      if (CHAR_IDENTIFIER == format[offset])
 	{
-	  if (CHAR_IDENTIFIER == format[index + 1])
+	  if (CHAR_IDENTIFIER == format[offset + 1])
 	    {
 	      data->OutStream(data, CHAR_IDENTIFIER);
-	      index += 2;
+	      offset += 2;
 	    }
 	  else
 	    {
@@ -3654,13 +3654,13 @@ TRIO_ARGS3((data, format, parameters),
 		} /* switch parameter type */
 
 	      /* Prepare for next */
-	      index = parameters[i].indexAfterSpecifier;
+	      offset = parameters[i].offsetAfterSpecifier;
 	      i++;
 	    }
 	}
       else /* not identifier */
 	{
-	  data->OutStream(data, format[index++]);
+	  data->OutStream(data, format[offset++]);
 	}
     }
   return data->processed;
@@ -5593,13 +5593,13 @@ TrioGetCollation(TRIO_NOARGS)
  */
 TRIO_PRIVATE int
 TrioGetCharacterClass
-TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
+TRIO_ARGS4((format, offsetPointer, flagsPointer, characterclass),
 	   TRIO_CONST char *format,
-	   int *indexPointer,
+	   int *offsetPointer,
 	   trio_flags_t *flagsPointer,
 	   int *characterclass)
 {
-  int index = *indexPointer;
+  int offset = *offsetPointer;
   int i;
   char ch;
   char range_begin;
@@ -5607,34 +5607,34 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 
   *flagsPointer &= ~FLAGS_EXCLUDE;
 
-  if (format[index] == QUALIFIER_CIRCUMFLEX)
+  if (format[offset] == QUALIFIER_CIRCUMFLEX)
     {
       *flagsPointer |= FLAGS_EXCLUDE;
-      index++;
+      offset++;
     }
   /*
    * If the ungroup character is at the beginning of the scanlist,
    * it will be part of the class, and a second ungroup character
    * must follow to end the group.
    */
-  if (format[index] == SPECIFIER_UNGROUP)
+  if (format[offset] == SPECIFIER_UNGROUP)
     {
       characterclass[(int)SPECIFIER_UNGROUP]++;
-      index++;
+      offset++;
     }
   /*
    * Minus is used to specify ranges. To include minus in the class,
    * it must be at the beginning of the list
    */
-  if (format[index] == QUALIFIER_MINUS)
+  if (format[offset] == QUALIFIER_MINUS)
     {
       characterclass[(int)QUALIFIER_MINUS]++;
-      index++;
+      offset++;
     }
   /* Collect characters */
-  for (ch = format[index];
+  for (ch = format[offset];
        (ch != SPECIFIER_UNGROUP) && (ch != NIL);
-       ch = format[++index])
+       ch = format[++offset])
     {
       switch (ch)
 	{
@@ -5653,8 +5653,8 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 	   * - duplicates (although we can easily convert these
 	   *   into errors)
 	   */
-	  range_begin = format[index - 1];
-	  range_end = format[++index];
+	  range_begin = format[offset - 1];
+	  range_end = format[++offset];
 	  if (range_end == SPECIFIER_UNGROUP)
 	    {
 	      /* Trailing minus is included */
@@ -5663,9 +5663,9 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 	      break; /* for */
 	    }
 	  if (range_end == NIL)
-	    return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+	    return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 	  if (range_begin > range_end)
-	    return TRIO_ERROR_RETURN(TRIO_ERANGE, index);
+	    return TRIO_ERROR_RETURN(TRIO_ERANGE, offset);
 	    
 	  for (i = (int)range_begin; i <= (int)range_end; i++)
 	    characterclass[i]++;
@@ -5677,7 +5677,7 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 
 	case SPECIFIER_GROUP:
 	  
-	  switch (format[index + 1])
+	  switch (format[offset + 1])
 	    {
 	    case QUALIFIER_DOT: /* Collating symbol */
 	      /*
@@ -5685,7 +5685,7 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 	       * characters have been implemented. Until now, we ignore
 	       * this feature.
 	       */
-	      for (i = index + 2; ; i++)
+	      for (i = offset + 2; ; i++)
 		{
 		  if (format[i] == NIL)
 		    /* Error in syntax */
@@ -5696,7 +5696,7 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 	      if (format[++i] != SPECIFIER_UNGROUP)
 		return -1;
 	      
-	      index = i;
+	      offset = i;
 	      break;
 	  
 	    case QUALIFIER_EQUAL: /* Equivalence class expressions */
@@ -5710,7 +5710,7 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 		    TrioGetCollation();
 		    internalCollationUnconverted = FALSE;
 		  }
-		for (i = index + 2; ; i++)
+		for (i = offset + 2; ; i++)
 		  {
 		    if (format[i] == NIL)
 		      /* Error in syntax */
@@ -5728,99 +5728,99 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 		if (format[++i] != SPECIFIER_UNGROUP)
 		  return -1;
 		
-		index = i;
+		offset = i;
 	      }
 	      break;
 	  
 	    case QUALIFIER_COLON: /* Character class expressions */
 	  
 	      if (trio_equal_max(CLASS_ALNUM, sizeof(CLASS_ALNUM) - 1,
-				 &format[index]))
+				 &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isalnum(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_ALNUM) - 1;
+		  offset += sizeof(CLASS_ALNUM) - 1;
 		}
 	      else if (trio_equal_max(CLASS_ALPHA, sizeof(CLASS_ALPHA) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isalpha(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_ALPHA) - 1;
+		  offset += sizeof(CLASS_ALPHA) - 1;
 		}
 	      else if (trio_equal_max(CLASS_CNTRL, sizeof(CLASS_CNTRL) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (iscntrl(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_CNTRL) - 1;
+		  offset += sizeof(CLASS_CNTRL) - 1;
 		}
 	      else if (trio_equal_max(CLASS_DIGIT, sizeof(CLASS_DIGIT) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isdigit(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_DIGIT) - 1;
+		  offset += sizeof(CLASS_DIGIT) - 1;
 		}
 	      else if (trio_equal_max(CLASS_GRAPH, sizeof(CLASS_GRAPH) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isgraph(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_GRAPH) - 1;
+		  offset += sizeof(CLASS_GRAPH) - 1;
 		}
 	      else if (trio_equal_max(CLASS_LOWER, sizeof(CLASS_LOWER) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (islower(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_LOWER) - 1;
+		  offset += sizeof(CLASS_LOWER) - 1;
 		}
 	      else if (trio_equal_max(CLASS_PRINT, sizeof(CLASS_PRINT) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isprint(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_PRINT) - 1;
+		  offset += sizeof(CLASS_PRINT) - 1;
 		}
 	      else if (trio_equal_max(CLASS_PUNCT, sizeof(CLASS_PUNCT) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (ispunct(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_PUNCT) - 1;
+		  offset += sizeof(CLASS_PUNCT) - 1;
 		}
 	      else if (trio_equal_max(CLASS_SPACE, sizeof(CLASS_SPACE) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isspace(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_SPACE) - 1;
+		  offset += sizeof(CLASS_SPACE) - 1;
 		}
 	      else if (trio_equal_max(CLASS_UPPER, sizeof(CLASS_UPPER) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isupper(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_UPPER) - 1;
+		  offset += sizeof(CLASS_UPPER) - 1;
 		}
 	      else if (trio_equal_max(CLASS_XDIGIT, sizeof(CLASS_XDIGIT) - 1,
-				      &format[index]))
+				      &format[offset]))
 		{
 		  for (i = 0; i < MAX_CHARACTER_CLASS; i++)
 		    if (isxdigit(i))
 		      characterclass[i]++;
-		  index += sizeof(CLASS_XDIGIT) - 1;
+		  offset += sizeof(CLASS_XDIGIT) - 1;
 		}
 	      else
 		{
@@ -6241,7 +6241,7 @@ TRIO_ARGS4((self, target, flags, width),
 {
   int ch;
   char doubleString[512];
-  int index = 0;
+  int offset = 0;
   int start;
 # if TRIO_FEATURE_QUOTE
   int j;
@@ -6263,29 +6263,29 @@ TRIO_ARGS4((self, target, flags, width),
   ch = self->current;
   if ((ch == '+') || (ch == '-'))
     {
-      doubleString[index++] = (char)ch;
+      doubleString[offset++] = (char)ch;
       self->InStream(self, &ch);
       width--;
     }
 
-  start = index;
+  start = offset;
   switch (ch)
     {
     case 'n':
     case 'N':
       /* Not-a-number */
-      if (index != 0)
+      if (offset != 0)
 	break;
       /* FALLTHROUGH */
     case 'i':
     case 'I':
       /* Infinity */
-      while (isalpha(ch) && (index - start < width))
+      while (isalpha(ch) && (offset - start < width))
 	{
-	  doubleString[index++] = (char)ch;
+	  doubleString[offset++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
-      doubleString[index] = NIL;
+      doubleString[offset] = NIL;
 
       /* Case insensitive string comparison */
       if (trio_equal(&doubleString[start], INFINITE_UPPER) ||
@@ -6331,12 +6331,12 @@ TRIO_ARGS4((self, target, flags, width),
       return FALSE;
 
     case '0':
-      doubleString[index++] = (char)ch;
+      doubleString[offset++] = (char)ch;
       self->InStream(self, &ch);
       if (trio_to_upper(ch) == 'X')
 	{
 	  isHex = TRUE;
-	  doubleString[index++] = (char)ch;
+	  doubleString[offset++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
       break;
@@ -6345,12 +6345,12 @@ TRIO_ARGS4((self, target, flags, width),
       break;
     }
   
-  while ((ch != EOF) && (index - start < width))
+  while ((ch != EOF) && (offset - start < width))
     {
       /* Integer part */
       if (isHex ? isxdigit(ch) : isdigit(ch))
 	{
-	  doubleString[index++] = (char)ch;
+	  doubleString[offset++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
 # if TRIO_FEATURE_QUOTE
@@ -6376,36 +6376,36 @@ TRIO_ARGS4((self, target, flags, width),
   if (ch == '.')
     {
       /* Decimal part */
-      doubleString[index++] = (char)ch;
+      doubleString[offset++] = (char)ch;
       self->InStream(self, &ch);
       while ((isHex ? isxdigit(ch) : isdigit(ch)) &&
-	     (index - start < width))
+	     (offset - start < width))
 	{
-	  doubleString[index++] = (char)ch;
+	  doubleString[offset++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
     }
   if (isHex ? (trio_to_upper(ch) == 'P') : (trio_to_upper(ch) == 'E'))
     {
       /* Exponent */
-      doubleString[index++] = (char)ch;
+      doubleString[offset++] = (char)ch;
       self->InStream(self, &ch);
       if ((ch == '+') || (ch == '-'))
 	{
-	  doubleString[index++] = (char)ch;
+	  doubleString[offset++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
-      while (isdigit(ch) && (index - start < width))
+      while (isdigit(ch) && (offset - start < width))
 	{
-	  doubleString[index++] = (char)ch;
+	  doubleString[offset++] = (char)ch;
 	  self->InStream(self, &ch);
 	}
     }
 
-  if ((index == start) || (*doubleString == NIL))
+  if ((offset == start) || (*doubleString == NIL))
     return FALSE;
 
-  doubleString[index] = 0;
+  doubleString[offset] = 0;
   
   if (flags & FLAGS_LONGDOUBLE)
     {
@@ -6487,8 +6487,8 @@ TRIO_ARGS3((data, format, parameters),
 #endif
   int assignment;
   int ch;
-  int index; /* Index of format string */
-  int i; /* Index of current parameter */
+  int offset; /* Offset of format string */
+  int i; /* Offset of current parameter */
   trio_flags_t flags;
   int width;
   int base;
@@ -6496,27 +6496,27 @@ TRIO_ARGS3((data, format, parameters),
 
   assignment = 0;
   i = 0;
-  index = 0;
+  offset = 0;
   data->InStream(data, &ch);
 
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
   (void)mblen(NULL, 0);
 #endif
 
-  while (format[index])
+  while (format[offset])
     {
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
-      if (! isascii(format[index]))
+      if (! isascii(format[offset]))
 	{
-	  charlen = mblen(&format[index], MB_LEN_MAX);
+	  charlen = mblen(&format[offset], MB_LEN_MAX);
 	  if (charlen != -1)
 	    {
 	      /* Compare multibyte characters in format string */
 	      for (cnt = 0; cnt < charlen - 1; cnt++)
 		{
-		  if (ch != format[index + cnt])
+		  if (ch != format[offset + cnt])
 		    {
-		      return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		      return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 		    }
 		  data->InStream(data, &ch);
 		}
@@ -6530,19 +6530,19 @@ TRIO_ARGS3((data, format, parameters),
 	  return (assignment > 0) ? assignment : EOF;
 	}
       
-      if (CHAR_IDENTIFIER == format[index])
+      if (CHAR_IDENTIFIER == format[offset])
 	{
-	  if (CHAR_IDENTIFIER == format[index + 1])
+	  if (CHAR_IDENTIFIER == format[offset + 1])
 	    {
 	      /* Two % in format matches one % in input stream */
 	      if (CHAR_IDENTIFIER == ch)
 		{
 		  data->InStream(data, &ch);
-		  index += 2;
+		  offset += 2;
 		  continue; /* while format chars left */
 		}
 	      else
-		return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+		return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 	    }
 
 	  /* Skip the parameter entries */
@@ -6671,16 +6671,16 @@ TRIO_ARGS3((data, format, parameters),
 		int rc;
 
 		/* Skip over modifiers */
-		while (format[index] != SPECIFIER_GROUP)
+		while (format[offset] != SPECIFIER_GROUP)
 		  {
-		    index++;
+		    offset++;
 		  }
 		/* Skip over group specifier */
-		index++;
+		offset++;
 		
 		memset(characterclass, 0, sizeof(characterclass));
 		rc = TrioGetCharacterClass(format,
-					   &index,
+					   &offset,
 					   &flags,
 					   characterclass);
 		if (rc < 0)
@@ -6782,27 +6782,27 @@ TRIO_ARGS3((data, format, parameters),
 	      break; /* FORMAT_PARAMETER */
 
 	    default:
-	      return TRIO_ERROR_RETURN(TRIO_EINVAL, index);
+	      return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
 	    }
 	  ch = data->current;
-	  index = parameters[i].indexAfterSpecifier;
+	  offset = parameters[i].offsetAfterSpecifier;
 	  i++;
 	}
       else /* Not an % identifier */
 	{
-	  if (isspace((int)format[index]))
+	  if (isspace((int)format[offset]))
 	    {
 	      /* Whitespaces may match any amount of whitespaces */
 	      ch = TrioSkipWhitespaces(data);
 	    }
-	  else if (ch == format[index])
+	  else if (ch == format[offset])
 	    {
 	      data->InStream(data, &ch);
 	    }
 	  else
 	    return assignment;
 	  
-	  index++;
+	  offset++;
 	}
     }
   return assignment;

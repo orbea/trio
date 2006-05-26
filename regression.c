@@ -661,11 +661,13 @@ VerifyFormatting(TRIO_NOARGS)
       nerrors += Verify(__FILE__, __LINE__, "Pointer 0x01234567",
 			"Pointer %p", 0x1234567);
     }
+#if defined(TRIO_COMPILER_SUPPORTS_LL)
   else if (sizeof(void *) == 8)
     {
       nerrors += Verify(__FILE__, __LINE__, "Pointer 0x0123456789012345",
-			"Pointer %p", 0x123456789012345);
+			"Pointer %p", 0x123456789012345LL);
     }
+#endif
   /* Nil pointer */
   nerrors += Verify(__FILE__, __LINE__, "Pointer (nil)",
 		   "Pointer %p", NULL);
@@ -704,8 +706,13 @@ VerifyFormatting(TRIO_NOARGS)
 
 #if TRIO_FEATURE_ERRNO
   errno = EINTR;
+# if defined(TRIO_PLATFORM_LYNX) && !defined(PREDEF_STANDARD_POSIX_1996)
+  nerrors += Verify(__FILE__, __LINE__, "System call interrupted",
+		    "%m");
+# else
   nerrors += Verify(__FILE__, __LINE__, "Interrupted system call",
 		    "%m");
+# endif
 #endif
   
 #if TRIO_FEATURE_QUAD
@@ -1163,7 +1170,7 @@ VerifyScanningRegression(TRIO_NOARGS)
   int nerrors = 0;
   int rc;
 #if TRIO_FEATURE_FLOAT
-  int index;
+  int offset;
   double dnumber;
 # if defined(TRIO_BREESE)
   trio_long_double_t ldnumber;
@@ -1174,9 +1181,9 @@ VerifyScanningRegression(TRIO_NOARGS)
   char ch;
 
 #if TRIO_FEATURE_FLOAT
-  rc = trio_sscanf("1.5", "%lf%n", &dnumber, &index);
+  rc = trio_sscanf("1.5", "%lf%n", &dnumber, &offset);
   nerrors += Verify(__FILE__, __LINE__, "1 3 1.500000",
-		    "%d %d %f", rc, index, dnumber);
+		    "%d %d %f", rc, offset, dnumber);
 #endif
   rc = trio_sscanf("q 123", "%c%ld", &ch, &lnumber);
   nerrors += Verify(__FILE__, __LINE__, "q 123",
