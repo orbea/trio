@@ -706,9 +706,14 @@ VerifyFormatting(TRIO_NOARGS)
 
 #if TRIO_FEATURE_ERRNO
   errno = EINTR;
-# if defined(TRIO_PLATFORM_LYNX) && !defined(PREDEF_STANDARD_POSIX_1996)
+# if defined(TRIO_PLATFORM_LYNX)
+#  if defined(PREDEF_STANDARD_POSIX_1996)
+  nerrors += Verify(__FILE__, __LINE__, "Interrupted system call ",
+		    "%m");
+#  else
   nerrors += Verify(__FILE__, __LINE__, "System call interrupted",
 		    "%m");
+#  endif
 # else
   nerrors += Verify(__FILE__, __LINE__, "Interrupted system call",
 		    "%m");
