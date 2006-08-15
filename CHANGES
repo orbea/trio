@@ -4,10 +4,13 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.12 - 2006/05/26
+Version 1.12 - 2006/08/15
 -------------------------
 * Olli Savia
   Added support for LynxOS.
+
+* Fixed configure.in for GCC on Tru64 (reported by Andreas Maus).
+
 
 Version 1.11 - 2006/04/08
 -------------------------

@@ -23,7 +23,7 @@ AC_TRY_COMPILE(,[
 #endif
 ],ac_cv_ieee_option="/IEEE_MODE=UNDERFLOW_TO_ZERO/FLOAT=IEEE",
 AC_TRY_COMPILE(,[
-#if !(defined(__alpha) && (defined(__DECC) || defined(__DECCXX) || (defined(__osf__) && defined(__LANGUAGE_C__))) && !(defined(VMS) || defined(__VMS)) && !defined(_CFE))
+#if !(defined(__alpha) && (defined(__DECC) || defined(__DECCXX) || (defined(__osf__) && defined(__LANGUAGE_C__) && !defined(__GNUC__))) && !(defined(VMS) || defined(__VMS)) && !defined(_CFE))
 # error "Option needed"
 #endif
 ],ac_cv_ieee_option="-ieee",
