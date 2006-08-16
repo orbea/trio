@@ -177,10 +177,8 @@
 
 #include <assert.h>
 #include <ctype.h>
-#if defined(PREDEF_STANDARD_C99)
+#if defined(PREDEF_STANDARD_C99) && !defined(isascii)
 # define isascii(x) ((x) & 0x7F)
-#else
-# define isblank(x) (((x)==32) || ((x)==9))
 #endif
 #if defined(TRIO_COMPILER_ANCIENT)
 # include <varargs.h>
@@ -249,7 +247,6 @@ typedef int trio_wint_t;
 #  define WEOF EOF
 #  define iswalnum(x) isalnum(x)
 #  define iswalpha(x) isalpha(x)
-#  define iswblank(x) isblank(x)
 #  define iswcntrl(x) iscntrl(x)
 #  define iswdigit(x) isdigit(x)
 #  define iswgraph(x) isgraph(x)
