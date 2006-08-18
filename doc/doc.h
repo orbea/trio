@@ -154,6 +154,7 @@ order sorted by surname)
 @li Rune Enggaard Lausen
 @li Mehdi Lavasani
 @li Alexander Lukyanov
+@li Andreas Maus
 @li Mikey Menezes
 @li Emmanuel Mogenet
 @li Jacob Navia
