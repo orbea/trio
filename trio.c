@@ -6439,7 +6439,7 @@ TRIO_ARGS3((self, target, flags),
     {
       if (target)
 	{
-#if defined(TRIO_COMPILER_GCC)
+#if defined(TRIO_COMPILER_GCC) || defined(TRIO_COMPILER_MIPSPRO)
 	  /*
 	   * The strange assignment of number is a workaround for a compiler
 	   * warning

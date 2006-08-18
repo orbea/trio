@@ -54,6 +54,10 @@
 # define TRIO_COMPILER_HP
 #endif
 
+#if defined(sgi) || defined(__sgi)
+# define TRIO_COMPILER_MIPSPRO
+#endif
+
 #if defined(_MSC_VER)
 # define TRIO_COMPILER_MSVC
 #endif
