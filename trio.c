@@ -6244,6 +6244,7 @@ TRIO_ARGS4((self, target, flags, width),
   int j;
 # endif
   BOOLEAN_T isHex = FALSE;
+  trio_long_double_t infinity;
 
   doubleString[0] = 0;
   
@@ -6288,27 +6289,20 @@ TRIO_ARGS4((self, target, flags, width),
       if (trio_equal(&doubleString[start], INFINITE_UPPER) ||
 	  trio_equal(&doubleString[start], LONG_INFINITE_UPPER))
 	{
+	  infinity = ((start == 1) && (doubleString[0] == '-'))
+	    ? trio_ninf()
+	    : trio_pinf();
 	  if (flags & FLAGS_LONGDOUBLE)
 	    {
-	      if ((start == 1) && (doubleString[0] == '-'))
-		{
-		  *((trio_long_double_t *)target) = trio_ninf();
-		}
-	      else
-		{
-		  *((trio_long_double_t *)target) = trio_pinf();
-		}
+	      *((trio_long_double_t *)target) = infinity;
+	    }
+	  else if (flags & FLAGS_LONG)
+	    {
+	      *((double *)target) = infinity;
 	    }
 	  else
 	    {
-	      if ((start == 1) && (doubleString[0] == '-'))
-		{
-		  *((double *)target) = trio_ninf();
-		}
-	      else
-		{
-		  *((double *)target) = trio_pinf();
-		}
+	      *((float *)target) = infinity;
 	    }
 	  return TRUE;
 	}
@@ -6319,9 +6313,13 @@ TRIO_ARGS4((self, target, flags, width),
 	    {
 	      *((trio_long_double_t *)target) = trio_nan();
 	    }
-	  else
+	  else if (flags & FLAGS_LONG)
 	    {
 	      *((double *)target) = trio_nan();
+	    }
+	  else
+	    {
+	      *((float *)target) = trio_nan();
 	    }
 	  return TRUE;
 	}
@@ -6408,9 +6406,13 @@ TRIO_ARGS4((self, target, flags, width),
     {
       *((trio_long_double_t *)target) = trio_to_long_double(doubleString, NULL);
     }
-  else
+  else if (flags & FLAGS_LONG)
     {
       *((double *)target) = trio_to_double(doubleString, NULL);
+    }
+  else
+    {
+      *((float *)target) = trio_to_float(doubleString, NULL);
     }
   return TRUE;
 }

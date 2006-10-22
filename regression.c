@@ -1046,6 +1046,23 @@ TRIO_ARGS5((file, line, expected, format, original),
 	   TRIO_CONST char *format,
 	   double original)
 {
+  float number;
+  char data[512];
+  
+  trio_snprintf(data, sizeof(data), format, original);
+  trio_sscanf(data, format, &number);
+  return Verify(file, line, expected, format, number);
+}
+
+int
+VerifyScanningOneDouble
+TRIO_ARGS5((file, line, expected, format, original),
+	   TRIO_CONST char *file,
+	   int line,
+	   TRIO_CONST char *expected,
+	   TRIO_CONST char *format,
+	   double original)
+{
   double number;
   char data[512];
   
@@ -1096,8 +1113,8 @@ VerifyScanningFloats(TRIO_NOARGS)
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "0X1.2D687P+20",
 				      "%A", 1234567.0);
 # endif
-  nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "1.79769e+308",
-				      "%g", 1.79769e+308);
+  nerrors += VerifyScanningOneDouble(__FILE__, __LINE__, "1.79769e+308",
+				      "%lg", 1.79769e+308);
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "nan",
 				      "%f", trio_nan());
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "NAN",
@@ -1217,10 +1234,10 @@ VerifyScanningRegression(TRIO_NOARGS)
 # endif
 #endif
 #if TRIO_FEATURE_FLOAT
-  rc = trio_sscanf("1.e-6", "%g", &dnumber);
+  rc = trio_sscanf("1.e-6", "%lg", &dnumber);
   nerrors += Verify(__FILE__, __LINE__, "1e-06",
 		    "%g", dnumber);
-  rc = trio_sscanf("1e-6", "%g", &dnumber);
+  rc = trio_sscanf("1e-6", "%lg", &dnumber);
   nerrors += Verify(__FILE__, __LINE__, "1e-06",
 		    "%g", dnumber);
 #endif
