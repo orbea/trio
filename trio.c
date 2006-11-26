@@ -7040,8 +7040,15 @@ TRIO_VARGS2((format, va_alist),
   TRIO_VA_END(args);
   return status;
 }
-#endif
+#endif /* TRIO_FEATURE_STDIO */
 
+/**
+   Scan characters from standard input stream.
+
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 #if TRIO_FEATURE_STDIO
 TRIO_PUBLIC int
 trio_vscanf
@@ -7055,8 +7062,15 @@ TRIO_ARGS2((format, args),
 		  TrioInStreamFile,
 		  format, args, NULL);
 }
-#endif
+#endif /* TRIO_FEATURE_STDIO */
 
+/**
+   Scan characters from standard input stream.
+
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 #if TRIO_FEATURE_STDIO
 TRIO_PUBLIC int
 trio_scanfv
@@ -7072,10 +7086,19 @@ TRIO_ARGS2((format, args),
 		  TrioInStreamFile,
 		  format, unused, args);
 }
-#endif
+#endif /* TRIO_FEATURE_STDIO */
 
 /*************************************************************************
  * fscanf
+ */
+
+/**
+   Scan characters from file.
+
+   @param file File pointer.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of scanned characters.
  */
 #if TRIO_FEATURE_FILE
 TRIO_PUBLIC int
@@ -7098,8 +7121,16 @@ TRIO_VARGS3((file, format, va_alist),
   TRIO_VA_END(args);
   return status;
 }
-#endif
+#endif /* TRIO_FEATURE_FILE */
 
+/**
+   Scan characters from file.
+
+   @param file File pointer.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 #if TRIO_FEATURE_FILE
 TRIO_PUBLIC int
 trio_vfscanf
@@ -7115,8 +7146,16 @@ TRIO_ARGS3((file, format, args),
 		  TrioInStreamFile,
 		  format, args, NULL);
 }
-#endif
+#endif /* TRIO_FEATURE_FILE */
 
+/**
+   Scan characters from file.
+
+   @param file File pointer.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 #if TRIO_FEATURE_FILE
 TRIO_PUBLIC int
 trio_fscanfv
@@ -7134,10 +7173,19 @@ TRIO_ARGS3((file, format, args),
 		  TrioInStreamFile,
 		  format, unused, args);
 }
-#endif
+#endif /* TRIO_FEATURE_FILE */
 
 /*************************************************************************
  * dscanf
+ */
+
+/**
+   Scan characters from file descriptor.
+
+   @param fd File descriptor.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of scanned characters.
  */
 #if TRIO_FEATURE_FD
 TRIO_PUBLIC int
@@ -7159,8 +7207,16 @@ TRIO_VARGS3((fd, format, va_alist),
   TRIO_VA_END(args);
   return status;
 }
-#endif
+#endif /* TRIO_FEATURE_FD */
 
+/**
+   Scan characters from file descriptor.
+
+   @param fd File descriptor.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 #if TRIO_FEATURE_FD
 TRIO_PUBLIC int
 trio_vdscanf
@@ -7175,8 +7231,16 @@ TRIO_ARGS3((fd, format, args),
 		  TrioInStreamFileDescriptor,
 		  format, args, NULL);
 }
-#endif
+#endif /* TRIO_FEATURE_FD */
 
+/**
+   Scan characters from file descriptor.
+
+   @param fd File descriptor.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 #if TRIO_FEATURE_FD
 TRIO_PUBLIC int
 trio_dscanfv
@@ -7193,7 +7257,7 @@ TRIO_ARGS3((fd, format, args),
 		  TrioInStreamFileDescriptor,
 		  format, unused, args);
 }
-#endif
+#endif /* TRIO_FEATURE_FD */
 
 /*************************************************************************
  * cscanf
@@ -7221,7 +7285,7 @@ TRIO_VARGS4((stream, closure, format, va_alist),
   TRIO_VA_END(args);
   return status;
 }
-#endif
+#endif /* TRIO_FEATURE_CLOSURE */
 
 #if TRIO_FEATURE_CLOSURE
 TRIO_PUBLIC int
@@ -7241,7 +7305,7 @@ TRIO_ARGS4((stream, closure, format, args),
   data.closure = closure;
   return TrioScan(&data, 0, TrioInStreamCustom, format, args, NULL);
 }
-#endif
+#endif /* TRIO_FEATURE_CLOSURE */
 
 #if TRIO_FEATURE_CLOSURE
 TRIO_PUBLIC int
@@ -7262,10 +7326,19 @@ TRIO_ARGS4((stream, closure, format, args),
   data.closure = closure;
   return TrioScan(&data, 0, TrioInStreamCustom, format, unused, args);
 }
-#endif
+#endif /* TRIO_FEATURE_CLOSURE */
 
 /*************************************************************************
  * sscanf
+ */
+
+/**
+   Scan characters from string.
+
+   @param buffer Input string.
+   @param format Formatting string.
+   @param ... Arguments.
+   @return Number of scanned characters.
  */
 TRIO_PUBLIC int
 trio_sscanf
@@ -7288,6 +7361,14 @@ TRIO_VARGS3((buffer, format, va_alist),
   return status;
 }
 
+/**
+   Scan characters from string.
+
+   @param buffer Input string.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 TRIO_PUBLIC int
 trio_vsscanf
 TRIO_ARGS3((buffer, format, args),
@@ -7303,6 +7384,14 @@ TRIO_ARGS3((buffer, format, args),
 		  format, args, NULL);
 }
 
+/**
+   Scan characters from string.
+
+   @param buffer Input string.
+   @param format Formatting string.
+   @param args Arguments.
+   @return Number of scanned characters.
+ */
 TRIO_PUBLIC int
 trio_sscanfv
 TRIO_ARGS3((buffer, format, args),
