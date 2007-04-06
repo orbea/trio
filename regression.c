@@ -530,12 +530,20 @@ VerifyFormattingFloats(TRIO_NOARGS)
 		    "%#11.5g", 1e-4);
   nerrors += Verify(__FILE__, __LINE__, "  0.0010000",
 		    "%#11.5g", 1e-3);
+  nerrors += Verify(__FILE__, __LINE__, "  0.0010000",
+		    "%#11.5g", 0.999999e-3);
   nerrors += Verify(__FILE__, __LINE__, "   0.010000",
 		    "%#11.5g", 1e-2);
+  nerrors += Verify(__FILE__, __LINE__, "   0.010000",
+		    "%#11.5g", 0.999999e-2);
   nerrors += Verify(__FILE__, __LINE__, "    0.10000",
 		    "%#11.5g", 1e-1);
+  nerrors += Verify(__FILE__, __LINE__, "    0.10000",
+		    "%#11.5g", 0.999999e-1);
   nerrors += Verify(__FILE__, __LINE__, "     1.0000",
 		    "%#11.5g", 1e0);
+  nerrors += Verify(__FILE__, __LINE__, "     1.0000",
+		    "%#11.5g", 0.999999e0);
   nerrors += Verify(__FILE__, __LINE__, "     10.000",
 		    "%#11.5g", 1e1);
   nerrors += Verify(__FILE__, __LINE__, "     100.00",

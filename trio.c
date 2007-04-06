@@ -2795,7 +2795,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   int i;
   int offset;
   BOOLEAN_T hasOnlyZeroes;
-  int leadingFractionZeroes = 0;
+  int leadingFractionZeroes = -1;
   register int trailingZeroes;
   BOOLEAN_T keepTrailingZeroes;
   BOOLEAN_T keepDecimalPoint;
@@ -2983,7 +2983,14 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     {
       if (leadingFractionZeroes > 0)
 	{
-	  fractionDigits += leadingFractionZeroes;
+	  if (number > 1.0)
+	    {
+	      fractionDigits += leadingFractionZeroes + 1;
+	    }
+	  else
+	    {
+	      fractionDigits += leadingFractionZeroes;
+	    }
 	}
       if ((integerNumber > epsilon) || (number <= epsilon))
 	{
@@ -2993,9 +3000,10 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 
   dblFractionBase = TrioPower(base, fractionDigits);
   
-  workNumber = number + 0.5 / dblFractionBase;
-  if (trio_floorl(number) != trio_floorl(workNumber))
+  workNumber = number * dblFractionBase + 0.5;
+  if (trio_floorl(number * dblFractionBase) != trio_floorl(workNumber))
     {
+      workNumber /= dblFractionBase;
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_FLOAT_E))
 	{
 	  /* The adjustment may require a change to scientific notation */
@@ -3033,15 +3041,52 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
       else
 	{
-	  /* Adjust if number was rounded up one digit (ie. 99 to 100) */
-	  integerNumber = trio_floorl(number + 0.5);
-	  fractionNumber = 0.0;
-	  integerDigits = (integerNumber > epsilon)
-	    ? 1 + (int)TrioLogarithm(integerNumber, base)
-	    : 1;
-	  if (flags & FLAGS_FLOAT_G)
+	  if (workNumber > 1.0)
 	    {
-	      fractionDigits = 0;
+	      /* Adjust if number was rounded up one digit (ie. 99 to 100) */
+	      integerNumber = trio_floorl(workNumber);
+	      fractionNumber = 0.0;
+	      integerDigits = (integerNumber > epsilon)
+		? 1 + (int)TrioLogarithm(integerNumber, base)
+		: 1;
+	      if (flags & FLAGS_FLOAT_G)
+		{
+		  if (flags & FLAGS_ALTERNATIVE)
+		    {
+		      if ((integerNumber > epsilon) || (number <= epsilon))
+			{
+			  fractionDigits -= integerDigits;
+			}
+		    }
+		  else
+		    {
+		      fractionDigits = 0;
+		    }
+		}
+	    }
+	  else
+	    {
+	      integerNumber = trio_floorl(workNumber);
+	      fractionNumber = workNumber - integerNumber;
+	      if (flags & FLAGS_FLOAT_G)
+		{
+		  if (flags & FLAGS_ALTERNATIVE)
+		    {
+		      fractionDigits = precision;
+		      if (leadingFractionZeroes > 0)
+			{
+			  fractionDigits += leadingFractionZeroes - 1;
+			}
+		      if ((integerNumber > epsilon) || (number <= epsilon))
+			{
+			  fractionDigits -= integerDigits;
+			}
+		    }
+		  else
+		    {
+		      fractionDigits = 0;
+		    }
+		}
 	    }
 	}
     }
