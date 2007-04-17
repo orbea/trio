@@ -4,9 +4,13 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.13 - 2006/04/06
+Version 1.13 - 2006/04/17
 -------------------------
+* Andreas Stricker
+  Added WinCE support.
+
 * Fixed number of significant digits for %g.
+
 
 Version 1.12 - 2006/10/22
 -------------------------

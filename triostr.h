@@ -136,7 +136,7 @@ enum {
 #else
 
 /*
- * When triostr is not embedded all all functions are defined.
+ * When triostr is not embedded all functions are defined.
  */
 
 # define TRIO_FUNC_APPEND
@@ -154,7 +154,9 @@ enum {
 # define TRIO_FUNC_EQUAL_LOCALE
 # define TRIO_FUNC_EQUAL_MAX
 # define TRIO_FUNC_ERROR
-# define TRIO_FUNC_FORMAT_DATE_MAX
+# if !defined(TRIO_PLATFORM_WINCE)
+#  define TRIO_FUNC_FORMAT_DATE_MAX
+# endif
 # define TRIO_FUNC_HASH
 # define TRIO_FUNC_INDEX
 # define TRIO_FUNC_INDEX_LAST
@@ -186,7 +188,9 @@ enum {
 # define TRIO_FUNC_STRING_EQUAL_CASE_MAX
 # define TRIO_FUNC_STRING_EQUAL_MAX
 # define TRIO_FUNC_STRING_EXTRACT
-# define TRIO_FUNC_STRING_FORMAT_DATE_MAX
+# if !defined(TRIO_PLATFORM_WINCE)
+#  define TRIO_FUNC_STRING_FORMAT_DATE_MAX
+# endif
 # define TRIO_FUNC_STRING_GET
 # define TRIO_FUNC_STRING_INDEX
 # define TRIO_FUNC_STRING_INDEX_LAST

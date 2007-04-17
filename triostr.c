@@ -100,7 +100,11 @@
 
 #if defined(TRIO_PLATFORM_WIN32)
 # define USE_STRCASECMP
-# define strcasecmp(x,y) strcmpi(x,y)
+# if defined(TRIO_PLATFORM_WINCE)
+#  define strcasecmp(x,y) _stricmp(x,y)
+# else
+#  define strcasecmp(x,y) strcmpi(x,y)
+# endif
 #endif
 
 #if !(defined(TRIO_PLATFORM_SUNOS))
@@ -812,7 +816,7 @@ TRIO_ARGS4((target, max, format, datetime),
   assert(format);
   assert(datetime);
   assert(max > 0);
-  
+
   return strftime(target, max, format, datetime);
 }
 

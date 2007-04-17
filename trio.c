@@ -125,9 +125,11 @@
 #endif
 
 #if defined(__STDC_ISO_10646__) || defined(MB_LEN_MAX) || defined(USE_MULTIBYTE) || TRIO_FEATURE_WIDECHAR
-# define TRIO_COMPILER_SUPPORTS_MULTIBYTE
-# if !defined(MB_LEN_MAX)
-#  define MB_LEN_MAX 6
+# if !defined(TRIO_PLATFORM_WINCE)
+#  define TRIO_COMPILER_SUPPORTS_MULTIBYTE
+#  if !defined(MB_LEN_MAX)
+#   define MB_LEN_MAX 6
+#  endif
 # endif
 #endif
 
@@ -186,7 +188,11 @@
 # include <stdarg.h>
 #endif
 #include <stddef.h>
-#include <errno.h>
+#if defined(TRIO_PLATFORM_WINCE)
+extern int errno;
+#else
+# include <errno.h>
+#endif
 
 #ifndef NULL
 # define NULL 0
@@ -229,9 +235,14 @@ typedef unsigned long trio_flags_t;
 # include <unistd.h>
 #endif
 #if defined(TRIO_PLATFORM_WIN32)
-# include <io.h>
-# define read _read
-# define write _write
+# if defined(TRIO_PLATFORM_WINCE)
+int read(int handle, char *buffer, unsigned int length);
+int write(int handle, const char *buffer, unsigned int length);
+# else
+#  include <io.h>
+#  define read _read
+#  define write _write
+# endif
 #endif /* TRIO_PLATFORM_WIN32 */
 
 #if TRIO_FEATURE_WIDECHAR
