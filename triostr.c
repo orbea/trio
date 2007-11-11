@@ -368,6 +368,33 @@ TRIO_ARGS1((string),
 #endif
 
 /**
+   Count at most @p max characters in a string.
+
+   @param string String to measure.
+   @param max Maximum number of characters to count.
+   @return The maximum value of @p max and number of characters in @p string.
+*/
+#if defined(TRIO_FUNC_LENGTH)
+
+TRIO_PUBLIC_STRING size_t
+trio_length_max
+TRIO_ARGS2((string, max),
+	   TRIO_CONST char *string,
+	   size_t max)
+{
+  size_t i;
+
+  for (i = 0; i < max; ++i)
+    {
+      if (string[i] == 0)
+	break;
+    }
+  return i;
+}
+
+#endif
+
+/**
    Append @p source at the end of @p target.
    
    @param target Target string.

@@ -63,6 +63,7 @@
 #if defined(TRIO_EMBED_STRING)
 # define TRIO_PUBLIC_STRING static
 # define TRIO_FUNC_LENGTH
+# define TRIO_FUNC_LENGTH_MAX
 # define TRIO_FUNC_TO_LONG
 # if TRIO_FEATURE_LOCALE
 #  define TRIO_FUNC_COPY_MAX
@@ -2597,7 +2598,14 @@ TRIO_ARGS5((self, string, flags, width, precision),
     }
   else
     {
-      length = trio_length(string);
+      if (precision == 0)
+	{
+	  length = trio_length(string);
+	}
+      else
+	{
+	  length = trio_length_max(string, precision);
+	}
     }
   if ((NO_PRECISION != precision) &&
       (precision < length))

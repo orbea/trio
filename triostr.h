@@ -161,6 +161,7 @@ enum {
 # define TRIO_FUNC_INDEX
 # define TRIO_FUNC_INDEX_LAST
 # define TRIO_FUNC_LENGTH
+# define TRIO_FUNC_LENGTH_MAX
 # define TRIO_FUNC_LOWER
 # define TRIO_FUNC_MATCH
 # define TRIO_FUNC_MATCH_CASE
@@ -342,6 +343,12 @@ TRIO_PROTO((TRIO_CONST char *string, int character));
 TRIO_PUBLIC_STRING size_t
 trio_length
 TRIO_PROTO((TRIO_CONST char *string));
+#endif
+
+#if defined(TRIO_FUNC_LENGTH_MAX)
+TRIO_PUBLIC_STRING size_t
+trio_length_max
+TRIO_PROTO((TRIO_CONST char *string, size_t max));
 #endif
 
 #if defined(TRIO_FUNC_LOWER)

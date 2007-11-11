@@ -6,6 +6,9 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.13 - 2006/04/17
 -------------------------
+* Fixed potential problem with read after buffer end for non-zero terminated
+  strings (reported as bug #1828465).
+
 * Andreas Stricker
   Added WinCE support.
 
