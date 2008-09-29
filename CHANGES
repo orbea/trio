@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.13 - 2007/11/11
+Version 1.13 - 2008/09/29
 -------------------------
+* David Boyce
+  Fixed long long support for MSVC.
+
 * Fixed potential problem with read after buffer end for non-zero terminated
   strings (reported as bug #1828465).
 

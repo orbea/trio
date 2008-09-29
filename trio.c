@@ -285,8 +285,12 @@ typedef int trio_wint_t;
 #   if defined(TRIO_COMPILER_SUNPRO)
 #    define USE_LONGLONG
 #   else
-#    if defined(_LONG_LONG) || defined(_LONGLONG)
+#    if defined(TRIO_COMPILER_MSVC) && (_MSC_VER >= 1400)
 #     define USE_LONGLONG
+#    else
+#     if defined(_LONG_LONG) || defined(_LONGLONG)
+#      define USE_LONGLONG
+#     endif
 #    endif
 #   endif
 #  endif
