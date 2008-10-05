@@ -4,8 +4,10 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.13 - 2008/09/29
+Version 1.13 - 2008/10/05
 -------------------------
+* Added Makefile dependency for test target (reported as bug #2136636).
+
 * David Boyce
   Fixed long long support for MSVC.
 
