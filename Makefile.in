@@ -24,7 +24,7 @@ libdir		= @libdir@
 
 all: $(TARGETLIB) $(TARGET) regression
 
-test:
+test:	all
 	./regression
 
 install:	$(TARGETLIB)
