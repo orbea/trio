@@ -2823,6 +2823,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   BOOLEAN_T keepTrailingZeroes;
   BOOLEAN_T keepDecimalPoint;
   trio_long_double_t epsilon;
+  BOOLEAN_T adjustNumber = FALSE;
   
   assert(VALID(self));
   assert(VALID(self->OutStream));
@@ -3006,14 +3007,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     {
       if (leadingFractionZeroes > 0)
 	{
-	  if (number > 1.0)
-	    {
-	      fractionDigits += leadingFractionZeroes + 1;
-	    }
-	  else
-	    {
-	      fractionDigits += leadingFractionZeroes;
-	    }
+	  fractionDigits += leadingFractionZeroes;
 	}
       if ((integerNumber > epsilon) || (number <= epsilon))
 	{
@@ -3022,11 +3016,28 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
 
   dblFractionBase = TrioPower(base, fractionDigits);
-  
-  workNumber = number * dblFractionBase + 0.5;
-  if (trio_floorl(number * dblFractionBase) != trio_floorl(workNumber))
+
+  if (integerNumber < 1.0)
     {
+      workNumber = number * dblFractionBase + 0.5;
+      if (trio_floorl(number * dblFractionBase) != trio_floorl(workNumber))
+	{
+	  adjustNumber = TRUE;
+	  /* Remove a leading fraction zero if fraction is rounded up */
+	  if ((int)TrioLogarithm(number * dblFractionBase, base) != (int)TrioLogarithm(workNumber, base))
+	    {
+	      --leadingFractionZeroes;
+	    }
+	}
       workNumber /= dblFractionBase;
+    }
+  else
+    {
+      workNumber = number + 0.5 / dblFractionBase;
+      adjustNumber = (trio_floorl(number) != trio_floorl(workNumber));
+    }
+  if (adjustNumber)
+    {
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_FLOAT_E))
 	{
 	  /* The adjustment may require a change to scientific notation */
@@ -3098,16 +3109,12 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 		      fractionDigits = precision;
 		      if (leadingFractionZeroes > 0)
 			{
-			  fractionDigits += leadingFractionZeroes - 1;
+			  fractionDigits += leadingFractionZeroes;
 			}
 		      if ((integerNumber > epsilon) || (number <= epsilon))
 			{
 			  fractionDigits -= integerDigits;
 			}
-		    }
-		  else
-		    {
-		      fractionDigits = 0;
 		    }
 		}
 	    }

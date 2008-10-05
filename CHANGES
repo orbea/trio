@@ -6,13 +6,15 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.13 - 2008/10/05
 -------------------------
-* Added Makefile dependency for test target (reported as bug #2136636).
+* Fixed rounding adjustment for long double (reported as bug item #2136686).
+
+* Added Makefile dependency for test target (reported as bug item #2136636).
 
 * David Boyce
   Fixed long long support for MSVC.
 
 * Fixed potential problem with read after buffer end for non-zero terminated
-  strings (reported as bug #1828465).
+  strings (reported as bug item #1828465).
 
 * Andreas Stricker
   Added WinCE support.
