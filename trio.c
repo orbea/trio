@@ -144,6 +144,9 @@
 #  if !defined(HAVE_FLOORL)
 #   define HAVE_FLOORL
 #  endif
+#  if !defined(HAVE_CEILL)
+#   define HAVE_CEILL
+#  endif
 #  if !defined(HAVE_POWL)
 #   define HAVE_POWL
 #  endif
@@ -157,6 +160,9 @@
 # if defined(TRIO_COMPILER_VISUALC)
 #  if defined(floorl)
 #   define HAVE_FLOORL
+#  endif
+#  if defined(ceill)
+#   define HAVE_CEILL
 #  endif
 #  if defined(powl)
 #   define HAVE_POWL
@@ -365,27 +371,33 @@ typedef trio_longlong_t trio_int64_t;
 #endif
 
 #if defined(HAVE_FLOORL)
-# define trio_floorl(x) floorl((x))
+# define trio_floor(x) floorl((x))
 #else
-# define trio_floorl(x) floor((double)(x))
+# define trio_floor(x) floor((double)(x))
+#endif
+
+#if defined(HAVE_CEILL)
+# define trio_ceil(x) ceill((x))
+#else
+# define trio_ceil(x) ceil((double)(x))
 #endif
 
 #if defined(HAVE_FMODL)
-# define trio_fmodl(x,y) fmodl((x),(y))
+# define trio_fmod(x,y) fmodl((x),(y))
 #else
-# define trio_fmodl(x,y) fmod((double)(x),(double)(y))
+# define trio_fmod(x,y) fmod((double)(x),(double)(y))
 #endif
 
 #if defined(HAVE_POWL)
-# define trio_powl(x,y) powl((x),(y))
+# define trio_pow(x,y) powl((x),(y))
 #else
-# define trio_powl(x,y) pow((double)(x),(double)(y))
+# define trio_pow(x,y) pow((double)(x),(double)(y))
 #endif
 
 #if defined(HAVE_LOG10L)
-# define trio_log10l(x) log10l((x))
+# define trio_log10(x) log10l((x))
 #else
-# define trio_log10l(x) log10((double)(x))
+# define trio_log10(x) log10((double)(x))
 #endif
 
 #if TRIO_FEATURE_FLOAT
@@ -1214,15 +1226,15 @@ TRIO_ARGS2((number, exponent),
 	  result = (trio_long_double_t)number * TRIO_SUFFIX_LONG(1E+8);
 	  break;
 	default:
-	  result = trio_powl((trio_long_double_t)number,
-			     (trio_long_double_t)exponent);
+	  result = trio_pow((trio_long_double_t)number,
+			    (trio_long_double_t)exponent);
 	  break;
 	}
     }
   else
     {
-      return trio_powl((trio_long_double_t)number,
-		       (trio_long_double_t)exponent);
+      return trio_pow((trio_long_double_t)number,
+		      (trio_long_double_t)exponent);
     }
   return result;
 }
@@ -1249,11 +1261,11 @@ TRIO_ARGS2((number, base),
     {
       if (base == 10)
 	{
-	  result = trio_log10l(number);
+	  result = trio_log10(number);
 	}
       else
 	{
-	  result = trio_log10l(number) / trio_log10l((double)base);
+	  result = trio_log10(number) / trio_log10((double)base);
 	}
     }
   return result;
@@ -2872,21 +2884,21 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     {
       baseDigits = (base == 10)
 	? LDBL_DIG
-	: (int)floor(LDBL_MANT_DIG / TrioLogarithmBase(base));
+	: (int)trio_floor(LDBL_MANT_DIG / TrioLogarithmBase(base));
       epsilon = LDBL_EPSILON;
     }
   else if (flags & FLAGS_SHORT)
     {
       baseDigits = (base == BASE_DECIMAL)
 	? FLT_DIG
-	: (int)floor(FLT_MANT_DIG / TrioLogarithmBase(base));
+	: (int)trio_floor(FLT_MANT_DIG / TrioLogarithmBase(base));
       epsilon = FLT_EPSILON;
     }
   else
     {
       baseDigits = (base == BASE_DECIMAL)
 	? DBL_DIG
-	: (int)floor(DBL_MANT_DIG / TrioLogarithmBase(base));
+	: (int)trio_floor(DBL_MANT_DIG / TrioLogarithmBase(base));
       epsilon = DBL_EPSILON;
     }
 
@@ -2937,7 +2949,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	precision = 1;
 
       if ( (number < 1.0E-4) ||
-	   (number >= trio_powl(base, (trio_long_double_t)precision)) )
+	   (number >= trio_pow(base, (trio_long_double_t)precision)) )
 	{
 	  /* Use scientific notation */
 	  flags |= FLAGS_FLOAT_E;
@@ -2951,9 +2963,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	   */
 	  workNumber = TrioLogarithm(number, base);
 	  workNumber = TRIO_FABS(workNumber);
-	  if (workNumber - trio_floorl(workNumber) < epsilon)
+	  if (workNumber - trio_floor(workNumber) < epsilon)
 	    workNumber--;
-	  leadingFractionZeroes = (int)trio_floorl(workNumber);
+	  leadingFractionZeroes = (int)trio_floor(workNumber);
 	}
     }
 
@@ -2970,12 +2982,12 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
       else
 	{
-	  exponent = (int)trio_floorl(workNumber);
+	  exponent = (int)trio_floor(workNumber);
 	  /*
 	   * The expression A * 10^-B is equivalent to A / 10^B but the former
 	   * gives better accuracy.
 	   */
-	  number *= trio_powl(dblBase, (trio_long_double_t)-exponent);
+	  number *= trio_pow(dblBase, (trio_long_double_t)-exponent);
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
 	  if (isHex)
@@ -2987,7 +2999,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
     }
 
-  integerNumber = trio_floorl(number);
+  integerNumber = trio_floor(number);
   fractionNumber = number - integerNumber;
   
   /*
@@ -3020,7 +3032,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   if (integerNumber < 1.0)
     {
       workNumber = number * dblFractionBase + 0.5;
-      if (trio_floorl(number * dblFractionBase) != trio_floorl(workNumber))
+      if (trio_floor(number * dblFractionBase) != trio_floor(workNumber))
 	{
 	  adjustNumber = TRUE;
 	  /* Remove a leading fraction zero if fraction is rounded up */
@@ -3034,7 +3046,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   else
     {
       workNumber = number + 0.5 / dblFractionBase;
-      adjustNumber = (trio_floorl(number) != trio_floorl(workNumber));
+      adjustNumber = (trio_floor(number) != trio_floor(workNumber));
     }
   if (adjustNumber)
     {
@@ -3042,7 +3054,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  /* The adjustment may require a change to scientific notation */
 	  if ( (workNumber < 1.0E-4) ||
-	       (workNumber >= trio_powl(base, (trio_long_double_t)precision)) )
+	       (workNumber >= trio_pow(base, (trio_long_double_t)precision)) )
 	    {
 	      /* Use scientific notation */
 	      flags |= FLAGS_FLOAT_E;
@@ -3052,12 +3064,12 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       
       if (flags & FLAGS_FLOAT_E)
 	{
-	  workDigits = 1 + TrioLogarithm(trio_floorl(workNumber), base);
+	  workDigits = 1 + TrioLogarithm(trio_floor(workNumber), base);
 	  if (integerDigits == workDigits)
 	    {
 	      /* Adjust if the same number of digits are used */
 	      number += 0.5 / dblFractionBase;
-	      integerNumber = trio_floorl(number);
+	      integerNumber = trio_floor(number);
 	      fractionNumber = number - integerNumber;
 	    }
 	  else
@@ -3069,7 +3081,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	      if (isHex)
 		uExponent *= 4; /* log16(2) */
 	      workNumber = (number + 0.5 / dblFractionBase) / dblBase;
-	      integerNumber = trio_floorl(workNumber);
+	      integerNumber = trio_floor(workNumber);
 	      fractionNumber = workNumber - integerNumber;
 	    }
 	}
@@ -3078,7 +3090,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  if (workNumber > 1.0)
 	    {
 	      /* Adjust if number was rounded up one digit (ie. 99 to 100) */
-	      integerNumber = trio_floorl(workNumber);
+	      integerNumber = trio_floor(workNumber);
 	      fractionNumber = 0.0;
 	      integerDigits = (integerNumber > epsilon)
 		? 1 + (int)TrioLogarithm(integerNumber, base)
@@ -3100,7 +3112,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	    }
 	  else
 	    {
-	      integerNumber = trio_floorl(workNumber);
+	      integerNumber = trio_floor(workNumber);
 	      fractionNumber = workNumber - integerNumber;
 	      if (flags & FLAGS_FLOAT_G)
 		{
@@ -3156,7 +3168,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
    *  + fraction + exponent
    */
   fractionAdjust /= dblFractionBase;
-  hasOnlyZeroes = (trio_floorl((fractionNumber + fractionAdjust) *
+  hasOnlyZeroes = (trio_floor((fractionNumber + fractionAdjust) *
 			       dblFractionBase) < epsilon);
   keepDecimalPoint = ( (flags & FLAGS_ALTERNATIVE) ||
 		       !((precision == 0) ||
@@ -3185,9 +3197,9 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  workFractionNumber *= dblBase;
 	  workFractionAdjust *= dblBase;
-	  workNumber = trio_floorl(workFractionNumber + workFractionAdjust);
+	  workNumber = trio_floor(workFractionNumber + workFractionAdjust);
 	  workFractionNumber -= workNumber;
-	  offset = (int)trio_fmodl(workNumber, dblBase);
+	  offset = (int)trio_fmod(workNumber, dblBase);
 	  if (offset == 0)
 	    {
 	      trailingZeroes++;
@@ -3222,8 +3234,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     {
       exponentDigits = (uExponent == 0)
 	? 1
-	: (int)ceil(TrioLogarithm((double)(uExponent + 1),
-				  (isHex) ? 10 : base));
+	: (int)trio_ceil(TrioLogarithm((double)(uExponent + 1),
+				       (isHex) ? 10 : base));
     }
   requireTwoDigitExponent = ((base == BASE_DECIMAL) && (exponentDigits == 1));
   if (exponentDigits > 0)
@@ -3288,8 +3300,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   /* Output the integer part and thousand separators */
   for (i = 0; i < integerDigits; i++)
     {
-      workNumber = trio_floorl(((integerNumber + integerAdjust)
-				/ TrioPower(base, integerDigits - i - 1)));
+      workNumber = trio_floor(((integerNumber + integerAdjust)
+			       / TrioPower(base, integerDigits - i - 1)));
       if (i > integerThreshold)
 	{
 	  /* Beyond accuracy */
@@ -3297,7 +3309,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
       else
 	{
-	  self->OutStream(self, digits[(int)trio_fmodl(workNumber, dblBase)]);
+	  self->OutStream(self, digits[(int)trio_fmod(workNumber, dblBase)]);
 	}
 
 #if TRIO_FEATURE_QUOTE
@@ -3343,7 +3355,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  fractionNumber *= dblBase;
 	  fractionAdjust *= dblBase;
-	  workNumber = trio_floorl(fractionNumber + fractionAdjust);
+	  workNumber = trio_floor(fractionNumber + fractionAdjust);
 	  if (workNumber > fractionNumber)
 	    {
 	      /* fractionNumber should never become negative */
@@ -3354,7 +3366,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	    {
 	      fractionNumber -= workNumber;
 	    }
-	  offset = (int)trio_fmodl(workNumber, dblBase);
+	  offset = (int)trio_fmod(workNumber, dblBase);
 	  if (offset == 0)
 	    {
 	      trailingZeroes++;
