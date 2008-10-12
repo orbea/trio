@@ -249,7 +249,7 @@ Corresponds to the size_t modifier ( @c z ).
 
 Prepend radix indicator for hexadecimal, octal, and binary integer numbers
 and for pointers.
-Always add a decimal-pointer for floating-point numbers.
+Always add a decimal-point for floating-point numbers.
 Escape non-printable characters for strings.
 
 @em Spacing ( )

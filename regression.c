@@ -633,6 +633,59 @@ VerifyFormattingFloats(TRIO_NOARGS)
 /*************************************************************************
  *
  */
+#if TRIO_EXTENSION
+int number_writer(void *ref)
+{
+  const char *format;
+  int *data;
+
+  format = trio_get_format(ref);
+  if ((format) && trio_equal(format, "integer"))
+    {
+      data = trio_get_argument(ref);
+      if (data)
+	{
+	  trio_print_int(ref, *data);
+	}
+    }
+  return 0;
+}
+
+#endif
+
+int
+VerifyFormattingUserDefined(TRIO_NOARGS)
+{
+  int nerrors = 0;
+#if TRIO_EXTENSION
+  void *number_handle;
+  int integer = 123;
+
+  number_handle = trio_register(number_writer, "number");
+
+  /* Old style */
+  nerrors += Verify(__FILE__, __LINE__, "123",
+		    "%<number:integer>", &integer);
+
+  /* New style */
+  nerrors += Verify(__FILE__, __LINE__, "123",
+		    "$<number:integer|%p>", &integer);
+  nerrors += Verify(__FILE__, __LINE__, "123",
+		    "$<integer|%p%p>", number_handle, &integer);
+  nerrors += Verify(__FILE__, __LINE__, "$<integer|123",
+		    "$<integer|%d", 123);
+  nerrors += Verify(__FILE__, __LINE__, "$integer|123>",
+		    "$integer|%d>", 123);
+
+  trio_unregister(number_handle);
+#endif
+
+  return nerrors;
+}
+
+/*************************************************************************
+ *
+ */
 int
 VerifyFormattingRegression(TRIO_NOARGS)
 {
@@ -656,13 +709,16 @@ int
 VerifyFormatting(TRIO_NOARGS)
 {
   int nerrors = 0;
+#if TRIO_FEATURE_SIZE_T || TRIO_FEATURE_SIZE_T_UPPER
   char buffer[256];
+#endif
 
   nerrors += VerifyFormattingStrings();
   nerrors += VerifyFormattingIntegers();
   nerrors += VerifyFormattingFloats();
   nerrors += VerifyFormattingRegression();
-  
+  nerrors += VerifyFormattingUserDefined();
+
   /* Pointer */
   if (sizeof(void *) == 4)
     {
@@ -1512,7 +1568,7 @@ main(TRIO_NOARGS)
   nerrors += VerifyAllocate();
 
   if (nerrors == 0)
-    printf("Regression test suceeded\n");
+    printf("Regression test succeeded\n");
   else
     printf("Regression test failed in %d instance(s)\n", nerrors);
   

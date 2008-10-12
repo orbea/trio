@@ -35,16 +35,43 @@ This documentation is incomplete.
 
 The user-defined specifier consists of a start character (\074 = '<'), an
 optional namespace string followed by a namespace separator (\072 = ':'),
-a format string, and an end character (\076 = '>').
+a format string, an optional skipping separator (\174 = '|'), and an end
+character (\076 = '>').
 
 The namespace string can consist of alphanumeric characters, and is used to
 define a named reference (see below). The namespace is case-sensitive. If no
 namespace is specified, then we use an unnamed reference (see below).
 
 The format can consist of any character except the end character ('>'), the
-namespace separator (':'), and the nil character (\000).
+namespace separator (':'), the skipping separator ('|'), and the nil character
+(\000).
 
 Any modifier can be used together with the user-defined specifier.
+
+There are two formats for invoking a user-defined specifier. The first format
+is an extension of the normal printf/scanf formatting. It uses the percent
+character (\045 = '%') followed by optional qualifiers and a specifier. For
+example:
+
+@verbatim
+  trio_printf("%<format>\n", my_handle, my_data);
+@endverbatim
+
+Some C compilers can issue a warning if there is a mismatch between specifiers
+and arguments. Unfortunately, these warnings does not work with the first
+format for user-defined specifiers. Therefore the second format has been
+introduced. The second format can only be applied to user-defined specifiers.
+
+The second format starts with a dollar character (\044 = '$') instead of the
+percent character, and is followed by optional qualifiers and the user-defined
+specifier. If the specifier contains a pipe character (\174 = '|'), then
+everything between the pipe character and the end character ('>') is ignored.
+The ignored part can be used to list the normal specifiers that the C compiler
+uses to determine mismatches. For example:
+
+@verbatim
+  trio_printf("$<format|%p%p>\n", my_handle, my_data);
+@endverbatim
 
 @b Registering
 
@@ -52,7 +79,7 @@ A user-defined specifier must be registered before it can be used.
 Unregistered user-defined specifiers are ignored. The @ref trio_register
 function is used to register a user-defined specifier. It takes two argument,
 a callback function and a namespace, and it returns a handle. The handle must
-be used to unregister the specifier later. 
+be used to unregister the specifier later.
 
 The following example registers a user-define specifier with the "my_namespace"
 namespace:
@@ -79,7 +106,7 @@ If the namespace is used, then a user-defined pointer must be passed as an
 argument:
 
 @verbatim
-  trio_printf("<my_namespace:format>\n", my_data);
+  trio_printf("%<my_namespace:format>\n", my_data);
 @endverbatim
 
 If the handle is used, then the user-defined specifier must not contain a
@@ -87,7 +114,7 @@ namespace. Instead the handle must be passed as an argument, followed by a
 user-defined pointer:
 
 @verbatim
-  trio_printf("<format>\n", my_handle, my_data);
+  trio_printf("%<format>\n", my_handle, my_data);
 @endverbatim
 
 The two examples above are equivalent.
@@ -107,7 +134,7 @@ No namespace can be specified.
 
 @verbatim
   anon_handle = trio_register(callback, NULL);
-  trio_printf("<format>\n", anon_handle, my_data);
+  trio_printf("%<format>\n", anon_handle, my_data);
 @endverbatim
 
 @b Restrictions
@@ -166,7 +193,7 @@ equivalents.
 
 @verbatim
   trio_print_ref(ref, "There are %d towels\n", 42);
-  trio_print_ref(ref, "%<recursive>\n", recursive_writer, trio_get_argument());
+  trio_print_ref(ref, "%<recursive>\n", recursive_writer, trio_get_argument(ref));
 @endverbatim
 
 @b GETTER @b AND @b SETTER @b FUNCTIONS
@@ -218,7 +245,7 @@ Print the time in the format "HOUR:MINUTE:SECOND" if "time" is specified inside
 the user-defined specifier.
 
 @verbatim
-  static int time_writer(void *ref)
+  static int time_print(void *ref)
   {
     const char *format;
     time_t *data;
