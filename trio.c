@@ -4590,8 +4590,7 @@ TRIO_ARGS4((buffer, max, format, args),
  * trio_aprintf
  */
 
-/* Deprecated */
-#if TRIO_FEATURE_DYNAMICSTRING
+#if TRIO_DEPRECATED && TRIO_FEATURE_DYNAMICSTRING
 TRIO_PUBLIC char *
 trio_aprintf
 TRIO_VARGS2((format, va_alist),
@@ -4618,10 +4617,9 @@ TRIO_VARGS2((format, va_alist),
     }
   return result;
 }
-#endif /* TRIO_FEATURE_DYNAMICSTRING */
+#endif /* TRIO_DEPRECATED && TRIO_FEATURE_DYNAMICSTRING */
 
-/* Deprecated */
-#if TRIO_FEATURE_DYNAMICSTRING
+#if TRIO_DEPRECATED && TRIO_FEATURE_DYNAMICSTRING
 TRIO_PUBLIC char *
 trio_vaprintf
 TRIO_ARGS2((format, args),
@@ -4644,7 +4642,7 @@ TRIO_ARGS2((format, args),
     }
   return result;
 }
-#endif /* TRIO_FEATURE_DYNAMICSTRING */
+#endif /* TRIO_DEPRECATED && TRIO_FEATURE_DYNAMICSTRING */
 
 /**
    Allocate and print to string.

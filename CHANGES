@@ -4,12 +4,14 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.13 - 2008/10/12
+Version 1.13 - 2008/11/09
 -------------------------
 * Ives Aerts
   Added the $<format|skip> format for user-defined specifiers, which is
   compatible with compiler warnings about mismatches between specifiers and
   arguments.
+
+* Added TRIO_DEPRECATED flag (reported by David Boyce)
 
 * Fixed rounding adjustment for long double (reported as bug item #2136686).
 
