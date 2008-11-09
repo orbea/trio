@@ -1,6 +1,6 @@
 SHELL = @SHELL@
 CC	= @CC@
-CFLAGS	= @CFLAGS@ -DDEBUG
+CFLAGS	= @CFLAGS@ -I. -DDEBUG
 OBJS	= triostr.o trio.o trionan.o
 TARGETLIB	= libtrio.a
 TARGETINCS	= trio.h triop.h triodef.h trionan.h triostr.h
@@ -58,4 +58,4 @@ doc::
 	$(GENDOC) doc/trio.cfg
 
 clean:
-	$(ERASE) *~ core regression example $(TOBJS) $(OBJS) $(TARGET) $(TARGETLIB) example.o regression.o
+	$(ERASE) *~ core core.* regression example $(TOBJS) $(OBJS) $(TARGET) $(TARGETLIB) example.o regression.o
