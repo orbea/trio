@@ -31,7 +31,7 @@
 #if defined(TRIO_FUNC_TO_LONG_DOUBLE)
 # define USE_MATH
 #endif
-#if defined(USE_MATH)
+#if defined(USE_MATH) && defined(HAVE_MATH_H)
 # include <math.h>
 #endif
 
@@ -107,9 +107,11 @@
 # endif
 #endif
 
-#if !(defined(TRIO_PLATFORM_SUNOS))
-# define USE_TOLOWER
-# define USE_TOUPPER
+#if !defined(HAVE_CONFIG_H)
+# if !(defined(TRIO_PLATFORM_SUNOS))
+#  define HAVE_TOLOWER
+#  define HAVE_TOUPPER
+# endif
 #endif
 
 #if defined(USE_MATH)
@@ -294,7 +296,7 @@ internal_to_upper
 TRIO_ARGS1((source),
 	   int source)
 {
-# if defined(USE_TOUPPER)
+# if defined(HAVE_TOUPPER)
   
   return toupper(source);
   
@@ -1425,7 +1427,7 @@ trio_to_lower
 TRIO_ARGS1((source),
 	   int source)
 {
-# if defined(USE_TOLOWER)
+# if defined(HAVE_TOLOWER)
   
   return tolower(source);
   
