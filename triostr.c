@@ -31,7 +31,7 @@
 #if defined(TRIO_FUNC_TO_LONG_DOUBLE)
 # define USE_MATH
 #endif
-#if defined(USE_MATH) && defined(HAVE_MATH_H)
+#if defined(USE_MATH)
 # include <math.h>
 #endif
 
