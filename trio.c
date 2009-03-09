@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (C) 1998 Bjorn Reese and Daniel Stenberg.
+ * Copyright (C) 1998, 2009 Bjorn Reese and Daniel Stenberg.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1426,9 +1426,10 @@ TRIO_ARGS4((type, format, offset, parameter),
 	  if (TYPE_PRINT == type)
 	    {
 	      /* Read with from parameter */
-	      parameter->flags |= (FLAGS_WIDTH | FLAGS_WIDTH_PARAMETER);
 	      int width = TrioGetPosition(format, &offset);
-	      if (NO_POSITION != width) parameter->width = width;
+	      parameter->flags |= (FLAGS_WIDTH | FLAGS_WIDTH_PARAMETER);
+	      if (NO_POSITION != width)
+                parameter->width = width;
 	      /* else keep parameter->width = NO_WIDTH which != NO_POSITION */
 	    }
 #if TRIO_FEATURE_SCANF
@@ -1908,8 +1909,9 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   
   while (format[offset])
     {
-      trio_parameter_t parameter = {};
+      trio_parameter_t parameter;
       int status;
+      memset(&parameter, 0, sizeof (parameter)); /* Initialize */
 
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
       if (! isascii(format[offset]))
