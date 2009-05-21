@@ -6,6 +6,9 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.14 - 2009/05/21
 -------------------------
+* Gideon Smeding
+  Fixed group scanning for non-matching input.
+
 * Fixed missing undo of look-ahead reading for scanf functions. This does only
   work for the scanf* and fscanf* functions, not dscanf* and cscanf* functions
   (reported by Gideon Smeding).

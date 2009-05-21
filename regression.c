@@ -1305,6 +1305,12 @@ VerifyScanningRegression(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "1e-06",
 		    "%g", dnumber);
 #endif
+
+  ch = 'a';
+  rc = trio_sscanf("0123456789", "%1[c]", &ch);
+  nerrors += Verify(__FILE__, __LINE__, "a",
+		    "%c", ch);
+
   return nerrors;
 }
 #endif

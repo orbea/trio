@@ -6345,6 +6345,8 @@ TRIO_ARGS4((self, target, flags, width),
 /*************************************************************************
  * TrioReadGroup
  *
+ * Reads non-empty character groups.
+ *
  * FIXME: characterclass does not work with multibyte characters
  */
 TRIO_PRIVATE BOOLEAN_T
@@ -6373,8 +6375,8 @@ TRIO_ARGS5((self, target, characterclass, flags, width),
 	target[i] = (char)ch;
       self->InStream(self, &ch);
     }
-  
-  if (target)
+  /* Terminate the string if input saved */
+  if ((target) && (i != 0))
     target[i] = NIL;
   return TRUE;
 }
