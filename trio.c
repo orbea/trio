@@ -839,6 +839,10 @@ typedef struct _trio_class_t {
    */
   void (*InStream) TRIO_PROTO((struct _trio_class_t *, int *));
   /*
+   * The function to undo read characters from a stream.
+   */
+  void (*UndoStream) TRIO_PROTO((struct _trio_class_t *));
+  /*
    * The current location in the stream.
    */
   trio_pointer_t location;
@@ -851,12 +855,17 @@ typedef struct _trio_class_t {
    * if there had been sufficient space.
    */
   int processed;
-  /*
-   * The number of characters that are actually written/read.
-   * Processed and committed will only differ for the *nprintf
-   * and *nscanf functions.
-   */
-  int committed;
+  union {
+    /*
+     * The number of characters that are actually written. Processed and
+     * committed will only differ for the *nprintf functions.
+     */
+    int committed;
+    /*
+     * The number of look-ahead characters read.
+     */
+    int cached;
+  } actually;
   /*
    * The upper limit of characters that may be written/read.
    */
@@ -3711,38 +3720,38 @@ TRIO_ARGS3((data, format, parameters),
 	      /*
 	       * C99 paragraph 7.19.6.1.8 says "the number of
 	       * characters written to the output stream so far by
-	       * this call", which is data->committed
+	       * this call", which is data->actually.committed
 	       */
 #if TRIO_FEATURE_SIZE_T || TRIO_FEATURE_SIZE_T_UPPER
 	      if (flags & FLAGS_SIZE_T)
-		*(size_t *)pointer = (size_t)data->committed;
+		*(size_t *)pointer = (size_t)data->actually.committed;
 	      else
 #endif
 #if TRIO_FEATURE_PTRDIFF_T
 	      if (flags & FLAGS_PTRDIFF_T)
-		*(ptrdiff_t *)pointer = (ptrdiff_t)data->committed;
+		*(ptrdiff_t *)pointer = (ptrdiff_t)data->actually.committed;
 	      else
 #endif
 #if TRIO_FEATURE_INTMAX_T
 	      if (flags & FLAGS_INTMAX_T)
-		*(trio_intmax_t *)pointer = (trio_intmax_t)data->committed;
+		*(trio_intmax_t *)pointer = (trio_intmax_t)data->actually.committed;
 	      else
 #endif
 	      if (flags & FLAGS_QUAD)
 		{
-		  *(trio_ulonglong_t *)pointer = (trio_ulonglong_t)data->committed;
+		  *(trio_ulonglong_t *)pointer = (trio_ulonglong_t)data->actually.committed;
 		}
 	      else if (flags & FLAGS_LONG)
 		{
-		  *(long int *)pointer = (long int)data->committed;
+		  *(long int *)pointer = (long int)data->actually.committed;
 		}
 	      else if (flags & FLAGS_SHORT)
 		{
-		  *(short int *)pointer = (short int)data->committed;
+		  *(short int *)pointer = (short int)data->actually.committed;
 		}
 	      else
 		{
-		  *(int *)pointer = (int)data->committed;
+		  *(int *)pointer = (int)data->actually.committed;
 		}
 	    }
 	  break; /* FORMAT_COUNT */
@@ -3910,7 +3919,7 @@ TRIO_ARGS2((self, output),
     }
   else
     {
-      self->committed++;
+      self->actually.committed++;
     }
 }
 #endif /* TRIO_FEATURE_FILE || TRIO_FEATURE_STDIO */
@@ -3939,7 +3948,7 @@ TRIO_ARGS2((self, output),
     }
   else
     {
-      self->committed++;
+      self->actually.committed++;
     }
 }
 #endif /* TRIO_FEATURE_FD */
@@ -3966,7 +3975,7 @@ TRIO_ARGS2((self, output),
       status = (data->stream.out)(data->closure, output);
       if (status >= 0)
 	{
-	  self->committed++;
+	  self->actually.committed++;
 	}
       else
 	{
@@ -3998,7 +4007,7 @@ TRIO_ARGS2((self, output),
   **buffer = (char)output;
   (*buffer)++;
   self->processed++;
-  self->committed++;
+  self->actually.committed++;
 }
 
 /*************************************************************************
@@ -4021,7 +4030,7 @@ TRIO_ARGS2((self, output),
     {
       **buffer = (char)output;
       (*buffer)++;
-      self->committed++;
+      self->actually.committed++;
     }
   self->processed++;
 }
@@ -4043,7 +4052,7 @@ TRIO_ARGS2((self, output),
     {
       trio_xstring_append_char((trio_string_t *)self->location,
 			       (char)output);
-      self->committed++;
+      self->actually.committed++;
     }
   /* The processed variable must always be increased */
   self->processed++;
@@ -6630,6 +6639,7 @@ TRIO_ARGS3((data, format, parameters),
 	   TRIO_CONST char *format,
 	   trio_parameter_t *parameters)
 {
+  int status;
   int assignment;
   int ch;
   int offset; /* Offset of format string */
@@ -6643,6 +6653,7 @@ TRIO_ARGS3((data, format, parameters),
   if (parameters[0].type == FORMAT_SENTINEL)
     return 0;
 
+  status = 0;
   assignment = 0;
   i = 0;
   offset = 0;
@@ -6671,7 +6682,10 @@ TRIO_ARGS3((data, format, parameters),
 		  continue; /* while format chars left */
 		}
 	      else
-		return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
+		{
+		  status = TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
+		  goto end;
+		}
 	    }
 	  else /* Not an % identifier */
 	    {
@@ -6685,7 +6699,10 @@ TRIO_ARGS3((data, format, parameters),
 		  data->InStream(data, &ch);
 		}
 	      else
-		return assignment;
+		{
+		  status = assignment;
+		  goto end;
+		}
 
 	      offset++;
 	    }
@@ -6695,7 +6712,10 @@ TRIO_ARGS3((data, format, parameters),
 	break;
 
       if ((EOF == ch) && (parameters[i].type != FORMAT_COUNT))
-	return (assignment > 0) ? assignment : EOF;
+	{
+	  status = (assignment > 0) ? assignment : EOF;
+	  goto end;
+	}
 
       flags = parameters[i].flags;
 
@@ -6739,7 +6759,10 @@ TRIO_ARGS3((data, format, parameters),
 				flags,
 				width,
 				base))
-	      return assignment;
+	      {
+		status = assignment;
+		goto end;
+	      }
 
 	    if (!(flags & FLAGS_IGNORE))
 	      {
@@ -6783,7 +6806,10 @@ TRIO_ARGS3((data, format, parameters),
 				      : parameters[i].data.wstring,
 				      flags,
 				      width))
-		return assignment;
+		{
+		  status = assignment;
+		  goto end;
+		}
 	    }
 	  else
 #endif
@@ -6794,7 +6820,10 @@ TRIO_ARGS3((data, format, parameters),
 				  : parameters[i].data.string,
 				  flags,
 				  width))
-		return assignment;
+		{
+		  status = assignment;
+		  goto end;
+		}
 	    }
 	  if (!(flags & FLAGS_IGNORE))
 	    assignment++;
@@ -6815,7 +6844,8 @@ TRIO_ARGS3((data, format, parameters),
 	      }
 	    if (!TrioReadDouble(data, pointer, flags, width))
 	      {
-		return assignment;
+		status = assignment;
+		goto end;
 	      }
 	    if (!(flags & FLAGS_IGNORE))
 	      {
@@ -6828,7 +6858,6 @@ TRIO_ARGS3((data, format, parameters),
 	case FORMAT_GROUP:
 	  {
 	    int characterclass[MAX_CHARACTER_CLASS + 1];
-	    int rc;
 
 	    /* Skip over modifiers */
 	    while (format[offset] != SPECIFIER_GROUP)
@@ -6839,12 +6868,12 @@ TRIO_ARGS3((data, format, parameters),
 	    offset++;
 
 	    memset(characterclass, 0, sizeof(characterclass));
-	    rc = TrioGetCharacterClass(format,
-				       &offset,
-				       &flags,
-				       characterclass);
-	    if (rc < 0)
-	      return rc;
+	    status = TrioGetCharacterClass(format,
+					   &offset,
+					   &flags,
+					   characterclass);
+	    if (status < 0)
+	      goto end;
 
 	    if (!TrioReadGroup(data,
 			       (flags & FLAGS_IGNORE)
@@ -6853,7 +6882,10 @@ TRIO_ARGS3((data, format, parameters),
 			       characterclass,
 			       flags,
 			       parameters[i].width))
-	      return assignment;
+	      {
+		status = assignment;
+		goto end;
+	      }
 	    if (!(flags & FLAGS_IGNORE))
 	      assignment++;
 	  }
@@ -6863,7 +6895,7 @@ TRIO_ARGS3((data, format, parameters),
 	  pointer = parameters[i].data.pointer;
 	  if (NULL != pointer)
 	    {
-	      int count = data->committed;
+	      int count = data->processed;
 	      if (ch != EOF)
 		count--; /* a character is read, but is not consumed yet */
 #if TRIO_FEATURE_SIZE_T || TRIO_FEATURE_SIZE_T_UPPER
@@ -6910,7 +6942,10 @@ TRIO_ARGS3((data, format, parameters),
 				   : parameters[i].data.wstring,
 				   flags,
 				   (width == NO_WIDTH) ? 1 : width) == 0)
-		return assignment;
+		{
+		  status = assignment;
+		  goto end;
+		}
 	    }
 	  else
 #endif
@@ -6921,7 +6956,10 @@ TRIO_ARGS3((data, format, parameters),
 			       : parameters[i].data.string,
 			       flags,
 			       (width == NO_WIDTH) ? 1 : width) == 0)
-		return assignment;
+		{
+		  status = assignment;
+		  goto end;
+		}
 	    }
 	  if (!(flags & FLAGS_IGNORE))
 	    assignment++;
@@ -6933,7 +6971,10 @@ TRIO_ARGS3((data, format, parameters),
 			       ? NULL
 			       : (trio_pointer_t *)parameters[i].data.pointer,
 			       flags))
-	    return assignment;
+	    {
+	      status = assignment;
+	      goto end;
+	    }
 	  if (!(flags & FLAGS_IGNORE))
 	    assignment++;
 	  break; /* FORMAT_POINTER */
@@ -6942,14 +6983,20 @@ TRIO_ARGS3((data, format, parameters),
 	  break; /* FORMAT_PARAMETER */
 
 	default:
-	  return TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
+	  status = TRIO_ERROR_RETURN(TRIO_EINVAL, offset);
+	  goto end;
 	}
 
       ch = data->current;
       offset = parameters[i].endOffset;
       i++;
     }
-  return assignment;
+
+  status = assignment;
+ end:
+  if (data->UndoStream)
+    data->UndoStream(data);
+  return status;
 }
 
 /*************************************************************************
@@ -6957,10 +7004,11 @@ TRIO_ARGS3((data, format, parameters),
  */
 TRIO_PRIVATE int
 TrioScan
-TRIO_ARGS6((source, sourceSize, InStream, format, arglist, argarray),
+TRIO_ARGS7((source, sourceSize, InStream, UndoStream, format, arglist, argarray),
 	   trio_pointer_t source,
 	   size_t sourceSize,
 	   void (*InStream) TRIO_PROTO((trio_class_t *, int *)),
+	   void (*UndoStream) TRIO_PROTO((trio_class_t *)),
 	   TRIO_CONST char *format,
 	   va_list arglist,
 	   trio_pointer_t *argarray)
@@ -6974,6 +7022,7 @@ TRIO_ARGS6((source, sourceSize, InStream, format, arglist, argarray),
 
   memset(&data, 0, sizeof(data));
   data.InStream = InStream;
+  data.UndoStream = UndoStream;
   data.location = (trio_pointer_t)source;
   data.max = sourceSize;
   data.error = 0;
@@ -6984,7 +7033,7 @@ TRIO_ARGS6((source, sourceSize, InStream, format, arglist, argarray),
       TrioSetLocale();
     }
 #endif
-  
+
   status = TrioParse(TYPE_SCAN, format, parameters, arglist, argarray);
   if (status < 0)
     return status;
@@ -7012,6 +7061,8 @@ TRIO_ARGS2((self, intPointer),
   assert(VALID(self));
   assert(VALID(file));
 
+  self->actually.cached = 0;
+
   self->current = fgetc(file);
   if (self->current == EOF)
     {
@@ -7022,12 +7073,36 @@ TRIO_ARGS2((self, intPointer),
   else
     {
       self->processed++;
-      self->committed++;
+      self->actually.cached++;
     }
-  
+
   if (VALID(intPointer))
     {
       *intPointer = self->current;
+    }
+}
+#endif /* TRIO_FEATURE_FILE || TRIO_FEATURE_STDIO */
+
+/*************************************************************************
+ * TrioUndoStreamFile
+ */
+#if TRIO_FEATURE_FILE || TRIO_FEATURE_STDIO
+TRIO_PRIVATE void
+TrioUndoStreamFile
+TRIO_ARGS1((self),
+	   trio_class_t *self)
+{
+  FILE *file = (FILE *)self->location;
+
+  assert(VALID(self));
+  assert(VALID(file));
+
+  if (self->actually.cached > 0)
+    {
+      assert(self->actually.cached == 1);
+
+      self->current = ungetc(self->current, file);
+      self->actually.cached = 0;
     }
 }
 #endif /* TRIO_FEATURE_FILE || TRIO_FEATURE_STDIO */
@@ -7048,6 +7123,8 @@ TRIO_ARGS2((self, intPointer),
 
   assert(VALID(self));
 
+  self->actually.cached = 0;
+
   size = read(fd, &input, sizeof(char));
   if (size == -1)
     {
@@ -7060,10 +7137,10 @@ TRIO_ARGS2((self, intPointer),
     }
   if (self->current != EOF)
     {
-      self->committed++;
+      self->actually.cached++;
       self->processed++;
     }
-  
+
   if (VALID(intPointer))
     {
       *intPointer = self->current;
@@ -7082,16 +7159,18 @@ TRIO_ARGS2((self, intPointer),
 	   int *intPointer)
 {
   trio_custom_t *data;
-  
+
   assert(VALID(self));
   assert(VALID(self->location));
+
+  self->actually.cached = 0;
 
   data = (trio_custom_t *)self->location;
 
   self->current = (data->stream.in == NULL)
     ? NIL
     : (data->stream.in)(data->closure);
-  
+
   if (self->current == NIL)
     {
       self->current = EOF;
@@ -7099,9 +7178,9 @@ TRIO_ARGS2((self, intPointer),
   else
     {
       self->processed++;
-      self->committed++;
+      self->actually.cached++;
     }
-  
+
   if (VALID(intPointer))
     {
       *intPointer = self->current;
@@ -7123,6 +7202,8 @@ TRIO_ARGS2((self, intPointer),
   assert(VALID(self));
   assert(VALID(self->location));
 
+  self->actually.cached = 0;
+
   buffer = (unsigned char **)self->location;
   self->current = (*buffer)[0];
   if (self->current == NIL)
@@ -7133,9 +7214,9 @@ TRIO_ARGS2((self, intPointer),
     {
       (*buffer)++;
       self->processed++;
-      self->committed++;
+      self->actually.cached++;
     }
-  
+
   if (VALID(intPointer))
     {
       *intPointer = self->current;
@@ -7181,6 +7262,7 @@ TRIO_VARGS2((format, va_alist),
   TRIO_VA_START(args, format);
   status = TrioScan((trio_pointer_t)stdin, 0,
 		    TrioInStreamFile,
+		    TrioUndoStreamFile,
 		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
@@ -7205,6 +7287,7 @@ TRIO_ARGS2((format, args),
   
   return TrioScan((trio_pointer_t)stdin, 0,
 		  TrioInStreamFile,
+		  TrioUndoStreamFile,
 		  format, args, NULL);
 }
 #endif /* TRIO_FEATURE_STDIO */
@@ -7229,6 +7312,7 @@ TRIO_ARGS2((format, args),
   
   return TrioScan((trio_pointer_t)stdin, 0,
 		  TrioInStreamFile,
+		  TrioUndoStreamFile,
 		  format, unused, args);
 }
 #endif /* TRIO_FEATURE_STDIO */
@@ -7262,6 +7346,7 @@ TRIO_VARGS3((file, format, va_alist),
   TRIO_VA_START(args, format);
   status = TrioScan((trio_pointer_t)file, 0,
 		    TrioInStreamFile,
+		    TrioUndoStreamFile,
 		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
@@ -7289,6 +7374,7 @@ TRIO_ARGS3((file, format, args),
   
   return TrioScan((trio_pointer_t)file, 0,
 		  TrioInStreamFile,
+		  TrioUndoStreamFile,
 		  format, args, NULL);
 }
 #endif /* TRIO_FEATURE_FILE */
@@ -7316,6 +7402,7 @@ TRIO_ARGS3((file, format, args),
   
   return TrioScan((trio_pointer_t)file, 0,
 		  TrioInStreamFile,
+		  TrioUndoStreamFile,
 		  format, unused, args);
 }
 #endif /* TRIO_FEATURE_FILE */
@@ -7348,6 +7435,7 @@ TRIO_VARGS3((fd, format, va_alist),
   TRIO_VA_START(args, format);
   status = TrioScan((trio_pointer_t)&fd, 0,
 		    TrioInStreamFileDescriptor,
+		    NULL,
 		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
@@ -7374,6 +7462,7 @@ TRIO_ARGS3((fd, format, args),
   
   return TrioScan((trio_pointer_t)&fd, 0,
 		  TrioInStreamFileDescriptor,
+		  NULL,
 		  format, args, NULL);
 }
 #endif /* TRIO_FEATURE_FD */
@@ -7400,6 +7489,7 @@ TRIO_ARGS3((fd, format, args),
   
   return TrioScan((trio_pointer_t)&fd, 0,
 		  TrioInStreamFileDescriptor,
+		  NULL,
 		  format, unused, args);
 }
 #endif /* TRIO_FEATURE_FD */
@@ -7426,7 +7516,7 @@ TRIO_VARGS4((stream, closure, format, va_alist),
   TRIO_VA_START(args, format);
   data.stream.in = stream;
   data.closure = closure;
-  status = TrioScan(&data, 0, TrioInStreamCustom, format, args, NULL);
+  status = TrioScan(&data, 0, TrioInStreamCustom, NULL, format, args, NULL);
   TRIO_VA_END(args);
   return status;
 }
@@ -7448,7 +7538,7 @@ TRIO_ARGS4((stream, closure, format, args),
 
   data.stream.in = stream;
   data.closure = closure;
-  return TrioScan(&data, 0, TrioInStreamCustom, format, args, NULL);
+  return TrioScan(&data, 0, TrioInStreamCustom, NULL, format, args, NULL);
 }
 #endif /* TRIO_FEATURE_CLOSURE */
 
@@ -7469,7 +7559,7 @@ TRIO_ARGS4((stream, closure, format, args),
 
   data.stream.in = stream;
   data.closure = closure;
-  return TrioScan(&data, 0, TrioInStreamCustom, format, unused, args);
+  return TrioScan(&data, 0, TrioInStreamCustom, NULL, format, unused, args);
 }
 #endif /* TRIO_FEATURE_CLOSURE */
 
@@ -7501,6 +7591,7 @@ TRIO_VARGS3((buffer, format, va_alist),
   TRIO_VA_START(args, format);
   status = TrioScan((trio_pointer_t)&buffer, 0,
 		    TrioInStreamString,
+		    NULL,
 		    format, args, NULL);
   TRIO_VA_END(args);
   return status;
@@ -7526,6 +7617,7 @@ TRIO_ARGS3((buffer, format, args),
   
   return TrioScan((trio_pointer_t)&buffer, 0,
 		  TrioInStreamString,
+		  NULL,
 		  format, args, NULL);
 }
 
@@ -7551,6 +7643,7 @@ TRIO_ARGS3((buffer, format, args),
   
   return TrioScan((trio_pointer_t)&buffer, 0,
 		  TrioInStreamString,
+		  NULL,
 		  format, unused, args);
 }
 

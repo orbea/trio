@@ -6,6 +6,10 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.14 - 2009/05/21
 -------------------------
+* Fixed missing undo of look-ahead reading for scanf functions. This does only
+  work for the scanf* and fscanf* functions, not dscanf* and cscanf* functions
+  (reported by Gideon Smeding).
+
 * If the format string is empty, scanf does not attempt to read any input.
 
 * Ralf Junker
