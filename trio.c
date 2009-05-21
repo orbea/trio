@@ -6628,6 +6628,10 @@ TRIO_ARGS3((data, format, parameters),
   int base;
   trio_pointer_t pointer;
 
+  /* Return on empty format string */
+  if (parameters[0].type == FORMAT_SENTINEL)
+    return 0;
+
   assignment = 0;
   i = 0;
   offset = 0;

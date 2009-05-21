@@ -4,6 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.14 - 2009/05/21
+-------------------------
+* If the format string is empty, scanf does not attempt to read any input.
+
+
 Version 1.13 - 2008/11/09
 -------------------------
 * Ives Aerts
@@ -490,9 +495,6 @@ Version 0.21 - 2000/07/19
   assume blocking sockets). Stdio buffering is surpassed, so the functions are
   async-safe. However, reading from stdin (STDIN_FILENO) or writing to stdout
   (STDOUT_FILENO) reintroduces the buffering.
-
-* Added trio_dprintf and trio_vdprintf. These can be used to write directly
-  to pipes and sockets.
 
 * Paul Janzen
   Added trio_asprintf and trio_vasprintf, which are compatible with the GNU
