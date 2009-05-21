@@ -8,6 +8,9 @@ Version 1.14 - 2009/05/21
 -------------------------
 * If the format string is empty, scanf does not attempt to read any input.
 
+* Ralf Junker
+  Fixed Borland compilation for user-defined specifiers.
+
 
 Version 1.13 - 2008/11/09
 -------------------------

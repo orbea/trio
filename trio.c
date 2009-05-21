@@ -1893,6 +1893,8 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   int save_errno;
   int i = -1;
   int num;
+  trio_parameter_t workParameter;
+  int status;
 
   /*
    * The 'parameters' array is not initialized, but we need to
@@ -1909,9 +1911,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   
   while (format[offset])
     {
-      trio_parameter_t parameter;
-      int status;
-      memset(&parameter, 0, sizeof (parameter)); /* Initialize */
+      memset(&workParameter, 0, sizeof (workParameter)); /* Initialize */
 
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
       if (! isascii(format[offset]))
@@ -1937,11 +1937,11 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	      continue; /* while */
 	    }
 
-	  status = TrioParseQualifiers(type, format, offset, &parameter);
+	  status = TrioParseQualifiers(type, format, offset, &workParameter);
 	  if (status < 0)
 	    return status; /* Return qualifier syntax error */
 
-	  status = TrioParseSpecifier(type, format, parameter.endOffset, &parameter);
+	  status = TrioParseSpecifier(type, format, workParameter.endOffset, &workParameter);
 	  if (status < 0)
 	    return status; /* Return specifier syntax error */
 	}
@@ -1950,12 +1950,12 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 #if TRIO_EXTENSION
       case CHAR_ALT_IDENTIFIER:
 	{
-	  status = TrioParseQualifiers(type, format, offset, &parameter);
+	  status = TrioParseQualifiers(type, format, offset, &workParameter);
 	  if (status < 0)
 	    continue; /* False alert, not a user defined specifier */
 
-	  status = TrioParseSpecifier(type, format, parameter.endOffset, &parameter);
-	  if ((status < 0) || (FORMAT_USER_DEFINED != parameter.type))
+	  status = TrioParseSpecifier(type, format, workParameter.endOffset, &workParameter);
+	  if ((status < 0) || (FORMAT_USER_DEFINED != workParameter.type))
 	    continue; /* False alert, not a user defined specifier */
 	}
 	break;
@@ -1966,116 +1966,116 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
       }
 
       /* now handle the parsed conversion specification */
-      positional = (NO_POSITION != parameter.position);
+      positional = (NO_POSITION != workParameter.position);
 
       /*
        * Parameters only need the type and value. The value is
        * read later.
        */
-      if (parameter.flags & FLAGS_WIDTH_PARAMETER)
+      if (workParameter.flags & FLAGS_WIDTH_PARAMETER)
       {
-	  if (parameter.width == NO_WIDTH)
+	  if (workParameter.width == NO_WIDTH)
 	  {
-	      parameter.width = parameterPosition++;
+	      workParameter.width = parameterPosition++;
 	  }
 	  else
 	  {
 	      if (! positional)
-		  parameter.position = parameter.width + 1;
+		  workParameter.position = workParameter.width + 1;
 	  }
 
-	  usedEntries[parameter.width] += 1;
-	  if (parameter.width > maxParam) maxParam = parameter.width;
+	  usedEntries[workParameter.width] += 1;
+	  if (workParameter.width > maxParam) maxParam = workParameter.width;
 	  parameters[pos].type = FORMAT_PARAMETER;
 	  parameters[pos].flags = 0;
-	  indices[parameter.width] = pos;
-	  parameter.width = pos++;
+	  indices[workParameter.width] = pos;
+	  workParameter.width = pos++;
       }
-      if (parameter.flags & FLAGS_PRECISION_PARAMETER)
+      if (workParameter.flags & FLAGS_PRECISION_PARAMETER)
       {
-	  if (parameter.precision == NO_PRECISION)
+	  if (workParameter.precision == NO_PRECISION)
 	  {
-	      parameter.precision = parameterPosition++;
+	      workParameter.precision = parameterPosition++;
 	  }
 	  else
 	  {
 	      if (! positional)
-		  parameter.position = parameter.precision + 1;
+		  workParameter.position = workParameter.precision + 1;
 	  }
 
-	  usedEntries[parameter.precision] += 1;
-	  if (parameter.precision > maxParam) maxParam = parameter.precision;
+	  usedEntries[workParameter.precision] += 1;
+	  if (workParameter.precision > maxParam) maxParam = workParameter.precision;
 	  parameters[pos].type = FORMAT_PARAMETER;
 	  parameters[pos].flags = 0;
-	  indices[parameter.precision] = pos;
-	  parameter.precision = pos++;
+	  indices[workParameter.precision] = pos;
+	  workParameter.precision = pos++;
       }
-      if (parameter.flags & FLAGS_BASE_PARAMETER)
+      if (workParameter.flags & FLAGS_BASE_PARAMETER)
       {
-	  if (parameter.base == NO_BASE)
+	  if (workParameter.base == NO_BASE)
 	  {
-	      parameter.base = parameterPosition++;
+	      workParameter.base = parameterPosition++;
 	  }
 	  else
 	  {
 	      if (! positional)
-		  parameter.position = parameter.base + 1;
+		  workParameter.position = workParameter.base + 1;
 	  }
 
-	  usedEntries[parameter.base] += 1;
-	  if (parameter.base > maxParam) maxParam = parameter.base;
+	  usedEntries[workParameter.base] += 1;
+	  if (workParameter.base > maxParam) maxParam = workParameter.base;
 	  parameters[pos].type = FORMAT_PARAMETER;
 	  parameters[pos].flags = 0;
-	  indices[parameter.base] = pos;
-	  parameter.base = pos++;
+	  indices[workParameter.base] = pos;
+	  workParameter.base = pos++;
       }
 #if TRIO_FEATURE_VARSIZE
-      if (parameter.flags & FLAGS_VARSIZE_PARAMETER)
+      if (workParameter.flags & FLAGS_VARSIZE_PARAMETER)
       {
-	  parameter.varsize = parameterPosition++;
+	  workParameter.varsize = parameterPosition++;
 
-	  usedEntries[parameter.varsize] += 1;
-	  if (parameter.varsize > maxParam) maxParam = parameter.varsize;
+	  usedEntries[workParameter.varsize] += 1;
+	  if (workParameter.varsize > maxParam) maxParam = workParameter.varsize;
 	  parameters[pos].type = FORMAT_PARAMETER;
 	  parameters[pos].flags = 0;
-	  indices[parameter.varsize] = pos;
-	  parameter.varsize = pos++;
+	  indices[workParameter.varsize] = pos;
+	  workParameter.varsize = pos++;
       }
 #endif
 #if TRIO_FEATURE_USER_DEFINED
-      if (parameter.flags & FLAGS_USER_DEFINED_PARAMETER)
+      if (workParameter.flags & FLAGS_USER_DEFINED_PARAMETER)
       {
-	  parameter.user_defined.handler = parameterPosition++;
+	  workParameter.user_defined.handler = parameterPosition++;
 
-	  usedEntries[parameter.user_defined.handler] += 1;
-	  if (parameter.user_defined.handler > maxParam) maxParam = parameter.user_defined.handler;
+	  usedEntries[workParameter.user_defined.handler] += 1;
+	  if (workParameter.user_defined.handler > maxParam) maxParam = workParameter.user_defined.handler;
 	  parameters[pos].type = FORMAT_PARAMETER;
 	  parameters[pos].flags = FLAGS_USER_DEFINED;
-	  indices[parameter.user_defined.handler] = pos;
-	  parameter.user_defined.handler = pos++;
+	  indices[workParameter.user_defined.handler] = pos;
+	  workParameter.user_defined.handler = pos++;
       }
 #endif
 
-      if (NO_POSITION == parameter.position) {
-	  parameter.position = parameterPosition++;
+      if (NO_POSITION == workParameter.position) {
+	  workParameter.position = parameterPosition++;
       }
 
-      if (parameter.position > maxParam) maxParam = parameter.position;
+      if (workParameter.position > maxParam) maxParam = workParameter.position;
 
-      if (parameter.position >= MAX_PARAMETERS)
+      if (workParameter.position >= MAX_PARAMETERS)
       {
 	/* Bail out completely to make the error more obvious */
 	return TRIO_ERROR_RETURN(TRIO_ETOOMANY, offset);
       }
 
-      indices[parameter.position] = pos;
+      indices[workParameter.position] = pos;
 
       /*  Count the number of times this entry has been used */
-      usedEntries[parameter.position] += 1;
+      usedEntries[workParameter.position] += 1;
 
       /* Find last sticky parameters */
 #if TRIO_FEATURE_STICKY
-      if (parameter.flags & FLAGS_STICKY) {
+      if (workParameter.flags & FLAGS_STICKY) {
 	gotSticky = TRUE;
       } else if (gotSticky) {
 	for (i = pos - 1; i >= 0; i--)
@@ -2083,27 +2083,27 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 	  if (parameters[i].type == FORMAT_PARAMETER)
 	    continue;
 	  if ((parameters[i].flags & FLAGS_STICKY) &&
-	      (parameters[i].type == parameter.type))
+	      (parameters[i].type == workParameter.type))
 	  {
 	    /* Do not overwrite current qualifiers */
-	    parameter.flags |= (parameters[i].flags & (unsigned long)~FLAGS_STICKY);
-	    if (parameter.width == NO_WIDTH)
-	      parameter.width = parameters[i].width;
-	    if (parameter.precision == NO_PRECISION)
-	      parameter.precision = parameters[i].precision;
-	    if (parameter.base == NO_BASE)
-	      parameter.base = parameters[i].base;
+	    workParameter.flags |= (parameters[i].flags & (unsigned long)~FLAGS_STICKY);
+	    if (workParameter.width == NO_WIDTH)
+	      workParameter.width = parameters[i].width;
+	    if (workParameter.precision == NO_PRECISION)
+	      workParameter.precision = parameters[i].precision;
+	    if (workParameter.base == NO_BASE)
+	      workParameter.base = parameters[i].base;
 	    break;
 	  }
 	}
       }
 #endif
 
-      if (parameter.base == NO_BASE) parameter.base = BASE_DECIMAL;
+      if (workParameter.base == NO_BASE) workParameter.base = BASE_DECIMAL;
 
-      offset = parameter.endOffset;
+      offset = workParameter.endOffset;
 
-      memcpy(&parameters[pos++], &parameter, sizeof(parameter));
+      memcpy(&parameters[pos++], &workParameter, sizeof(workParameter));
     } /* while format characters left */
 
   parameters[pos].type = FORMAT_SENTINEL;  /* end parameter array with sentinel */
