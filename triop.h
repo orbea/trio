@@ -462,7 +462,7 @@ void trio_print_uint TRIO_PROTO((trio_pointer_t ref, unsigned int number));
 /*  void trio_print_long TRIO_PROTO((trio_pointer_t ref, long number)); */
 /*  void trio_print_ulong TRIO_PROTO((trio_pointer_t ref, unsigned long number)); */
 void trio_print_double TRIO_PROTO((trio_pointer_t ref, double number));
-void trio_print_string TRIO_PROTO((trio_pointer_t ref, char *string));
+void trio_print_string TRIO_PROTO((trio_pointer_t ref, TRIO_CONST char *string));
 void trio_print_pointer TRIO_PROTO((trio_pointer_t ref, trio_pointer_t pointer));
 
 #ifdef __cplusplus

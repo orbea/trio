@@ -5477,7 +5477,7 @@ void
 trio_print_string
 TRIO_ARGS2((ref, string),
 	   trio_pointer_t ref,
-	   char *string)
+	   TRIO_CONST char *string)
 {
   trio_reference_t *self = (trio_reference_t *)ref;
 
