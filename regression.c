@@ -1265,6 +1265,7 @@ VerifyScanningRegression(TRIO_NOARGS)
   long lnumber;
   int number;
   char ch;
+  char buffer[4096];
 
 #if TRIO_FEATURE_FLOAT
   rc = trio_sscanf("1.5", "%lf%n", &dnumber, &offset);
@@ -1310,6 +1311,15 @@ VerifyScanningRegression(TRIO_NOARGS)
   rc = trio_sscanf("0123456789", "%1[c]", &ch);
   nerrors += Verify(__FILE__, __LINE__, "a",
 		    "%c", ch);
+
+  rc = trio_sscanf("+42", "%u", &number);
+  nerrors += Verify(__FILE__, __LINE__, "1 42",
+		    "%d %u", rc, number);
+
+  rc = trio_sscanf("-42", "%u", &number);
+  sprintf(buffer, "1 %u", -42U);
+  nerrors += Verify(__FILE__, __LINE__, buffer,
+		    "%d %u", rc, number);
 
   return nerrors;
 }

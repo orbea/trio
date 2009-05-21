@@ -7,6 +7,9 @@ Bjorn Reese and/or Daniel Stenberg.
 Version 1.14 - 2009/05/21
 -------------------------
 * Gideon Smeding
+  Fixed %u scanning of signed numbers.
+
+* Gideon Smeding
   Fixed group scanning for non-matching input.
 
 * Fixed missing undo of look-ahead reading for scanf functions. This does only

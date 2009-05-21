@@ -6039,18 +6039,15 @@ TRIO_ARGS5((self, target, flags, width, base),
   
   TrioSkipWhitespaces(self);
   
-  if (!(flags & FLAGS_UNSIGNED))
+  /* Leading sign */
+  if (self->current == '+')
     {
-      /* Leading sign */
-      if (self->current == '+')
-	{
-	  self->InStream(self, NULL);
-	}
-      else if (self->current == '-')
-	{
-	  self->InStream(self, NULL);
-	  isNegative = TRUE;
-	}
+      self->InStream(self, NULL);
+    }
+  else if (self->current == '-')
+    {
+      self->InStream(self, NULL);
+      isNegative = TRUE;
     }
   
   count = self->processed;
