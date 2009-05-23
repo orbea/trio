@@ -964,6 +964,34 @@ static trio_userdef_t *internalUserDef = NULL;
 #endif
 
 /*************************************************************************
+ * TrioInitializeParameter
+ *
+ * Description:
+ *  Initialize a trio_parameter_t struct.
+ */
+TRIO_PRIVATE void
+TrioInitializeParameter
+TRIO_ARGS1((parameter),
+	   trio_parameter_t *parameter)
+{
+  parameter->type = FORMAT_UNKNOWN;
+  parameter->flags = 0;
+  parameter->width = 0;
+  parameter->precision = 0;
+  parameter->base = 0;
+  parameter->baseSpecifier = 0;
+  parameter->varsize = 0;
+  parameter->beginOffset = 0;
+  parameter->endOffset = 0;
+  parameter->position = 0;
+  parameter->data.pointer = 0;
+#if TRIO_FEATURE_USER_DEFINED
+  parameter->user_defined.handler = 0;
+  parameter->user_data[0] = 0;
+#endif
+}
+
+/*************************************************************************
  * TrioIsQualifier
  *
  * Description:
@@ -1920,7 +1948,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
   
   while (format[offset])
     {
-      memset(&workParameter, 0, sizeof (workParameter)); /* Initialize */
+      TrioInitializeParameter(&workParameter);
 
 #if defined(TRIO_COMPILER_SUPPORTS_MULTIBYTE)
       if (! isascii(format[offset]))
