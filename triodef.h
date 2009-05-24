@@ -231,6 +231,7 @@ typedef char * trio_pointer_t;
 # define TRIO_ARGS4(list,a1,a2,a3,a4) list a1; a2; a3; a4;
 # define TRIO_ARGS5(list,a1,a2,a3,a4,a5) list a1; a2; a3; a4; a5;
 # define TRIO_ARGS6(list,a1,a2,a3,a4,a5,a6) list a1; a2; a3; a4; a5; a6;
+# define TRIO_ARGS7(list,a1,a2,a3,a4,a5,a6,a7) list a1; a2; a3; a4; a5; a6; a7;
 # define TRIO_VARGS2(list,a1,a2) list a1; a2
 # define TRIO_VARGS3(list,a1,a2,a3) list a1; a2; a3
 # define TRIO_VARGS4(list,a1,a2,a3,a4) list a1; a2; a3; a4
@@ -253,6 +254,7 @@ typedef void * trio_pointer_t;
 # define TRIO_ARGS4(list,a1,a2,a3,a4) (a1,a2,a3,a4)
 # define TRIO_ARGS5(list,a1,a2,a3,a4,a5) (a1,a2,a3,a4,a5)
 # define TRIO_ARGS6(list,a1,a2,a3,a4,a5,a6) (a1,a2,a3,a4,a5,a6)
+# define TRIO_ARGS7(list,a1,a2,a3,a4,a5,a6,a7) (a1,a2,a3,a4,a5,a6,a7)
 # define TRIO_VARGS2 TRIO_ARGS2
 # define TRIO_VARGS3 TRIO_ARGS3
 # define TRIO_VARGS4 TRIO_ARGS4
