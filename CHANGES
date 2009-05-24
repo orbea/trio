@@ -4,9 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.14 - 2009/05/23
+Version 1.14 - 2009/05/24
 -------------------------
-* Improved parsing performance by approximately 40% (reported by Adam McLaurin).
+* Adam McLaurin
+  Improved parsing performance by avoiding memset() and memcpy() on character
+  arrays.
 
 * Gideon Smeding
   Fixed %u scanning of signed numbers.

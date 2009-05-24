@@ -992,6 +992,45 @@ TRIO_ARGS1((parameter),
 }
 
 /*************************************************************************
+ * TrioCopyParameter
+ *
+ * Description:
+ *  Copies one trio_parameter_t struct to another.
+ */
+TRIO_PRIVATE void
+TrioCopyParameter
+TRIO_ARGS2((target, source),
+	   trio_parameter_t *target,
+	   TRIO_CONST trio_parameter_t *source)
+{
+#if TRIO_FEATURE_USER_DEFINED
+  size_t i;
+#endif
+
+  target->type = source->type;
+  target->flags = source->flags;
+  target->width = source->width;
+  target->precision = source->precision;
+  target->base = source->base;
+  target->baseSpecifier = source->baseSpecifier;
+  target->varsize = source->varsize;
+  target->beginOffset = source->beginOffset;
+  target->endOffset = source->endOffset;
+  target->position = source->position;
+  target->data = source->data;
+
+#if TRIO_FEATURE_USER_DEFINED
+  target->user_defined = source->user_defined;
+
+  for (i = 0U; i < sizeof(target->user_data); ++i)
+    {
+      if ((target->user_data[i] = source->user_data[i]) == NIL)
+	break;
+    }
+#endif
+}
+
+/*************************************************************************
  * TrioIsQualifier
  *
  * Description:
@@ -2151,7 +2190,7 @@ TRIO_ARGS5((type, format, parameters, arglist, argarray),
 
       offset = workParameter.endOffset;
 
-      memcpy(&parameters[pos++], &workParameter, sizeof(workParameter));
+      TrioCopyParameter(&parameters[pos++], &workParameter);
     } /* while format characters left */
 
   parameters[pos].type = FORMAT_SENTINEL;  /* end parameter array with sentinel */
