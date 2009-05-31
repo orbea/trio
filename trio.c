@@ -6439,8 +6439,12 @@ TRIO_ARGS5((self, target, characterclass, flags, width),
 	target[i] = (char)ch;
       self->InStream(self, &ch);
     }
+
+  if (i == 0)
+    return FALSE;
+
   /* Terminate the string if input saved */
-  if ((target) && (i != 0))
+  if (target)
     target[i] = NIL;
   return TRUE;
 }
@@ -7129,7 +7133,7 @@ TRIO_ARGS2((self, intPointer),
 
   self->actually.cached = 0;
 
-  self->current = fgetc(file);
+  /* The initial value of self->current is zero */
   if (self->current == EOF)
     {
       self->error = (ferror(file))
@@ -7141,6 +7145,8 @@ TRIO_ARGS2((self, intPointer),
       self->processed++;
       self->actually.cached++;
     }
+
+  self->current = fgetc(file);
 
   if (VALID(intPointer))
     {

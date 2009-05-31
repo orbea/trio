@@ -1266,6 +1266,7 @@ VerifyScanningRegression(TRIO_NOARGS)
   int number;
   char ch;
   char buffer[4096];
+  FILE *stream;
 
 #if TRIO_FEATURE_FLOAT
   rc = trio_sscanf("1.5", "%lf%n", &dnumber, &offset);
@@ -1307,19 +1308,57 @@ VerifyScanningRegression(TRIO_NOARGS)
 		    "%g", dnumber);
 #endif
 
+  /* Do not overwrite result on matching error */
   ch = 'a';
   rc = trio_sscanf("0123456789", "%1[c]", &ch);
   nerrors += Verify(__FILE__, __LINE__, "a",
 		    "%c", ch);
 
+  /* Scan plus prefix for unsigned integer */
   rc = trio_sscanf("+42", "%u", &number);
   nerrors += Verify(__FILE__, __LINE__, "1 42",
 		    "%d %u", rc, number);
 
+  /* Scan minus prefix even for unsigned integer */
   rc = trio_sscanf("-42", "%u", &number);
   sprintf(buffer, "1 %u", -42U);
   nerrors += Verify(__FILE__, __LINE__, buffer,
 		    "%d %u", rc, number);
+
+  /* A scangroup match failure should not bind its argument,
+   * i.e., it shouldn't match the empty string. */
+  sprintf(buffer, "SPQR");
+  rc = trio_sscanf("asdf", "%[c]", buffer);
+  nerrors += Verify(__FILE__, __LINE__, "0 SPQR",
+		    "%d %s", rc, buffer);
+
+  /* Even whitespace scanning shouldn't try to read past EOF */
+  stream = tmpfile();
+  trio_fprintf(stream, "");
+  rewind(stream);
+  rc = trio_fscanf(stream, " ");
+  nerrors += Verify(__FILE__, __LINE__, "0",
+		    "%d", rc);
+  fclose(stream);
+
+  /* Idem, after a succesfull read */
+  stream = tmpfile();
+  trio_fprintf(stream, "123");
+  rewind(stream);
+  rc = trio_fscanf(stream, "%i ", &number);
+  nerrors += Verify(__FILE__, __LINE__, "1 123",
+		    "%d %i", rc, number);
+  fclose(stream);
+
+  /* The scanner should unget its read-ahead char */
+  stream = tmpfile();
+  trio_fprintf(stream, "123");
+  rewind(stream);
+  trio_fscanf(stream, "%*c");
+  trio_fscanf(stream, "%c", &ch);
+  nerrors += Verify(__FILE__, __LINE__, "2",
+		    "%c", ch);
+  fclose(stream);
 
   return nerrors;
 }
