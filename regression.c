@@ -1217,6 +1217,10 @@ VerifyScanningStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
 
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "",
+				     "hello", "hello");
+  nerrors += VerifyScanningOneString(__FILE__, __LINE__, "",
+				     "", "");
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",
 				     "%s", "hello");
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",

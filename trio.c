@@ -6688,7 +6688,7 @@ TRIO_ARGS3((self, target, flags),
 			  : buffer,
 			  0,
 			  sizeof(internalNullString) - 1))
-    {  
+    {
       if (trio_equal_case(buffer, internalNullString))
 	{
 	  if (target)
@@ -6720,7 +6720,7 @@ TRIO_ARGS3((data, format, parameters),
   trio_pointer_t pointer;
 
   /* Return on empty format string */
-  if (parameters[0].type == FORMAT_SENTINEL)
+  if (format[0] == NIL)
     return 0;
 
   status = 0;
