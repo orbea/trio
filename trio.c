@@ -5019,7 +5019,7 @@ TRIO_ARGS1((ref),
 /*************************************************************************
  * trio_get_argument [public]
  */
-trio_pointer_t 
+TRIO_CONST trio_pointer_t
 trio_get_argument
 TRIO_ARGS1((ref),
 	   trio_pointer_t ref)
@@ -5027,7 +5027,7 @@ TRIO_ARGS1((ref),
 #if TRIO_FEATURE_USER_DEFINED
   assert(((trio_reference_t *)ref)->parameter->type == FORMAT_USER_DEFINED);
 #endif
-  
+
   return ((trio_reference_t *)ref)->parameter->data.pointer;
 }
 
