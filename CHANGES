@@ -4,8 +4,12 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.14 - 2009/05/31
+Version 1.14 - 2009/07/05
 -------------------------
+* Tom Honermann
+  Fixed problem with subnormal numbers which caused an infinite loop outputting
+  leading spaces.
+
 * Adam McLaurin
   Improved parsing performance by avoiding memset() and memcpy() on character
   arrays.

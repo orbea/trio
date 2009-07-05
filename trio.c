@@ -3127,15 +3127,13 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       else
 	{
 	  exponent = (int)trio_floor(workNumber);
+	  workNumber = number;
 	  /*
-	   * The expression A * 10^-B is equivalent to A / 10^B but the former
-	   * usually gives better accuracy.
+	   * Scaling is done it two steps to avoid problems with subnormal
+	   * numbers.
 	   */
-	  workNumber = number * trio_pow(dblBase, (trio_long_double_t)-exponent);
-	  if (trio_isinf(workNumber))
-	    {
-	      workNumber = number / trio_pow(dblBase, (trio_long_double_t)exponent);
-	    }
+	  workNumber /= trio_pow(dblBase, (trio_long_double_t)(exponent / 2));
+	  workNumber /= trio_pow(dblBase, (trio_long_double_t)(exponent - (exponent / 2)));
 	  number = workNumber;
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
