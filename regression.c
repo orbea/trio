@@ -1208,6 +1208,7 @@ TRIO_ARGS5((file, line, expected, format, original),
   char data[512];
   
   trio_snprintf(data, sizeof(data), "%s", original);
+  string[0] = 0;
   trio_sscanf(data, format, string);
   return Verify(file, line, expected, "%s", string);
 }
