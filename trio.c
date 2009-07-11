@@ -3092,8 +3092,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       if (precision == 0)
 	precision = 1;
 
-      if ( (number < 1.0E-4) ||
-	   (number >= trio_pow(base, (trio_long_double_t)precision)) )
+      if ( (number < TRIO_SUFFIX_LONG(1.0E-4)) ||
+	   (number >= TrioPower(base, (trio_long_double_t)precision)) )
 	{
 	  /* Use scientific notation */
 	  flags |= FLAGS_FLOAT_E;
@@ -3129,11 +3129,18 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  exponent = (int)trio_floor(workNumber);
 	  workNumber = number;
 	  /*
-	   * Scaling is done it two steps to avoid problems with subnormal
-	   * numbers.
+	   * The expression A * 10^-B is equivalent to A / 10^B but the former
+	   * usually gives better accuracy.
 	   */
-	  workNumber /= trio_pow(dblBase, (trio_long_double_t)(exponent / 2));
-	  workNumber /= trio_pow(dblBase, (trio_long_double_t)(exponent - (exponent / 2)));
+	  workNumber *= TrioPower(dblBase, (trio_long_double_t)-exponent);
+	  if (trio_isinf(workNumber)) {
+	    /*
+	     * Scaling is done it two steps to avoid problems with subnormal
+	     * numbers.
+	     */
+	    workNumber /= TrioPower(dblBase, (trio_long_double_t)(exponent / 2));
+	    workNumber /= TrioPower(dblBase, (trio_long_double_t)(exponent - (exponent / 2)));
+	  }
 	  number = workNumber;
 	  isExponentNegative = (exponent < 0);
 	  uExponent = (isExponentNegative) ? -exponent : exponent;
@@ -3178,7 +3185,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 
   if (integerNumber < 1.0)
     {
-      workNumber = number * dblFractionBase + 0.5;
+      workNumber = number * dblFractionBase + TRIO_SUFFIX_LONG(0.5);
       if (trio_floor(number * dblFractionBase) != trio_floor(workNumber))
 	{
 	  adjustNumber = TRUE;
@@ -3192,7 +3199,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
   else
     {
-      workNumber = number + 0.5 / dblFractionBase;
+      workNumber = number + TRIO_SUFFIX_LONG(0.5) / dblFractionBase;
       adjustNumber = (trio_floor(number) != trio_floor(workNumber));
     }
   if (adjustNumber)
@@ -3200,8 +3207,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       if ((flags & FLAGS_FLOAT_G) && !(flags & FLAGS_FLOAT_E))
 	{
 	  /* The adjustment may require a change to scientific notation */
-	  if ( (workNumber < 1.0E-4) ||
-	       (workNumber >= trio_pow(base, (trio_long_double_t)precision)) )
+	  if ( (workNumber < TRIO_SUFFIX_LONG(1.0E-4)) ||
+	       (workNumber >= TrioPower(base, (trio_long_double_t)precision)) )
 	    {
 	      /* Use scientific notation */
 	      flags |= FLAGS_FLOAT_E;
@@ -3215,7 +3222,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  if (integerDigits == workDigits)
 	    {
 	      /* Adjust if the same number of digits are used */
-	      number += 0.5 / dblFractionBase;
+	      number += TRIO_SUFFIX_LONG(0.5) / dblFractionBase;
 	      integerNumber = trio_floor(number);
 	      fractionNumber = number - integerNumber;
 	    }
@@ -3227,7 +3234,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	      uExponent = (isExponentNegative) ? -exponent : exponent;
 	      if (isHex)
 		uExponent *= 4; /* log16(2) */
-	      workNumber = (number + 0.5 / dblFractionBase) / dblBase;
+	      workNumber = (number + TRIO_SUFFIX_LONG(0.5) / dblFractionBase) / dblBase;
 	      integerNumber = trio_floor(workNumber);
 	      fractionNumber = workNumber - integerNumber;
 	    }
@@ -3281,7 +3288,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
 
   /* Estimate accuracy */
-  integerAdjust = fractionAdjust = 0.5;
+  integerAdjust = fractionAdjust = TRIO_SUFFIX_LONG(0.5);
 # if TRIO_FEATURE_ROUNDING
   if (flags & FLAGS_ROUNDING)
     {
