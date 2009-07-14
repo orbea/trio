@@ -148,7 +148,7 @@
 
 #if defined(__STDC__) \
  || defined(_MSC_EXTENSIONS) \
- || defined(TRIO_COMPILER_BORLAND)
+ || defined(TRIO_COMPILER_BCB)
 # define PREDEF_STANDARD_C89
 #endif
 #if defined(__STDC_VERSION__)
