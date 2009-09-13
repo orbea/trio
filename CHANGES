@@ -11,6 +11,9 @@ Version 1.14 - 2009/09/13
   to them.
 
 * Matthias Andree
+  Upgraded configure.in to use new macros instead of obsoleted macros.
+
+* Matthias Andree
   Added VPATH to Makefile.in
 
 * Tom Honermann
