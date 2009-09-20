@@ -4,8 +4,11 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.14 - 2009/09/13
+Version 1.14 - 2009/09/20
 -------------------------
+* Fixed compilation problem on Cygwin due to lack of long double math
+  (reported by Matthias Andree).
+
 * David Boyce
   Added #undef of standard stdio function names before assigning trio functions
   to them.

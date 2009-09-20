@@ -141,19 +141,19 @@
 #if TRIO_FEATURE_FLOAT
 # if defined(PREDEF_STANDARD_C99) \
   || defined(PREDEF_STANDARD_UNIX03)
-#  if !defined(HAVE_FLOORL)
+#  if !defined(HAVE_FLOORL) && !defined(TRIO_NO_FLOORL)
 #   define HAVE_FLOORL
 #  endif
-#  if !defined(HAVE_CEILL)
+#  if !defined(HAVE_CEILL) && !defined(TRIO_NO_CEILL)
 #   define HAVE_CEILL
 #  endif
-#  if !defined(HAVE_POWL)
+#  if !defined(HAVE_POWL) && !defined(TRIO_NO_POWL)
 #   define HAVE_POWL
 #  endif
-#  if !defined(HAVE_FMODL)
+#  if !defined(HAVE_FMODL) && !defined(TRIO_NO_FMODL)
 #   define HAVE_FMODL
 #  endif
-#  if !defined(HAVE_LOG10L)
+#  if !defined(HAVE_LOG10L) && !defined(TRIO_NO_LOG10L)
 #   define HAVE_LOG10L
 #  endif
 # endif
@@ -3086,7 +3086,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
     }
 
  reprocess:
-  
+
   if (flags & FLAGS_FLOAT_G)
     {
       if (precision == 0)
@@ -3155,7 +3155,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 
   integerNumber = trio_floor(number);
   fractionNumber = number - integerNumber;
-  
+
   /*
    * Truncated number.
    *
