@@ -1535,6 +1535,7 @@ VerifyDynamicStrings(TRIO_NOARGS)
   int nerrors = 0;
 #if !defined(TRIO_MINIMAL)
   trio_string_t *string;
+  const char no_terminate[5] = { 'h', 'e', 'l', 'l', 'o' };
 
   string = trio_xstring_duplicate("Find me now");
   if (string == NULL) {
@@ -1553,6 +1554,9 @@ VerifyDynamicStrings(TRIO_NOARGS)
   if (!trio_xstring_match(string, "* me *"))
     nerrors++;
   if (trio_xstring_match_case(string, "* ME *"))
+    nerrors++;
+  if (!trio_xstring_append_max(string, no_terminate, 5) ||
+      !trio_xstring_equal(string, "FIND ME NOW AND AGAINhello"))
     nerrors++;
   
  error:
