@@ -3253,6 +3253,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 		{
 		  if (flags & FLAGS_ALTERNATIVE)
 		    {
+		      fractionDigits = precision;
 		      if ((integerNumber > epsilon) || (number <= epsilon))
 			{
 			  fractionDigits -= integerDigits;

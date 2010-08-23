@@ -4,6 +4,12 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.15 - 2010/08/23
+-------------------------
+* Fixed calculation of fraction digits for %#g numbers involving rounding
+  (reported by Lajos Foldy).
+
+
 Version 1.14 - 2010/01/26
 -------------------------
 * David Byron

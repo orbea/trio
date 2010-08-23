@@ -697,6 +697,10 @@ VerifyFormattingRegression(TRIO_NOARGS)
 		    "%e", 0.5);
   nerrors += Verify(__FILE__, __LINE__, "6.000000e-01",
 		    "%e", 0.6);
+
+  /* Calculate the correct number of fractional digits while rounding */
+  nerrors += Verify(__FILE__, __LINE__, "7654321.0",
+		    "%#.8g", 7654320.99);
 #endif
 
   return nerrors;
