@@ -37,7 +37,7 @@ to the trio counterparts.
 The scanning is controlled by the format string.
 The format string can contain normal text and conversion indicators.
 The normal text can be any character except the nil character
-(\000) and the percent character (\045 = '\%').
+(\\000) and the percent character (\\045 = '\\%').
 Conversion indicators consists of an indication character (%), followed by
 zero or more conversion modifiers, and exactly one conversion specifier.
 

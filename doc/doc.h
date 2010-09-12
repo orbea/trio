@@ -39,7 +39,7 @@ When you write applications that must be portable to a wide range of
 platforms you often have to deal with inadequate implementations of the
 stdio library functions. Most notably is the lack of secure formatting
 functions, such as snprintf, or the lack of parameter reordering commonly
-used for the internationalization of applications, such as the <num>$
+used for the internationalization of applications, such as the \<num\>$
 modifier. Sometimes the feature you need is simply not present in stdio.
 So you end up spending much effort on determining which platforms supports
 what, and to write your own versions of various features. This is where
@@ -106,12 +106,13 @@ Trio is distributed under the following license, which allows practically
 anybody to use it in almost any kind of software, including proprietary
 software, without difficulty.
 
+@par
 "Copyright (C) 1998-2001 Bjorn Reese and Daniel Stenberg.
-
+@par
 Permission to use, copy, modify, and distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
 copyright notice and this permission notice appear in all copies.
-
+@par
 THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND

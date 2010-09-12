@@ -63,8 +63,8 @@ and returns an allocated string in @p buffer containing the formatted text.
 @b FORMATTING
 
 The @p format string can contain normal text and conversion indicators.
-The normal text can be any character except the nil character (\000 =
-'\0') and the percent character (\045 = '%'). Conversion indicators
+The normal text can be any character except the nil character (\\000 =
+'\\0') and the percent character (\\045 = '%'). Conversion indicators
 consists of an indication character (%), followed by zero or more conversion
 modifiers, and exactly one conversion specifier.
 
@@ -419,15 +419,15 @@ Escape non-printable characters.
 
 Non-printable characters are converted into C escapes, or hexadecimal numbers
 where no C escapes exists for the character. The C escapes, the hexadecimal
-number, and all backslashes are prepended by a backslash ( @c \ ).
+number, and all backslashes are prepended by a backslash ( @c \\ ).
 The supported C escapes are
-@li @c \a (\007) = alert
-@li @c \b (\010) = backspace
-@li @c \f (\014) = formfeed
-@li @c \n (\012) = newline
-@li @c \r (\015) = carriage return
-@li @c \t (\011) = horizontal tab
-@li @c \v (\013) = vertical tab
+@li @c \\a (\\007) = alert
+@li @c \\b (\\010) = backspace
+@li @c \\f (\\014) = formfeed
+@li @c \\n (\\012) = newline
+@li @c \\r (\\015) = carriage return
+@li @c \\t (\\011) = horizontal tab
+@li @c \\v (\\013) = vertical tab
 
 @verbatim
   trio_printf("|One %s Three|One %'s Three|\n", "Two", "Two");

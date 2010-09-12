@@ -33,10 +33,10 @@ This documentation is incomplete.
 
 @b User-defined @b Specifier
 
-The user-defined specifier consists of a start character (\074 = '<'), an
-optional namespace string followed by a namespace separator (\072 = ':'),
-a format string, an optional skipping separator (\174 = '|'), and an end
-character (\076 = '>').
+The user-defined specifier consists of a start character (\\074 = '<'), an
+optional namespace string followed by a namespace separator (\\072 = ':'),
+a format string, an optional skipping separator (\\174 = '|'), and an end
+character (\\076 = '>').
 
 The namespace string can consist of alphanumeric characters, and is used to
 define a named reference (see below). The namespace is case-sensitive. If no
@@ -44,13 +44,13 @@ namespace is specified, then we use an unnamed reference (see below).
 
 The format can consist of any character except the end character ('>'), the
 namespace separator (':'), the skipping separator ('|'), and the nil character
-(\000).
+(\\000).
 
 Any modifier can be used together with the user-defined specifier.
 
 There are two formats for invoking a user-defined specifier. The first format
 is an extension of the normal printf/scanf formatting. It uses the percent
-character (\045 = '%') followed by optional qualifiers and a specifier. For
+character (\\045 = '%') followed by optional qualifiers and a specifier. For
 example:
 
 @verbatim
@@ -62,9 +62,9 @@ and arguments. Unfortunately, these warnings does not work with the first
 format for user-defined specifiers. Therefore the second format has been
 introduced. The second format can only be applied to user-defined specifiers.
 
-The second format starts with a dollar character (\044 = '$') instead of the
+The second format starts with a dollar character (\\044 = '$') instead of the
 percent character, and is followed by optional qualifiers and the user-defined
-specifier. If the specifier contains a pipe character (\174 = '|'), then
+specifier. If the specifier contains a pipe character (\\174 = '|'), then
 everything between the pipe character and the end character ('>') is ignored.
 The ignored part can be used to list the normal specifiers that the C compiler
 uses to determine mismatches. For example:
