@@ -1,0 +1,8 @@
+.gitignore
+*.o
+*.a
+*~
+Makefile
+config.log
+config.status
+configure
