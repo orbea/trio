@@ -9,6 +9,9 @@ Version 1.16 - XXXX/XX/XX
 * David Turner
   Changed trionan to use sigaction() instead of signal().
 
+* Chris Liddell
+  Fixed compiler warnings.
+
 
 Version 1.15 - 2010/09/12
 -------------------------
