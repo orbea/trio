@@ -4145,6 +4145,7 @@ TRIO_ARGS2((self, output),
 /*************************************************************************
  * TrioArrayGetter
  */
+TRIO_PRIVATE
 trio_pointer_t TrioArrayGetter(trio_pointer_t context, int index, int type)
 {
   /* Utility function for the printfv family */
@@ -5028,6 +5029,7 @@ TRIO_ARGS2((callback, name),
 
    @param handle
  */
+TRIO_PUBLIC
 void
 trio_unregister
 TRIO_ARGS1((handle),
