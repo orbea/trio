@@ -5061,8 +5061,9 @@ TRIO_ARGS1((handle),
 }
 
 /*************************************************************************
- * trio_get_format [public]
+ * trio_get_format
  */
+TRIO_PUBLIC
 TRIO_CONST char *
 trio_get_format
 TRIO_ARGS1((ref),
@@ -5076,8 +5077,9 @@ TRIO_ARGS1((ref),
 }
 
 /*************************************************************************
- * trio_get_argument [public]
+ * trio_get_argument
  */
+TRIO_PUBLIC
 TRIO_CONST trio_pointer_t
 trio_get_argument
 TRIO_ARGS1((ref),
@@ -5091,8 +5093,9 @@ TRIO_ARGS1((ref),
 }
 
 /*************************************************************************
- * trio_get_width / trio_set_width [public]
+ * trio_get_width / trio_set_width
  */
+TRIO_PUBLIC
 int
 trio_get_width
 TRIO_ARGS1((ref),
@@ -5101,6 +5104,7 @@ TRIO_ARGS1((ref),
   return ((trio_reference_t *)ref)->parameter->width;
 }
 
+TRIO_PUBLIC
 void
 trio_set_width
 TRIO_ARGS2((ref, width),
@@ -5111,8 +5115,9 @@ TRIO_ARGS2((ref, width),
 }
 
 /*************************************************************************
- * trio_get_precision / trio_set_precision [public]
+ * trio_get_precision / trio_set_precision
  */
+TRIO_PUBLIC
 int
 trio_get_precision
 TRIO_ARGS1((ref),
@@ -5121,6 +5126,7 @@ TRIO_ARGS1((ref),
   return (((trio_reference_t *)ref)->parameter->precision);
 }
 
+TRIO_PUBLIC
 void
 trio_set_precision
 TRIO_ARGS2((ref, precision),
@@ -5131,8 +5137,9 @@ TRIO_ARGS2((ref, precision),
 }
 
 /*************************************************************************
- * trio_get_base / trio_set_base [public]
+ * trio_get_base / trio_set_base
  */
+TRIO_PUBLIC
 int
 trio_get_base
 TRIO_ARGS1((ref),
@@ -5141,6 +5148,7 @@ TRIO_ARGS1((ref),
   return (((trio_reference_t *)ref)->parameter->base);
 }
 
+TRIO_PUBLIC
 void
 trio_set_base
 TRIO_ARGS2((ref, base),
@@ -5151,8 +5159,9 @@ TRIO_ARGS2((ref, base),
 }
 
 /*************************************************************************
- * trio_get_long / trio_set_long [public]
+ * trio_get_long / trio_set_long
  */
+TRIO_PUBLIC
 int
 trio_get_long
 TRIO_ARGS1((ref),
@@ -5163,6 +5172,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_long
 TRIO_ARGS2((ref, is_long),
@@ -5176,8 +5186,9 @@ TRIO_ARGS2((ref, is_long),
 }
 
 /*************************************************************************
- * trio_get_longlong / trio_set_longlong [public]
+ * trio_get_longlong / trio_set_longlong
  */
+TRIO_PUBLIC
 int
 trio_get_longlong
 TRIO_ARGS1((ref),
@@ -5188,6 +5199,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_longlong
 TRIO_ARGS2((ref, is_longlong),
@@ -5201,9 +5213,10 @@ TRIO_ARGS2((ref, is_longlong),
 }
 
 /*************************************************************************
- * trio_get_longdouble / trio_set_longdouble [public]
+ * trio_get_longdouble / trio_set_longdouble
  */
 # if TRIO_FEATURE_FLOAT
+TRIO_PUBLIC
 int
 trio_get_longdouble
 TRIO_ARGS1((ref),
@@ -5214,6 +5227,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_longdouble
 TRIO_ARGS2((ref, is_longdouble),
@@ -5228,8 +5242,9 @@ TRIO_ARGS2((ref, is_longdouble),
 # endif /* TRIO_FEATURE_FLOAT */
 
 /*************************************************************************
- * trio_get_short / trio_set_short [public]
+ * trio_get_short / trio_set_short
  */
+TRIO_PUBLIC
 int
 trio_get_short
 TRIO_ARGS1((ref),
@@ -5240,6 +5255,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_short
 TRIO_ARGS2((ref, is_short),
@@ -5253,8 +5269,9 @@ TRIO_ARGS2((ref, is_short),
 }
 
 /*************************************************************************
- * trio_get_shortshort / trio_set_shortshort [public]
+ * trio_get_shortshort / trio_set_shortshort
  */
+TRIO_PUBLIC
 int
 trio_get_shortshort
 TRIO_ARGS1((ref),
@@ -5265,6 +5282,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_shortshort
 TRIO_ARGS2((ref, is_shortshort),
@@ -5278,8 +5296,9 @@ TRIO_ARGS2((ref, is_shortshort),
 }
 
 /*************************************************************************
- * trio_get_alternative / trio_set_alternative [public]
+ * trio_get_alternative / trio_set_alternative
  */
+TRIO_PUBLIC
 int
 trio_get_alternative
 TRIO_ARGS1((ref),
@@ -5290,6 +5309,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_alternative
 TRIO_ARGS2((ref, is_alternative),
@@ -5303,8 +5323,9 @@ TRIO_ARGS2((ref, is_alternative),
 }
 
 /*************************************************************************
- * trio_get_alignment / trio_set_alignment [public]
+ * trio_get_alignment / trio_set_alignment
  */
+TRIO_PUBLIC
 int
 trio_get_alignment
 TRIO_ARGS1((ref),
@@ -5315,6 +5336,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_alignment
 TRIO_ARGS2((ref, is_leftaligned),
@@ -5328,8 +5350,9 @@ TRIO_ARGS2((ref, is_leftaligned),
 }
 
 /*************************************************************************
- * trio_get_spacing /trio_set_spacing [public]
+ * trio_get_spacing /trio_set_spacing
  */
+TRIO_PUBLIC
 int
 trio_get_spacing
 TRIO_ARGS1((ref),
@@ -5340,6 +5363,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_spacing
 TRIO_ARGS2((ref, is_space),
@@ -5353,8 +5377,9 @@ TRIO_ARGS2((ref, is_space),
 }
 
 /*************************************************************************
- * trio_get_sign / trio_set_sign [public]
+ * trio_get_sign / trio_set_sign
  */
+TRIO_PUBLIC
 int
 trio_get_sign
 TRIO_ARGS1((ref),
@@ -5365,6 +5390,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_sign
 TRIO_ARGS2((ref, is_sign),
@@ -5378,8 +5404,9 @@ TRIO_ARGS2((ref, is_sign),
 }
 
 /*************************************************************************
- * trio_get_padding / trio_set_padding [public]
+ * trio_get_padding / trio_set_padding
  */
+TRIO_PUBLIC
 int
 trio_get_padding
 TRIO_ARGS1((ref),
@@ -5390,6 +5417,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_padding
 TRIO_ARGS2((ref, is_padding),
@@ -5403,9 +5431,10 @@ TRIO_ARGS2((ref, is_padding),
 }
 
 /*************************************************************************
- * trio_get_quote / trio_set_quote [public]
+ * trio_get_quote / trio_set_quote
  */
 # if TRIO_FEATURE_QUOTE
+TRIO_PUBLIC
 int
 trio_get_quote
 TRIO_ARGS1((ref),
@@ -5416,6 +5445,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_quote
 TRIO_ARGS2((ref, is_quote),
@@ -5430,8 +5460,9 @@ TRIO_ARGS2((ref, is_quote),
 #endif /* TRIO_FEATURE_QUOTE */
 
 /*************************************************************************
- * trio_get_upper / trio_set_upper [public]
+ * trio_get_upper / trio_set_upper
  */
+TRIO_PUBLIC
 int
 trio_get_upper
 TRIO_ARGS1((ref),
@@ -5442,6 +5473,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_upper
 TRIO_ARGS2((ref, is_upper),
@@ -5455,9 +5487,10 @@ TRIO_ARGS2((ref, is_upper),
 }
 
 /*************************************************************************
- * trio_get_largest / trio_set_largest [public]
+ * trio_get_largest / trio_set_largest
  */
 #if TRIO_FEATURE_INTMAX_T
+TRIO_PUBLIC
 int
 trio_get_largest
 TRIO_ARGS1((ref),
@@ -5468,6 +5501,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_largest
 TRIO_ARGS2((ref, is_largest),
@@ -5482,9 +5516,10 @@ TRIO_ARGS2((ref, is_largest),
 #endif /* TRIO_FEATURE_INTMAX_T */
 
 /*************************************************************************
- * trio_get_ptrdiff / trio_set_ptrdiff [public]
+ * trio_get_ptrdiff / trio_set_ptrdiff
  */
 #if TRIO_FEATURE_PTRDIFF_T
+TRIO_PUBLIC
 int
 trio_get_ptrdiff
 TRIO_ARGS1((ref),
@@ -5495,6 +5530,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_ptrdiff
 TRIO_ARGS2((ref, is_ptrdiff),
@@ -5509,9 +5545,10 @@ TRIO_ARGS2((ref, is_ptrdiff),
 #endif /* TRIO_FEATURE_PTRDIFF_T */
 
 /*************************************************************************
- * trio_get_size / trio_set_size [public]
+ * trio_get_size / trio_set_size
  */
 #if TRIO_FEATURE_SIZE_T
+TRIO_PUBLIC
 int
 trio_get_size
 TRIO_ARGS1((ref),
@@ -5522,6 +5559,7 @@ TRIO_ARGS1((ref),
     : FALSE;
 }
 
+TRIO_PUBLIC
 void
 trio_set_size
 TRIO_ARGS2((ref, is_size),
@@ -5536,8 +5574,9 @@ TRIO_ARGS2((ref, is_size),
 #endif /* TRIO_FEATURE_SIZE_T */
 
 /*************************************************************************
- * trio_print_int [public]
+ * trio_print_int
  */
+TRIO_PUBLIC
 void
 trio_print_int
 TRIO_ARGS2((ref, number),
@@ -5555,8 +5594,9 @@ TRIO_ARGS2((ref, number),
 }
 
 /*************************************************************************
- * trio_print_uint [public]
+ * trio_print_uint
  */
+TRIO_PUBLIC
 void
 trio_print_uint
 TRIO_ARGS2((ref, number),
@@ -5574,9 +5614,10 @@ TRIO_ARGS2((ref, number),
 }
 
 /*************************************************************************
- * trio_print_double [public]
+ * trio_print_double
  */
 #if TRIO_FEATURE_FLOAT
+TRIO_PUBLIC
 void
 trio_print_double
 TRIO_ARGS2((ref, number),
@@ -5595,8 +5636,9 @@ TRIO_ARGS2((ref, number),
 #endif /* TRIO_FEATURE_FLOAT */
 
 /*************************************************************************
- * trio_print_string [public]
+ * trio_print_string
  */
+TRIO_PUBLIC
 void
 trio_print_string
 TRIO_ARGS2((ref, string),
@@ -5613,8 +5655,9 @@ TRIO_ARGS2((ref, string),
 }
 
 /*************************************************************************
- * trio_print_ref [public]
+ * trio_print_ref
  */
+TRIO_PUBLIC
 int
 trio_print_ref
 TRIO_VARGS3((ref, format, va_alist),
@@ -5634,8 +5677,9 @@ TRIO_VARGS3((ref, format, va_alist),
 }
 
 /*************************************************************************
- * trio_vprint_ref [public]
+ * trio_vprint_ref
  */
+TRIO_PUBLIC
 int
 trio_vprint_ref
 TRIO_ARGS3((ref, format, arglist),
@@ -5649,8 +5693,9 @@ TRIO_ARGS3((ref, format, arglist),
 }
 
 /*************************************************************************
- * trio_printv_ref [public]
+ * trio_printv_ref
  */
+TRIO_PUBLIC
 int
 trio_printv_ref
 TRIO_ARGS3((ref, format, argarray),
@@ -5669,8 +5714,9 @@ TRIO_ARGS3((ref, format, argarray),
 #endif
 
 /*************************************************************************
- * trio_print_pointer [public]
+ * trio_print_pointer
  */
+TRIO_PUBLIC
 void
 trio_print_pointer
 TRIO_ARGS2((ref, pointer),
