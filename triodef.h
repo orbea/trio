@@ -206,7 +206,29 @@
  */
 
 #if !defined(TRIO_PUBLIC)
-# define TRIO_PUBLIC
+/* Based on http://gcc.gnu.org/wiki/Visibility */
+# if defined(TRIO_PLATFORM_WIN32) || defined (__CYGWIN__)
+#  if defined(BUILDING_DLL)
+#   if defined(TRIO_COMPILER_GCC)
+#    define TRIO_PUBLIC __attribute__ ((dllexport))
+#   else
+#    define TRIO_PUBLIC __declspec(dllexport)
+#   endif
+#  else
+#   if defined(TRIO_COMPILER_GCC)
+#    define TRIO_PUBLIC __attribute__ ((dllimport))
+#   else
+#    define TRIO_PUBLIC __declspec(dllimport)
+#   endif
+#  endif
+# else
+#  if defined(TRIO_COMPILER_GCC) && __GNUC__ >= 4
+#   define TRIO_PUBLIC __attribute__ ((visibility ("default")))
+#   define TRIO_PRIVATE __attribute__ ((visibility ("hidden")))
+#  else
+#   define TRIO_PUBLIC
+#  endif
+# endif
 #endif
 #if !defined(TRIO_PRIVATE)
 # define TRIO_PRIVATE static

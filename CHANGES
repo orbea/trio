@@ -6,6 +6,9 @@ Bjorn Reese and/or Daniel Stenberg.
 
 Version 1.16 - XXXX/XX/XX
 -------------------------
+* Balint Reczey
+  Fixed several visibility problems.
+
 * David Turner
   Changed trionan to use sigaction() instead of signal().
 
