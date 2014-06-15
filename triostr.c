@@ -292,7 +292,7 @@ TRIO_ARGS2((self, length),
 
 #if defined(TRIO_FUNC_INTERNAL_TO_UPPER)
 
-TRIO_PRIVATE_STRING TRIO_INLINE int
+TRIO_PRIVATE_STRING int
 internal_to_upper
 TRIO_ARGS1((source),
 	   int source)
