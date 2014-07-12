@@ -434,6 +434,10 @@ typedef trio_longlong_t trio_int64_t;
 #  define LDBL_EPSILON DBL_EPSILON
 # endif
 
+# if defined(TRIO_CPU_POWERPC) || defined(TRIO_CPU_SPARC) || defined(TRIO_CPU_SYSTEMZ)
+#  define TRIO_DOUBLE_DOUBLE
+# endif
+
 #endif /* TRIO_FEATURE_FLOAT */
 
 /* The maximal number of digits is for base 2 */
@@ -3143,10 +3147,14 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	  exponent = (int)trio_floor(workNumber + epsilonCorrection);
 	  workNumber = number;
 	  /*
-	   * The expression A * 10^-B is equivalent to A / 10^B but the former
-	   * usually gives better accuracy.
+           * We want to apply A / 10^B but the equivalent A * 10^-B gives better
+           * accuracy on platforms with true long double support.
 	   */
+#if defined(TRIO_DOUBLE_DOUBLE)
+	  workNumber /= TrioPower(dblBase, (trio_long_double_t)exponent);
+#else
 	  workNumber *= TrioPower(dblBase, (trio_long_double_t)-exponent);
+#endif
 	  if (trio_isinf(workNumber)) {
 	    /*
 	     * Scaling is done it two steps to avoid problems with subnormal

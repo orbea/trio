@@ -142,6 +142,18 @@
 # endif
 #endif
 
+#if defined(__powerpc) || defined(__powerpc__) || defined(_ARCH_PPC)
+# define TRIO_CPU_POWERPC
+#endif
+
+#if defined(__sparc) || defined(__sparc__)
+# define TRIO_CPU_SPARC
+#endif
+
+#if defined(__s390x__) || defined(__zarch__) || defined(__SYSC_ZARCH__)
+# define TRIO_CPU_SYSTEMZ
+#endif
+
 /*************************************************************************
  * Standards support detection
  */
