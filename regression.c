@@ -937,7 +937,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.17Rf", 1.4);
   nerrors += Verify(__FILE__, __LINE__, "39413.8",
 		    "%.30Rf", 39413.80);
-#  if !defined(TRIO_COMPILER_ANCIENT)
+#  if !defined(TRIO_COMPILER_ANCIENT) && !defined(TRIO_DOUBLE_DOUBLE)
   /* Long double */
   nerrors += Verify(__FILE__, __LINE__, "1.4",
 		    "%RLf", 1.4L);

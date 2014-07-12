@@ -368,4 +368,8 @@ typedef void * trio_pointer_t;
 # endif
 #endif
 
+# if defined(TRIO_CPU_POWERPC) || defined(TRIO_CPU_SPARC) || defined(TRIO_CPU_SYSTEMZ)
+#  define TRIO_DOUBLE_DOUBLE
+# endif
+
 #endif /* TRIO_TRIODEF_H */

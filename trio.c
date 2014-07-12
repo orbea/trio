@@ -434,10 +434,6 @@ typedef trio_longlong_t trio_int64_t;
 #  define LDBL_EPSILON DBL_EPSILON
 # endif
 
-# if defined(TRIO_CPU_POWERPC) || defined(TRIO_CPU_SPARC) || defined(TRIO_CPU_SYSTEMZ)
-#  define TRIO_DOUBLE_DOUBLE
-# endif
-
 #endif /* TRIO_FEATURE_FLOAT */
 
 /* The maximal number of digits is for base 2 */
