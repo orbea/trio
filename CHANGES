@@ -7,6 +7,9 @@ Bjorn Reese and/or Daniel Stenberg.
 Version 1.16 - XXXX/XX/XX
 -------------------------
 * Stephen Kitt
+  Fixed accuracy problems on platforms with double-double support.
+
+* Stephen Kitt
   Added support for GCC format attribute.
 
 * Balint Reczey

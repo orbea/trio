@@ -2987,6 +2987,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   BOOLEAN_T keepTrailingZeroes;
   BOOLEAN_T keepDecimalPoint;
   trio_long_double_t epsilon;
+  trio_long_double_t epsilonCorrection;
   BOOLEAN_T adjustNumber = FALSE;
   
   assert(VALID(self));
@@ -3059,6 +3060,11 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   if (base == NO_BASE)
     base = BASE_DECIMAL;
   dblBase = (trio_long_double_t)base;
+  /*
+   * Some log10() functions can "err by almost 3 ulps" according to
+   * http://www.cs.berkeley.edu/~wkahan/LOG10HAF.TXT
+   */
+  epsilonCorrection = 3 * epsilon;
   keepTrailingZeroes = !( (flags & FLAGS_ROUNDING) ||
 			  ( (flags & FLAGS_FLOAT_G) &&
 			    !(flags & FLAGS_ALTERNATIVE) ) );
@@ -3134,7 +3140,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
       else
 	{
-	  exponent = (int)trio_floor(workNumber);
+	  exponent = (int)trio_floor(workNumber + epsilonCorrection);
 	  workNumber = number;
 	  /*
 	   * The expression A * 10^-B is equivalent to A / 10^B but the former
@@ -3173,7 +3179,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   integerDigits = 1;
   if (integerNumber > epsilon)
     {
-      integerDigits += (int)TrioLogarithm(integerNumber, base);
+      integerDigits += (int)(TrioLogarithm(integerNumber, base) + epsilonCorrection);
     }
 
   fractionDigits = precision;
@@ -3198,7 +3204,8 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	{
 	  adjustNumber = TRUE;
 	  /* Remove a leading fraction zero if fraction is rounded up */
-	  if ((int)TrioLogarithm(number * dblFractionBase, base) != (int)TrioLogarithm(workNumber, base))
+	  if ((int)(TrioLogarithm(number * dblFractionBase, base) + epsilonCorrection) !=
+              (int)(TrioLogarithm(workNumber, base) + epsilonCorrection))
 	    {
 	      --leadingFractionZeroes;
 	    }
@@ -3226,7 +3233,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
       
       if (flags & FLAGS_FLOAT_E)
 	{
-	  workDigits = 1 + TrioLogarithm(trio_floor(workNumber), base);
+	  workDigits = 1 + (TrioLogarithm(trio_floor(workNumber), base) + epsilonCorrection);
 	  if (integerDigits == workDigits)
 	    {
 	      /* Adjust if the same number of digits are used */
@@ -3255,7 +3262,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	      integerNumber = trio_floor(workNumber);
 	      fractionNumber = 0.0;
 	      integerDigits = (integerNumber > epsilon)
-		? 1 + (int)TrioLogarithm(integerNumber, base)
+		? 1 + (int)(TrioLogarithm(integerNumber, base) + epsilonCorrection)
 		: 1;
 	      if (flags & FLAGS_FLOAT_G)
 		{
