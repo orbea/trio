@@ -10,7 +10,7 @@
  *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
  * CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
  *
  ************************************************************************/
@@ -342,7 +342,7 @@ the format is "r exp(i theta)", where r is the length of the complex vector
 
 @b RETURN @b VALUES
 
-@ref trio_register returns a handle, or NULL if an error occured.
+@ref trio_register returns a handle, or NULL if an error occurred.
 
 @b SEE @b ALSO
 

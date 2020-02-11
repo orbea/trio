@@ -10,7 +10,7 @@
  *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
  * CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
  *
  ************************************************************************
@@ -120,7 +120,7 @@ extern "C" {
  *
  * Define this to 0 to disable Trio-specific extensions, or define
  * to 1 to enable them.  This has two effects: it controls whether
- * or not the Trio user-defined formating mechanism
+ * or not the Trio user-defined formatting mechanism
  * (trio_register() etc) is supported, and it enables or disables
  * Trio's own format specifier extensions.  The format specifiers
  * that are disabled by this switch are labelled with [TRIO] in

@@ -10,7 +10,7 @@
  *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
  * CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
  *
  ************************************************************************/
@@ -84,7 +84,7 @@ argument is referred as 1$. If this modifier is used, it must be the first
 modifier after the indication character. n$ can also be used for argument
 width, precision, and base.
 
-The performance penalty of using positionals is almost neglible (contrary to
+The performance penalty of using positionals is almost negligible (contrary to
 most other printf implementations).
 
 @li @em Reference @em Mix.
@@ -289,7 +289,7 @@ The following specifier groups exists
 @li Errno ( @c m )
 @li Group ( @c [] )
 
-The sticky modifiers are active until superseeded by other sticky modifiers,
+The sticky modifiers are active until superseded by other sticky modifiers,
 or the end of the format string is reached.
 Local modifiers overrides sticky modifiers for the given specifier only.
 @verbatim
@@ -312,7 +312,7 @@ The full syntax is @c %%.
 @em Hex @em floats ( @c a, @c A ) [C99]
 
 Output a hexadecimal (base 16) representation of a floating point number. The
-number is automatically preceeded by @c 0x ( or @c 0X ). The exponent is
+number is automatically preceded by @c 0x ( or @c 0X ). The exponent is
 @c p ( or @c P ).
 @verbatim
   trio_printf("|%a|%A|\n", 3.1415, 3.1415e20);
@@ -403,7 +403,7 @@ Output an octal (base 8) representation of a number.
 
 @em Pointer ( @c p )
 
-Ouput the address of the argument. The address is printed as a hexadecimal
+Output the address of the argument. The address is printed as a hexadecimal
 number. If the argument is the NULL pointer the text @c (nil) will be used
 instead.
 @li Alternative ( @c # ) [TRIO].
@@ -449,7 +449,7 @@ Output an unsigned integer. Default base is 10.
 Output a hexadecimal (base 16) representation of a number.
 
 @li Alternative ( @c # ).
-Preceed the number by @c 0x ( or @c 0X ). The two characters are counted
+Precede the number by @c 0x ( or @c 0X ). The two characters are counted
 as part of the width.
 
 @em User-defined ( @c <> )
@@ -459,7 +459,7 @@ See @ref trio_register for further information.
 
 @b RETURN @b VALUES
 
-All functions returns the number of outputted characters. If an error occured
+All functions return the number of outputted characters. If an error occurred
 then a negative error code is returned [TRIO]. Note that this is a deviation
 from the standard, which simply returns -1 (or EOF) and errno set
 appropriately.

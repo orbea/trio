@@ -1414,7 +1414,7 @@ VerifyScanningRegression(TRIO_NOARGS)
 		    "%d", rc);
   fclose(stream);
 
-  /* Idem, after a succesfull read */
+  /* Idem, after a successful read */
   stream = tmpfile();
   trio_fprintf(stream, "123");
   rewind(stream);

@@ -10,7 +10,7 @@
  *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
  * CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
  *
  ************************************************************************/
@@ -33,7 +33,7 @@ functions.
 
 @b Naming
 
-Renaming is done to provide more clear names, to provide a consistant naming
+Renaming is done to provide more clear names, to provide a consistent naming
 and argument policy, and to hide portability issues.
 
 @li All functions starts with "trio_".
