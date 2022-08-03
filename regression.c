@@ -749,7 +749,6 @@ int
 VerifyFormattingArgarray(TRIO_NOARGS)
 {
   int nerrors = 0;
-  int rc;
   trio_pointer_t argarray[4];
   int value = 42;
   double number = 123.456;
