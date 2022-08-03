@@ -4,6 +4,23 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
+Version 1.17 - 2022/8/22
+------------------------
+* Jochen Roemmler
+  Fixes typos detected by the 'codespell' program.
+
+* orbea
+  Use a standard autotools build system based from a yacp patch.
+
+* Add a pkgconfig file.
+
+* Fixes a compile failure with -Os.
+
+* Fixes generating the doxygen documentation.
+
+* Merges changes from various downstream patches.
+
+
 Version 1.16 - 2014/07/16
 -------------------------
 * Stephen Kitt
