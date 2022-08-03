@@ -430,7 +430,7 @@ TRIO_ARGS1((number),
 
 #if defined(TRIO_FUNC_C99_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_PRIVATE_NAN TRIO_INLINE_NAN int
+TRIO_PRIVATE_NAN int
 c99_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	   double number,
