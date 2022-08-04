@@ -2,17 +2,18 @@ if HAVE_DOXYGEN
 
 CLEANFILES = doxygen.stamp
 
-doxygen.stamp: trio.cfg
+doxyfile.stamp: Doxyfile
 	$(DOXYGEN) $<
 	touch $@
 
-all-local: doxygen.stamp
+all-local: doxyfile.stamp
 clean-local:
 	-rm -rf $(top_srcdir)/docs/html
 
 endif
 
 EXTRA_DIST = \
+	Doxyfile \
 	doc.h \
 	doc_dynamic.h \
 	doc_nan.h \
@@ -22,5 +23,4 @@ EXTRA_DIST = \
 	doc_static.h \
 	footer.html \
 	header.html \
-	trio.cfg \
 	trio.css
