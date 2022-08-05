@@ -186,7 +186,7 @@
 
 #include <assert.h>
 #include <ctype.h>
-#if defined(PREDEF_STANDARD_C99) && !defined(isascii)
+#if !defined(isascii) && (defined(__STRICT_ANSI__) || defined(PREDEF_STANDARD_C99))
 # define isascii(x) ((x) & 0x7F)
 #endif
 #if defined(TRIO_COMPILER_ANCIENT)

@@ -196,7 +196,7 @@
 # endif
 #endif
 
-#if (_XOPEN_VERSION - 0 >= 3) || defined(_XOPEN_XPG3)
+#if !defined(__STRICT_ANSI__) && ((_XOPEN_VERSION - 0 >= 3) || defined(_XOPEN_XPG3))
 # define PREDEF_STANDARD_XPG3
 #endif
 #if (_XOPEN_VERSION - 0 >= 4) || defined(_XOPEN_XPG4)
