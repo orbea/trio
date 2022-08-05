@@ -229,10 +229,6 @@
  * Constants
  */
 
-#if !defined(TRIO_EMBED_NAN)
-static TRIO_CONST char rcsid[] = "@(#)$Id$";
-#endif
-
 #if defined(TRIO_FUNC_INTERNAL_MAKE_DOUBLE) \
  || defined(TRIO_FUNC_INTERNAL_IS_SPECIAL_QUANTITY) \
  || defined(TRIO_FUNC_INTERNAL_IS_NEGATIVE)

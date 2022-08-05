@@ -43,8 +43,6 @@
 #define DOUBLE_EQUAL(x,y) (((x)>(y)-DBL_EPSILON) && ((x)<(y)+DBL_EPSILON))
 #define FLOAT_EQUAL(x,y) (((x)>(y)-FLT_EPSILON) && ((x)<(y)+FLT_EPSILON))
 
-static TRIO_CONST char rcsid[] = "@(#)$Id$";
-
 #if defined(TRIO_EMBED_NAN)
 # include "trionan.c"
 #endif
@@ -1666,8 +1664,6 @@ int
 main(TRIO_NOARGS)
 {
   int nerrors = 0;
-
-  printf("%s\n", rcsid);
 
 #if TRIO_EXTENSION
   /* Override system locale settings */

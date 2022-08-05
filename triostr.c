@@ -156,14 +156,6 @@ struct _trio_string_t
 };
 
 /*************************************************************************
- * Constants
- */
-
-#if !defined(TRIO_EMBED_STRING)
-static TRIO_CONST char rcsid[] = "@(#)$Id$";
-#endif
-
-/*************************************************************************
  * Static String Functions
  */
 

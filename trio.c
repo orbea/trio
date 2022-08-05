@@ -897,8 +897,6 @@ typedef struct _trio_userdef_t {
  *
  *************************************************************************/
 
-static TRIO_CONST char rcsid[] = "@(#)$Id$";
-
 #if TRIO_FEATURE_FLOAT
 /*
  * Need this to workaround a parser bug in HP C/iX compiler that fails
