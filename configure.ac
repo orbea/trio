@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE([foreign])
 AC_PROG_CC
 LT_INIT
 
-AC_CHECK_HEADERS([float.h inttypes.h limits.h locale.h stddef.h stdint.h stdlib.h string.h unistd.h wchar.h wctype.h])
+AC_CHECK_HEADERS([float.h inttypes.h limits.h locale.h stddef.h stdint.h stdlib.h string.h strings.h unistd.h wchar.h wctype.h])
 
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
