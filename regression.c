@@ -103,7 +103,7 @@ TRIO_ARGS4((file, line, expected, got),
 /*************************************************************************
  *
  */
-int
+static int
 Compare
 TRIO_ARGS4((file, line, expected, got),
 	   TRIO_CONST char *file,
@@ -122,7 +122,7 @@ TRIO_ARGS4((file, line, expected, got),
 /*************************************************************************
  *
  */
-int
+static int
 Verify
 TRIO_VARGS5((file, line, result, fmt, va_alist),
 	    TRIO_CONST char *file,
@@ -147,7 +147,7 @@ TRIO_VARGS5((file, line, result, fmt, va_alist),
 /*************************************************************************
  *
  */
-int
+static int
 VerifyV
 TRIO_ARGS5((file, line, result, fmt, args),
 	    TRIO_CONST char *file,
@@ -169,7 +169,7 @@ TRIO_ARGS5((file, line, result, fmt, args),
 /*************************************************************************
  *
  */
-int
+static int
 VerifyReturnValues(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -235,7 +235,7 @@ VerifyReturnValues(TRIO_NOARGS)
  */
 #define TEST_STRING "0123456789"
 
-int
+static int
 VerifyAllocate(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -275,7 +275,7 @@ VerifyAllocate(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyFormattingStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -293,7 +293,7 @@ VerifyFormattingStrings(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyFormattingIntegers(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -400,7 +400,7 @@ VerifyFormattingIntegers(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyFormattingFloats(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -670,7 +670,7 @@ VerifyFormattingFloats(TRIO_NOARGS)
  *
  */
 #if TRIO_EXTENSION
-int number_writer(void *ref)
+static int number_writer(void *ref)
 {
   const char *format;
   int *data;
@@ -689,7 +689,7 @@ int number_writer(void *ref)
 
 #endif
 
-int
+static int
 VerifyFormattingUserDefined(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -722,7 +722,7 @@ VerifyFormattingUserDefined(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyFormattingRegression(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -745,7 +745,7 @@ VerifyFormattingRegression(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyFormattingArgarray(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -771,7 +771,7 @@ VerifyFormattingArgarray(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyFormatting(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -978,7 +978,7 @@ VerifyFormatting(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyErrors(TRIO_NOARGS)
 {
   char buffer[512];
@@ -1117,7 +1117,7 @@ VerifyErrors(TRIO_NOARGS)
  *
  */
 #if TRIO_FEATURE_SCANF
-int
+static int
 VerifyScanningOneInteger
 TRIO_ARGS5((file, line, expected, format, original),
 	   TRIO_CONST char *file,
@@ -1134,7 +1134,7 @@ TRIO_ARGS5((file, line, expected, format, original),
   return Verify(file, line, expected, format, number);
 }
 
-int
+static int
 VerifyScanningIntegers(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -1168,7 +1168,7 @@ VerifyScanningIntegers(TRIO_NOARGS)
  *
  */
 #if TRIO_FEATURE_SCANF
-int
+static int
 VerifyScanningOneFloat
 TRIO_ARGS5((file, line, expected, format, original),
 	   TRIO_CONST char *file,
@@ -1185,7 +1185,7 @@ TRIO_ARGS5((file, line, expected, format, original),
   return Verify(file, line, expected, format, number);
 }
 
-int
+static int
 VerifyScanningOneDouble
 TRIO_ARGS5((file, line, expected, format, original),
 	   TRIO_CONST char *file,
@@ -1202,7 +1202,7 @@ TRIO_ARGS5((file, line, expected, format, original),
   return Verify(file, line, expected, format, number);
 }
 
-int
+static int
 VerifyScanningFloats(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -1262,7 +1262,7 @@ VerifyScanningFloats(TRIO_NOARGS)
  *
  */
 #if TRIO_FEATURE_SCANF
-int
+static int
 VerifyScanningOneString
 TRIO_ARGS5((file, line, expected, format, original),
 	   TRIO_CONST char *file,
@@ -1280,7 +1280,7 @@ TRIO_ARGS5((file, line, expected, format, original),
   return Verify(file, line, expected, "%s", string);
 }
 
-int
+static int
 VerifyScanningStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -1322,7 +1322,7 @@ VerifyScanningStrings(TRIO_NOARGS)
  *
  */
 #if TRIO_FEATURE_SCANF
-int
+static int
 VerifyScanningRegression(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -1439,7 +1439,7 @@ VerifyScanningRegression(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyScanning(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -1455,7 +1455,7 @@ VerifyScanning(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -1596,7 +1596,7 @@ VerifyStrings(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyDynamicStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
@@ -1637,7 +1637,7 @@ VerifyDynamicStrings(TRIO_NOARGS)
 /*************************************************************************
  *
  */
-int
+static int
 VerifyNaN(TRIO_NOARGS)
 {
   double ninf_number = trio_ninf();
