@@ -1,16 +1,12 @@
 if HAVE_DOXYGEN
 
-CLEANFILES = doxygen.stamp
-
-doxyfile.stamp: Doxyfile
-	$(DOXYGEN) $<
-	touch $@
-
-all-local: doxyfile.stamp
-clean-local:
-	-rm -rf $(top_srcdir)/doc/html
+all-local: html
+install-data-local: install-html
+uninstall-hook: uninstall-html
 
 endif
+
+CLEANFILES = doxyfile.stamp
 
 EXTRA_DIST = \
 	doc.h \
@@ -23,3 +19,27 @@ EXTRA_DIST = \
 	footer.html \
 	header.html \
 	trio.css
+
+directory = $(top_builddir)/doc/html
+
+.PHONY: html install-html uninstall-html
+
+doxyfile.stamp: Doxyfile
+	$(DOXYGEN) $<
+	touch $@
+
+html: doxyfile.stamp
+
+clean-local:
+	-rm -rf html
+
+install-html: doxyfile.stamp
+	$(MKDIR_P) $(DESTDIR)$(htmldir)
+	for file in $(directory)/*; do \
+		$(INSTALL_DATA) $$file "$(DESTDIR)$(htmldir)" || exit 1; \
+	done;
+
+uninstall-html:
+	-rm -f -- $(DESTDIR)$(htmldir)/*.png $(DESTDIR)$(htmldir)/*.svg
+	-rm -f -- $(DESTDIR)$(htmldir)/*.html $(DESTDIR)$(htmldir)/*.js
+	-rm -f -- $(DESTDIR)$(htmldir)/*.css

@@ -1,6 +1,4 @@
-if HAVE_DOXYGEN
 SUBDIRS = doc
-endif
 
 LDADD = libtrio.la
 

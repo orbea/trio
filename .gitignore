@@ -8,6 +8,7 @@
 *~
 .deps/
 .libs/
+Doxyfile
 Makefile
 Makefile.in
 aclocal.m4
@@ -17,6 +18,7 @@ compile
 config.*
 configure
 depcomp
+html
 install-sh
 libtool
 ltmain.sh
