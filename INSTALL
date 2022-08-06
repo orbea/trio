@@ -1,0 +1,30 @@
+Trio uses a standard autotools build.
+
+Generate configure:
+
+    autoreconf -fi
+
+Show configure help:
+
+    ./configure --help
+
+Build:
+
+    ./configure
+    make
+
+Install:
+
+    make install
+
+Build the regression test:
+
+    make check
+
+Build the libc compare:
+
+    make compare
+
+Build the example:
+
+    make example

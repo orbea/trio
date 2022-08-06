@@ -12,7 +12,9 @@ compare_SOURCES = compare.c
 example_SOURCES = example.c
 regression_SOURCES = regression.c
 
-EXTRA_DIST = CHANGES README test-build.sh
+EXTRA_DIST = CHANGES INSTALL LICENSE test-build.sh
+
+dist_doc_DATA = README
 
 include_HEADERS = trio.h triop.h triodef.h trionan.h triostr.h
 

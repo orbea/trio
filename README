@@ -1,38 +1,82 @@
-README -- trio
+Trio is a fully matured and stable set of printf and string functions
+designed be used by applications with focus on portability or with
+the need for additional features that are not supported by standard
+stdio implementation.
 
-Trio is a package with portable string functions. Including printf() clones
-and others.
+There are several cases where you may want to consider using trio:
 
- Copyright (C) 1998-2001 by Bjorn Reese and Daniel Stenberg.
+    1. Portability across heterogeneous platforms.
+    2. Embedded systems without stdio support.
+    3. Extendability of unsupported features.
+    4. Your native version doesn't do everything you need.
 
- Permission to use, copy, modify, and distribute this software for any
- purpose with or without fee is hereby granted, provided that the above
- copyright notice and this permission notice appear in all copies.
+When you write applications that must be portable to a wide range
+of platforms you often have to deal with inadequate implementations
+of the stdio library functions. Most notably is the lack of secure
+formatting functions, such as snprintf, or the lack of parameter
+reordering commonly used for the internationalization of applications,
+such as the <num>$ modifier. Sometimes the feature you need is
+simply not present in stdio. So you end up spending much effort on
+determining which platforms supports what, and to write your own
+versions of various features. This is where trio can help you. Trio
+is a platform-independent implementation of the stdio printf and
+scanf functions and the string library functions.
 
- THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
- WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
- CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
+The functionality described in the stdio standards is a compromise, and
+does unfortunately not include a mechanism to extend the functionality
+for an individual application. Oftentimes an application has the need
+for an extra feature, and the application code can become much more
+clear and readable by using an extension mechanism. Trio supports a
+range of useful extensions such as user-defined specifiers, passing of
+arguments in arrays, localized string scanning, thousand-separators,
+and arbitrary integer bases.
 
-Trio is intended to be an integral part of another application, so we
-have not done anything to create a proper installation.
+Trio fully implements the C99 (ISO/IEC 9899:1999) and UNIX98 (the
+Single Unix Specification, Version 2) standards, as well as many
+features from other implemenations, e.g. the GNU libc and BSD4.
 
-Compile with 'make' (edit the Makefile if you want a release build)
+Examples
 
-Test the package with 'make test'
+1. Output an integer as a binary number using a trio extension.
 
-Install by copying trio.h, triop.h, and libtrio.a (and man/man?/* if
-you want documentation) to the appropriate directories.
+    trio_printf("%..2i\n", number);
 
-Catch some usage examples in example.c
+2. Output a number with thousand-separator using a trio extension
 
-Send feedback and patches to the mailing list, subscription and other
-information is found here:
+    trio_printf("%'f\n", 12345.6);
 
-        http://lists.sourceforge.net/lists/listinfo/ctrio-talk
+The thousand-separator described by the locale is used.
 
-Enjoy!
+3. Output an fixed length array of floating-point numbers.
 
-Trio web page
+    double array[] = {1.0, 2.0, 3.0}; printf("%.2f %.2f %.2f\n",
+    array[0], array[1], array[2]);
 
-        http://daniel.haxx.se/trio/
+The same with two trio extensions (arguments are passed in an array,
+and the first formatting specifier sets the sticky option so we
+do not have to type all the formatting modifiers for the remaining
+formatting specifiers)
+
+    trio_printfv("%!.2f %f %f\n", array);
+
+Another, and more powerful, application of being able to pass arguments
+in an array is the creation of the printf/scanf statement at run-time,
+where the formatting string, and thus the argument list, is based on
+an external configuration file.
+
+4. Parse a string consisting of one or more upper-case alphabetic
+   characters followed by one or more numeric characters.
+
+    sscanf(buffer, "%[A-Z]%[0-9]", alphabetic, numeric);
+
+The same but with locale using a trio extension.
+
+    trio_sscanf(buffer, "%[:upper:]%[:digit:]", alphabetic, numeric);
+
+Send feedback and patches to the git repo:
+
+    https://github.com/orbea/trio
+
+Trio web page:
+
+    https://daniel.haxx.se/projects/trio/
