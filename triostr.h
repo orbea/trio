@@ -332,13 +332,13 @@ TRIO_PROTO((TRIO_CONST char *string, int type));
 #endif
 
 #if defined(TRIO_FUNC_INDEX)
-TRIO_PUBLIC_STRING char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_index
 TRIO_PROTO((TRIO_CONST char *string, int character));
 #endif
 
 #if defined(TRIO_FUNC_INDEX_LAST)
-TRIO_PUBLIC_STRING char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_index_last
 TRIO_PROTO((TRIO_CONST char *string, int character));
 #endif
@@ -380,7 +380,7 @@ TRIO_PROTO((char *target, TRIO_CONST char *source, int (*Function) TRIO_PROTO((i
 #endif
 
 #if defined(TRIO_FUNC_SUBSTRING)
-TRIO_PUBLIC_STRING char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_substring
 TRIO_PROTO((TRIO_CONST char *string, TRIO_CONST char *substring));
 #endif
@@ -534,13 +534,13 @@ TRIO_PROTO((trio_string_t *self, int offset));
 #endif
 
 #if defined(TRIO_FUNC_STRING_INDEX)
-TRIO_PUBLIC_STRING char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_string_index
 TRIO_PROTO((trio_string_t *self, int character));
 #endif
 
 #if defined(TRIO_FUNC_STRING_INDEX_LAST)
-TRIO_PUBLIC_STRING char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_string_index_last
 TRIO_PROTO((trio_string_t *self, int character));
 #endif
@@ -576,7 +576,7 @@ TRIO_PROTO((trio_string_t *self));
 #endif
 
 #if defined(TRIO_FUNC_STRING_SUBSTRING)
-TRIO_PUBLIC_STRING char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_string_substring
 TRIO_PROTO((trio_string_t *self, trio_string_t *other));
 #endif
@@ -672,7 +672,7 @@ TRIO_PROTO((trio_string_t *self, char *buffer));
 #endif
 
 #if defined(TRIO_FUNC_XSTRING_SUBSTRING)
-TRIO_PUBLIC_STRING char *
+TRIO_PUBLIC_STRING TRIO_CONST char *
 trio_xstring_substring
 TRIO_PROTO((trio_string_t *self, TRIO_CONST char *other));
 #endif
