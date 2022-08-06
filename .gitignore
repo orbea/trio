@@ -2,6 +2,8 @@
 *.lo
 *.log
 *.o
+*.pc
+*.stamp
 *.trs
 *~
 .deps/
@@ -16,7 +18,6 @@ configure
 depcomp
 install-sh
 libtool
-libtrio.pc
 ltmain.sh
 missing
 stamp-h1

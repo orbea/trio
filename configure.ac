@@ -32,5 +32,5 @@ AS_IF([test "x$enable_doc" = "xyes"], [
 ])
 AM_CONDITIONAL([HAVE_DOXYGEN], [test "x$enable_doc" = "xyes"])
 
-AC_CONFIG_FILES([libtrio.pc doc/Makefile Makefile])
+AC_CONFIG_FILES([libtrio.pc doc/Doxyfile doc/Makefile Makefile])
 AC_OUTPUT

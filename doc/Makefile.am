@@ -8,12 +8,11 @@ doxyfile.stamp: Doxyfile
 
 all-local: doxyfile.stamp
 clean-local:
-	-rm -rf $(top_srcdir)/docs/html
+	-rm -rf $(top_srcdir)/doc/html
 
 endif
 
 EXTRA_DIST = \
-	Doxyfile \
 	doc.h \
 	doc_dynamic.h \
 	doc_nan.h \
