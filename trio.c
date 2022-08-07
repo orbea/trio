@@ -4159,6 +4159,7 @@ trio_pointer_t TrioArrayGetter(trio_pointer_t context, int index, int type)
 {
   /* Utility function for the printfv family */
   trio_pointer_t *argarray = (trio_pointer_t *)context;
+  if (type) {}
   return argarray[index];
 }
 
@@ -5746,14 +5747,7 @@ TRIO_ARGS2((ref, pointer),
     }
   else
     {
-      /*
-       * The subtraction of the null pointer is a workaround
-       * to avoid a compiler warning. The performance overhead
-       * is negligible (and likely to be removed by an
-       * optimizing compiler). The (char *) casting is done
-       * to please ANSI C++.
-       */
-      number = (trio_uintmax_t)((char *)pointer - (char *)0);
+      number = (trio_uintmax_t)(pointer);
       /* Shrink to size of pointer */
       number &= (trio_uintmax_t)-1;
       flags = self->parameter->flags;
