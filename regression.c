@@ -176,10 +176,14 @@ VerifyReturnValues(TRIO_NOARGS)
   char *expected;
   char buffer[4096];
   char result[4096];
+  char string1[] = "10 10 0123456789";
+  char string2[] = "10 3 012";
+  char string3[] = "10 0 ";
+  char string4[] = "10 0 DO NOT TOUCH";
 
   rc = trio_sprintf(buffer, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
-  expected = "10 10 0123456789";
+  expected = string1;
   if (!trio_equal_case(result, expected))
     {
       nerrors++;
@@ -188,7 +192,7 @@ VerifyReturnValues(TRIO_NOARGS)
   
   rc = trio_snprintf(buffer, sizeof(buffer), "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
-  expected = "10 10 0123456789";
+  expected = string1;
   if (!trio_equal_case(result, expected))
     {
       nerrors++;
@@ -197,7 +201,7 @@ VerifyReturnValues(TRIO_NOARGS)
   
   rc = trio_snprintf(buffer, 4, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
-  expected = "10 3 012";
+  expected = string2;
   if (!trio_equal_case(result, expected))
     {
       nerrors++;
@@ -207,7 +211,7 @@ VerifyReturnValues(TRIO_NOARGS)
   /* The output buffer contains the empty string */
   rc = trio_snprintf(buffer, 1, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
-  expected = "10 0 ";
+  expected = string3;
   if (!trio_equal_case(result, expected))
     {
       nerrors++;
@@ -218,7 +222,7 @@ VerifyReturnValues(TRIO_NOARGS)
   trio_sprintf(buffer, "DO NOT TOUCH");
   rc = trio_snprintf(buffer, 0, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
-  expected = "10 0 DO NOT TOUCH";
+  expected = string4;
   if (!trio_equal_case(result, expected))
     {
       nerrors++;
@@ -1283,35 +1287,39 @@ static int
 VerifyScanningStrings(TRIO_NOARGS)
 {
   int nerrors = 0;
+  char string1[] = "";
+  char string2[] = "hello";
+  char string3[] = "hello world";
+  char string4[] = "abcba";
 
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "",
-				     "hello", "hello");
+				     "hello", string2);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "",
-				     "", "");
+				     "", string1);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",
-				     "%s", "hello");
+				     "%s", string2);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",
-				     "%s", "hello world");
+				     "%s", string3);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello world",
-				     "%[^\n]", "hello world");
+				     "%[^\n]", string3);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "(nil)",
 				     "%s", NULL);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "hello",
-				     "%20s", "hello");
+				     "%20s", string2);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "he",
-				     "%2s", "hello");
+				     "%2s", string2);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "ab",
-				     "%[ab]", "abcba");
+				     "%[ab]", string4);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
-				     "%[abc]", "abcba");
+				     "%[abc]", string4);
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
-				     "%[a-c]", "abcba");
+				     "%[a-c]", string4);
 #if TRIO_EXTENSION
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "abcba",
-				     "%[[:alpha:]]", "abcba");
+				     "%[[:alpha:]]", string4);
 #endif
   nerrors += VerifyScanningOneString(__FILE__, __LINE__, "ba",
-				     "%*[ab]c%[^\n]", "abcba");
+				     "%*[ab]c%[^\n]", string4);
 
   return nerrors;
 }
@@ -1667,10 +1675,14 @@ main(TRIO_NOARGS)
   int nerrors = 0;
 
 #if TRIO_EXTENSION
+  char string1[] = ".";
+  char string2[] = ",";
+  char string3[] = "\3";
+
   /* Override system locale settings */
-  trio_locale_set_decimal_point(".");
-  trio_locale_set_thousand_separator(",");
-  trio_locale_set_grouping("\3");
+  trio_locale_set_decimal_point(string1);
+  trio_locale_set_thousand_separator(string2);
+  trio_locale_set_grouping(string3);
 #endif
 
   printf("Verifying strings\n");
