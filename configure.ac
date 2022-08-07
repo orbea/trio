@@ -8,6 +8,7 @@ AM_INIT_AUTOMAKE([foreign])
 AC_PROG_CC
 AC_PROG_MKDIR_P
 LT_INIT
+LT_LIB_M
 
 AC_CHECK_HEADERS([float.h inttypes.h limits.h locale.h stddef.h stdint.h stdlib.h string.h strings.h unistd.h wchar.h wctype.h])
 
