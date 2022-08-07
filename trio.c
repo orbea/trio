@@ -1493,8 +1493,8 @@ TRIO_ARGS4((type, format, offset, parameter),
 #if defined(QUALIFIER_PARAM)
 	case QUALIFIER_PARAM:
 	  parameter->type = TYPE_PRINT;
-	  /* FALLTHROUGH */
 #endif
+	  /* FALLTHROUGH */
 	case QUALIFIER_STAR:
 	  /* This has different meanings for print and scan */
 	  if (TYPE_PRINT == type)
@@ -1701,8 +1701,8 @@ TRIO_ARGS4((type, format, offset, parameter),
 #if defined(SPECIFIER_CHAR_UPPER)
     case SPECIFIER_CHAR_UPPER:
       parameter->flags |= FLAGS_WIDECHAR;
-      /* FALLTHROUGH */
 #endif
+      /* FALLTHROUGH */
     case SPECIFIER_CHAR:
       if (parameter->flags & FLAGS_LONG)
 	parameter->flags |= FLAGS_WIDECHAR;
@@ -1714,8 +1714,8 @@ TRIO_ARGS4((type, format, offset, parameter),
 #if defined(SPECIFIER_STRING_UPPER)
     case SPECIFIER_STRING_UPPER:
       parameter->flags |= FLAGS_WIDECHAR;
-      /* FALLTHROUGH */
 #endif
+      /* FALLTHROUGH */
     case SPECIFIER_STRING:
       if (parameter->flags & FLAGS_LONG)
 	parameter->flags |= FLAGS_WIDECHAR;
@@ -1801,8 +1801,8 @@ TRIO_ARGS4((type, format, offset, parameter),
 # if defined(SPECIFIER_FLOAT_E_UPPER)
     case SPECIFIER_FLOAT_E_UPPER:
       parameter->flags |= FLAGS_UPPER;
-      /* FALLTHROUGH */
 # endif
+      /* FALLTHROUGH */
     case SPECIFIER_FLOAT_E:
       parameter->flags |= FLAGS_FLOAT_E;
       parameter->type = FORMAT_DOUBLE;
@@ -1813,8 +1813,8 @@ TRIO_ARGS4((type, format, offset, parameter),
 # if defined(SPECIFIER_FLOAT_G_UPPER)
     case SPECIFIER_FLOAT_G_UPPER:
       parameter->flags |= FLAGS_UPPER;
-      /* FALLTHROUGH */
 # endif
+      /* FALLTHROUGH */
     case SPECIFIER_FLOAT_G:
       parameter->flags |= FLAGS_FLOAT_G;
       parameter->type = FORMAT_DOUBLE;
@@ -1825,8 +1825,8 @@ TRIO_ARGS4((type, format, offset, parameter),
 # if defined(SPECIFIER_FLOAT_F_UPPER)
     case SPECIFIER_FLOAT_F_UPPER:
       parameter->flags |= FLAGS_UPPER;
-      /* FALLTHROUGH */
 # endif
+      /* FALLTHROUGH */
     case SPECIFIER_FLOAT_F:
       parameter->type = FORMAT_DOUBLE;
       break;
