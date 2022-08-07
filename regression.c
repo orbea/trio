@@ -157,7 +157,7 @@ TRIO_ARGS5((file, line, result, fmt, args),
   int rc;
   char buffer[4096];
 
-  rc = trio_snprintfv(buffer, sizeof(buffer), fmt, args);
+  rc = trio_snprintfv(buffer, sizeof(buffer), fmt, (trio_pointer_t*)args);
   if (rc < 0)
     Dump(buffer, rc);
 
@@ -676,7 +676,7 @@ static int number_writer(void *ref)
   format = trio_get_format(ref);
   if ((format) && trio_equal(format, "integer"))
     {
-      data = trio_get_argument(ref);
+      data = (int*)trio_get_argument(ref);
       if (data)
 	{
 	  trio_print_int(ref, *data);
@@ -751,11 +751,12 @@ VerifyFormattingArgarray(TRIO_NOARGS)
   int value = 42;
   double number = 123.456;
   float smallNumber = 123.456;
+  char string[] = "my string";
 
   argarray[0] = &value;
   nerrors += VerifyV(__FILE__, __LINE__, "42",
 		     "%d", argarray);
-  argarray[0] = "my string";
+  argarray[0] = string;
   nerrors += VerifyV(__FILE__, __LINE__, "my string",
 		     "%s", argarray);
   argarray[0] = &number;
