@@ -2981,7 +2981,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
   int offset;
   BOOLEAN_T hasOnlyZeroes;
   int leadingFractionZeroes = -1;
-  register int trailingZeroes;
+  int trailingZeroes;
   BOOLEAN_T keepTrailingZeroes;
   BOOLEAN_T keepDecimalPoint;
   trio_long_double_t epsilon;
