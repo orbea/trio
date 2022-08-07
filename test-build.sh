@@ -100,20 +100,24 @@ build () {
   eval "set -- $compiler"
   for cc do
     [ "$cc" != 'clang' ] || ! check_asan "$test" || continue
-    for standard in '' -std=c89 -std=c99 -std=c11; do
+    eval "set -- $standard"
+    for std do
+      libs=
+      ! check_cxx "$std" || libs='-lstdc++'
       # TODO: Add -O3 and -Ofast
       for optimization in '' -O1 -O2 -O0 -Os -Og; do
-        build_string="$(printf %s "$standard" | tr = _)"
+        build_string="$(printf %s "$std" | tr = _ | tr -d '[:space:]')"
         dir="build/${test}/${cc}${optimization}${build_string}"
         rm -rf -- "$dir"
         cp -r -- build/configure/"$cc" "$dir"
         (
           cd -- "$dir"/
-          build_flags="${standard} ${optimization}"
+          build_flags="${std} ${optimization}"
           all_flags="${build_flags} ${_CFLAGS} ${cflags}"
           printf %s\\n '' "Building ${cc} ${build_flags}: ${test}" ''
-          make install V=1 CFLAGS="$all_flags" DESTDIR="$srcdir/$dir"/install
-          make check V=1 CFLAGS="$all_flags"
+          make install V=1 CFLAGS="$all_flags" LDFLAGS="$libs" \
+            DESTDIR="$srcdir/$dir"/install
+          make check V=1 CFLAGS="$all_flags" LDFLAGS="$libs"
         )
       done
     done
@@ -127,6 +131,13 @@ check_asan () {
   esac
 }
 
+check_cxx () {
+  case "$1" in
+    *c++* ) return 0 ;;
+    * ) return 1 ;;
+  esac
+}
+
 ###########
 ## Tests ##
 ###########
@@ -134,9 +145,27 @@ check_asan () {
 _CFLAGS='-Werror -Wall'
 _CFLAGS_ASAN='-g -fno-omit-frame-pointer'
 
+standard=
+all_std='default c89 c99 c11 c++ c++98 c++11 c++14 c++17'
+
+for i in $(printf %s "${all_std}"); do
+  case "$i" in
+    c89 ) standard="${standard} -std=c89" ;;
+    c99 ) standard="${standard} -std=c99" ;;
+    c11 ) standard="${standard} -std=c11" ;;
+    c++ ) standard="${standard} -xc++" ;;
+    c++98 ) standard="${standard} '-xc++ -std=c++98'" ;;
+    c++11 ) standard="${standard} '-xc++ -std=c++11'" ;;
+    c++14 ) standard="${standard} '-xc++ -std=c++14'" ;;
+    c++17 ) standard="${standard} '-xc++ -std=c++17'" ;;
+    default ) standard="${standard} ''" ;;
+    * ) printf %s\\n "ERROR: Unknown '$i' standard." >&2; exit 1 ;;
+  esac
+done
+
 if [ -z "${check}" ]; then
   # TODO: Indeterminate non-reproducible failures with lsan
-  check="default ansi lto asan tsan ubsan"
+  check='default ansi lto asan tsan ubsan'
 fi
 
 for i in $(printf %s "${check}"); do
