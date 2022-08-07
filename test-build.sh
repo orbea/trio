@@ -12,12 +12,70 @@ else
   rm -rf build
 fi
 
+exists () {
+  r=0; cwd="$(pwd)"
+  while [ $# -gt 0 ]; do
+    v=1; arg="$1"; shift
+    case "$arg" in
+      ''|*/ )
+        :
+      ;;
+      /* )
+        if [ -f "$arg" ] && [ -x "$arg" ]; then
+          printf %s\\n "$arg"
+          v=0
+        fi
+      ;;
+      ./* )
+        if [ -f "$arg" ] && [ -x "$arg" ]; then
+          pre="$(cd -- "${arg%%/*}/" && pwd)"
+          printf %s\\n "${pre%/}/$arg"
+          v=0
+        fi
+      ;;
+      */* )
+        if [ -f "$arg" ] && [ -x "$arg" ]; then
+          printf %s\\n "$(cd -- "${arg%%/*}/.." && pwd)/$arg"
+          v=0
+        fi
+      ;;
+      * )
+        if [ -n "${PATH+x}" ]; then
+          p=":${PATH:-$cwd}"
+          while [ "$p" != "${p#*:}" ] && [ -n "${p#*:}" ]; do
+            p="${p#*:}"; x="${p%%:*}"; z="${x:-$cwd}"; d="${z%/}/$arg"
+            if [ -f "$d" ] && [ -x "$d" ]; then
+              case "$d" in
+                /* ) : ;;
+                ./* ) pre="$(cd -- "${d%/*}/" && pwd)"; d="${pre%/}/$d" ;;
+                * ) d="$(cd -- "${d%/*}/" && pwd)/$arg" ;;
+              esac
+              printf %s\\n "$d"
+              v=0
+              break
+            fi
+          done
+        fi
+      ;;
+    esac
+    [ $v = 0 ] || r=1
+  done
+  return $r
+}
+
 check=
 
 while [ $# -gt 0 ]; do
   check="${check} $1"
   shift
 done
+
+if exists doxygen >/dev/null 2>&1; then
+  doc='--enable-doc'
+else
+  printf %s\\n 'WARNING: Building without doxygen' >&2
+  doc=
+fi
 
 autoreconf -fi
 
@@ -30,7 +88,7 @@ for cc do
   (
     cd -- "$confdir"/
     printf %s\\n '' "Configuring for $cc" ''
-    CC="$cc" "$srcdir"/configure --enable-doc
+    CC="$cc" "$srcdir"/configure $doc
   )
 done
 
