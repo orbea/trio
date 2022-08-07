@@ -142,7 +142,7 @@ check_cxx () {
 ## Tests ##
 ###########
 
-_CFLAGS='-Werror -Wall'
+_CFLAGS='-Werror -Wall -Wextra'
 _CFLAGS_ASAN='-g -fno-omit-frame-pointer'
 
 standard=
