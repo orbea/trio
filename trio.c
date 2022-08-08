@@ -3163,7 +3163,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
 	}
     }
 
-  integerNumber = trio_floor(number);
+  integerNumber = trio_floor(number + epsilonCorrection);
   fractionNumber = number - integerNumber;
 
   /*
