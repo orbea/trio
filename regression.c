@@ -189,7 +189,7 @@ VerifyReturnValues(TRIO_NOARGS)
       nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
-  
+
   rc = trio_snprintf(buffer, sizeof(buffer), "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
   expected = string1;
@@ -198,7 +198,7 @@ VerifyReturnValues(TRIO_NOARGS)
       nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
-  
+
   rc = trio_snprintf(buffer, 4, "%s%n", "0123456789", &count);
   trio_sprintf(result, "%d %d %s", rc, count, buffer);
   expected = string2;
@@ -228,7 +228,7 @@ VerifyReturnValues(TRIO_NOARGS)
       nerrors++;
       Report(__FILE__, __LINE__, expected, result);
     }
-  
+
   return nerrors;
 }
 
@@ -269,10 +269,9 @@ VerifyAllocate(TRIO_NOARGS)
   if (string)
     free(string);
 #endif
-  
+
   return nerrors;
 }
-
 
 /*************************************************************************
  *
@@ -300,7 +299,7 @@ VerifyFormattingIntegers(TRIO_NOARGS)
 {
   int nerrors = 0;
   char buffer[256];
-  
+
   /* Integer */
   nerrors += Verify(__FILE__, __LINE__, "Number 42",
 		   "Number %d", 42);
@@ -626,7 +625,7 @@ VerifyFormattingFloats(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "1.400000",
 		    "%Lf", 1.4L);
 #endif
-  
+
   /* Special cases */
   nerrors += Verify(__FILE__, __LINE__, "1.00",
 		    "%.2f", 0.999);
@@ -645,7 +644,7 @@ VerifyFormattingFloats(TRIO_NOARGS)
 		    "%f", trio_nan());
   nerrors += Verify(__FILE__, __LINE__, "NAN",
 		    "%F", trio_nan());
-  
+
 # if TRIO_FEATURE_HEXFLOAT
   nerrors += Verify(__FILE__, __LINE__, "0x2.ap+4",
 		    "%a", 42.0);
@@ -662,9 +661,9 @@ VerifyFormattingFloats(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "0xb.351c434a98fa8p-148",
 		    "%a", 3.141e-44);
 # endif
-  
+
 #endif /* TRIO_FEATURE_FLOAT */
-  
+
   return nerrors;
 }
 
@@ -805,7 +804,7 @@ VerifyFormatting(TRIO_NOARGS)
   /* Nil pointer */
   nerrors += Verify(__FILE__, __LINE__, "Pointer (nil)",
 		   "Pointer %p", NULL);
-  
+
   /* Char width alignment */
   nerrors += Verify(__FILE__, __LINE__, "Char X   .",
 	 "Char %-4c.", 'X');
@@ -832,7 +831,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%4$d %3$*8$d %2$.*7$d %1$*6$.*5$d",
 		    123, 1234, 12345, 123456, 5, 6, 7, 8);
 #endif
-  
+
 #if TRIO_FEATURE_SIZE_T_UPPER
   nerrors += Verify(__FILE__, __LINE__, "256",
 		    "%Zd", sizeof(buffer));
@@ -853,7 +852,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%m");
 # endif
 #endif
-  
+
 #if TRIO_FEATURE_QUAD
 # if defined(TRIO_COMPILER_SUPPORTS_LL)
   /* This may fail if the preprocessor does not recognize LL */
@@ -895,7 +894,7 @@ VerifyFormatting(TRIO_NOARGS)
   nerrors += Verify(__FILE__, __LINE__, "ffffffff",
 		    "%I16x", -1);
 #endif
-  
+
 #if TRIO_EXTENSION
   nerrors += Verify(__FILE__, __LINE__, "  42   86",
 		    "%!4d %d", 42, 86);
@@ -974,7 +973,7 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%.30RLf", (2.0L/3.0L));
 # endif
 #endif
-  
+
   return nerrors;
 }
 
@@ -987,7 +986,7 @@ VerifyErrors(TRIO_NOARGS)
   char buffer[512];
   int rc;
   int nerrors = 0;
-  
+
   /* Error: Invalid argument 1 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%d %r", 42, "text");
 #if TRIO_FEATURE_ERRORCODE
@@ -1008,7 +1007,7 @@ VerifyErrors(TRIO_NOARGS)
 #else
   nerrors += (rc != -1);
 #endif
-  
+
   /* Error: Invalid argument 2 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%#");
 #if TRIO_FEATURE_ERRORCODE
@@ -1029,7 +1028,7 @@ VerifyErrors(TRIO_NOARGS)
 #else
   nerrors += (rc != -1);
 #endif
-  
+
   /* Error: Invalid argument 3 */
   rc = trio_snprintf(buffer, sizeof(buffer), "%hhhd", 42);
 #if TRIO_FEATURE_ERRORCODE
@@ -1050,7 +1049,7 @@ VerifyErrors(TRIO_NOARGS)
 #else
   nerrors += (rc != -1);
 #endif
-  
+
   /* Error: Double reference */
   rc = trio_snprintf(buffer, sizeof(buffer), "hello %1$d %1$d", 31, 32);
 #if TRIO_FEATURE_ERRORCODE
@@ -1081,7 +1080,7 @@ VerifyErrors(TRIO_NOARGS)
 #else
   nerrors += (rc != -1);
 #endif
-  
+
   /* Error: Reference gap */
   rc = trio_snprintf(buffer, sizeof(buffer), "%3$d %1$d", 31, 32, 33);
 #if TRIO_FEATURE_ERRORCODE
@@ -1112,7 +1111,7 @@ VerifyErrors(TRIO_NOARGS)
 #else
   nerrors += (rc != -1);
 #endif
-  
+
   return nerrors;
 }
 
@@ -1131,7 +1130,7 @@ TRIO_ARGS5((file, line, expected, format, original),
 {
   int number;
   char data[512];
-  
+
   trio_snprintf(data, sizeof(data), format, original);
   trio_sscanf(data, format, &number);
   return Verify(file, line, expected, format, number);
@@ -1182,7 +1181,7 @@ TRIO_ARGS5((file, line, expected, format, original),
 {
   float number;
   char data[512];
-  
+
   trio_snprintf(data, sizeof(data), format, original);
   trio_sscanf(data, format, &number);
   return Verify(file, line, expected, format, number);
@@ -1199,7 +1198,7 @@ TRIO_ARGS5((file, line, expected, format, original),
 {
   double number;
   char data[512];
-  
+
   trio_snprintf(data, sizeof(data), format, original);
   trio_sscanf(data, format, &number);
   return Verify(file, line, expected, format, number);
@@ -1256,7 +1255,7 @@ VerifyScanningFloats(TRIO_NOARGS)
   nerrors += VerifyScanningOneFloat(__FILE__, __LINE__, "-inf",
 				      "%f", trio_ninf());
 #endif
-  
+
   return nerrors;
 }
 #endif
@@ -1276,7 +1275,7 @@ TRIO_ARGS5((file, line, expected, format, original),
 {
   char string[512];
   char data[512];
-  
+
   trio_snprintf(data, sizeof(data), "%s", original);
   string[0] = 0;
   trio_sscanf(data, format, string);
@@ -1551,7 +1550,7 @@ VerifyStrings(TRIO_NOARGS)
     nerrors++;
     Report0(__FILE__, __LINE__);
   }
-  
+
   /* To upper/lower */
   trio_copy(buffer, "Find me now");
   trio_upper(buffer);
@@ -1595,7 +1594,7 @@ VerifyStrings(TRIO_NOARGS)
     nerrors++;
     Report0(__FILE__, __LINE__);
   }
-  
+
 #endif /* !defined(TRIO_MINIMAL) */
   return nerrors;
 }
@@ -1632,11 +1631,11 @@ VerifyDynamicStrings(TRIO_NOARGS)
   if (!trio_xstring_append_max(string, no_terminate, 5) ||
       !trio_xstring_equal(string, "FIND ME NOW AND AGAINhello"))
     nerrors++;
-  
+
  error:
   if (string)
     trio_string_destroy(string);
-  
+
 #endif /* !defined(TRIO_MINIMAL) */
   return nerrors;
 }
@@ -1651,7 +1650,7 @@ VerifyNaN(TRIO_NOARGS)
   double pinf_number = trio_pinf();
   double nan_number = trio_nan();
   int nerrors = 0;
-  
+
   nerrors += Verify(__FILE__, __LINE__, "-1",
 		    "%d", trio_isinf(ninf_number));
   nerrors += Verify(__FILE__, __LINE__, "0",
@@ -1687,23 +1686,23 @@ main(TRIO_NOARGS)
 
   printf("Verifying strings\n");
   nerrors += VerifyStrings();
-  
+
   printf("Verifying dynamic strings\n");
   nerrors += VerifyDynamicStrings();
 
   printf("Verifying special quantities\n");
   nerrors += VerifyNaN();
-  
+
   printf("Verifying formatting\n");
   nerrors += VerifyFormatting();
-  
+
   printf("Verifying scanning\n");
   nerrors += VerifyScanning();
-  
+
   printf("Verifying return values\n");
   nerrors += VerifyErrors();
   nerrors += VerifyReturnValues();
-  
+
   printf("Verifying allocation\n");
   nerrors += VerifyAllocate();
 
@@ -1711,6 +1710,6 @@ main(TRIO_NOARGS)
     printf("Regression test succeeded\n");
   else
     printf("Regression test failed in %d instance(s)\n", nerrors);
-  
+
   return nerrors ? 1 : 0;
 }

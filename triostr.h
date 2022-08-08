@@ -58,7 +58,7 @@ enum {
  *
  * The following resolves internal dependencies.
  */
-  
+
 # if defined(TRIO_FUNC_XSTRING_SET)
 #  if !defined(TRIO_FUNC_DUPLICATE)
 #   define TRIO_FUNC_DUPLICATE
@@ -121,7 +121,7 @@ enum {
 #  endif
 #  if !defined(TRIO_FUNC_TO_FLOAT)
 #   define TRIO_FUNC_TO_FLOAT
-#  endif  
+#  endif
 # endif
 
 # if defined(TRIO_FUNC_STRING_TERMINATE)
@@ -223,7 +223,6 @@ enum {
 # define TRIO_FUNC_XSTRING_SUBSTRING
 
 #endif
-
 
 /*************************************************************************
  * String functions
