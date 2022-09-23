@@ -102,8 +102,12 @@ build () {
     [ "$cc" != 'clang' ] || ! check_asan "$test" || continue
     eval "set -- $standard"
     for std do
+      cpp=
       libs=
-      ! check_cxx "$std" || libs='-lstdc++'
+      if check_cxx "$std"; then
+        cpp='-xc++'
+        libs='-lstdc++'
+      fi
       # TODO: Add -O3 and -Ofast
       for optimization in '' -O1 -O2 -O0 -Os -Og; do
         build_string="$(printf %s "$std" | tr = _ | tr -d '[:space:]')"
@@ -112,12 +116,13 @@ build () {
         cp -r -- build/configure/"$cc" "$dir"
         (
           cd -- "$dir"/
-          build_flags="${std} ${optimization}"
+          print_flags="${std} ${optimization}"
+          build_flags="$(printf %s "${print_flags}" | sed 's/-xc++//')"
           all_flags="${build_flags} ${_CFLAGS} ${cflags}"
-          printf %s\\n '' "Building ${cc} ${build_flags}: ${test}" ''
-          make install V=1 CFLAGS="$all_flags" LDFLAGS="$libs" \
+          printf %s\\n '' "Building ${cc} ${print_flags}: ${test}" ''
+          make install V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs" \
             DESTDIR="$srcdir/$dir"/install
-          make check V=1 CFLAGS="$all_flags" LDFLAGS="$libs"
+          make check V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs"
         )
       done
     done
