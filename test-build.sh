@@ -99,41 +99,48 @@ build () {
   mkdir -p -- build/"$test"
   eval "set -- $compiler"
   for cc do
-    [ "$cc" != 'clang' ] || ! check_asan "$test" || continue
-    eval "set -- $standard"
-    for std do
-      cpp=
-      libs=
-      if check_cxx "$std"; then
-        cpp='-xc++'
-        libs='-lstdc++'
-      fi
-      # TODO: Add -O3 and -Ofast
-      for optimization in '' -O1 -O2 -O0 -Os -Og; do
-        build_string="$(printf %s "$std" | tr = _ | tr -d '[:space:]')"
-        dir="build/${test}/${cc}${optimization}${build_string}"
-        rm -rf -- "$dir"
-        cp -r -- build/configure/"$cc" "$dir"
-        (
-          cd -- "$dir"/
-          print_flags="${std} ${optimization}"
-          build_flags="$(printf %s "${print_flags}" | sed 's/-xc++//')"
-          all_flags="${build_flags} ${_CFLAGS} ${cflags}"
-          printf %s\\n '' "Building ${cc} ${print_flags}: ${test}" ''
-          make install V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs" \
-            DESTDIR="$srcdir/$dir"/install
-          make check V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs"
-        )
+    if check_asan "$test" "$cc" "$musl"; then
+      eval "set -- $standard"
+      for std do
+        cpp=
+        libs=
+        if check_cxx "$std"; then
+          cpp='-xc++'
+          libs='-lstdc++'
+        fi
+        # TODO: Add -O3 and -Ofast
+        for optimization in '' -O1 -O2 -O0 -Os -Og; do
+          build_string="$(printf %s "$std" | tr = _ | tr -d '[:space:]')"
+          dir="build/${test}/${cc}${optimization}${build_string}"
+          rm -rf -- "$dir"
+          cp -r -- build/configure/"$cc" "$dir"
+          (
+            cd -- "$dir"/
+            print_flags="${std} ${optimization}"
+            build_flags="$(printf %s "${print_flags}" | sed 's/-xc++//')"
+            all_flags="${build_flags} ${_CFLAGS} ${cflags}"
+            printf %s\\n '' "Building ${cc} ${print_flags}: ${test}" ''
+            make install V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs" \
+             DESTDIR="$srcdir/$dir"/install
+            make check V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs"
+          )
+        done
       done
-    done
+    fi
   done
 }
 
 check_asan () {
   case "$1" in
-    *san ) return 0 ;;
-    * ) return 1 ;;
+    *san )
+      # TODO: sanitizers are disabled with clang and musl
+      if [ "$2" = 'clang' ] || [ -n "${3}" ]; then
+        return 1
+      fi
+    ;;
   esac
+
+  return 0
 }
 
 check_cxx () {
@@ -142,6 +149,13 @@ check_cxx () {
     * ) return 1 ;;
   esac
 }
+
+if ldd "$(exists ls)" | grep -q musl; then
+  musl='1'
+else
+  printf %s\\n 'WARNING: Skipping the sanitizer tests on musl systems' >&2
+  musl=
+fi
 
 ###########
 ## Tests ##
