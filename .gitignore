@@ -1,9 +1,11 @@
+*.bak
 *.la
 *.lo
 *.log
 *.o
 *.pc
 *.stamp
+*.tar.?z
 *.trs
 *~
 .deps/
