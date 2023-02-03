@@ -4,8 +4,35 @@ CHANGES -- trio
 The changes listed without a name attributed to them were most likely done by
 Bjorn Reese and/or Daniel Stenberg.
 
-Version 1.17 - 2022/8/22
-------------------------
+Version 1.17.1 - 2023/02/03
+---------------------------
+* orbea
+  Use semantic versioning. (https://semver.org/)
+
+* Fix many compiler warnings with gcc and clang.
+
+* Improve C standards portability and fix the build with -xc++.
+
+* Workaround runtime issues with -Ofast.
+
+* Fix out of tree builds with doxygen support enabled.
+
+* Further improve the build system.
+
+* Update doxygen.
+
+* Remove trailing and redundant whitespace.
+
+* Add dedicated INSTALL and LICENSE files.
+
+* Update the README using the trio homepage.
+  (https://daniel.haxx.se/projects/trio/)
+
+* Add test-build.sh for regression testing.
+
+
+Version 1.17 - 2022/08/22
+-------------------------
 * Jochen Roemmler
   Fixes typos detected by the 'codespell' program.
 
