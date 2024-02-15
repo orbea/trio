@@ -17,14 +17,12 @@ dist_doc_DATA = README
 include_HEADERS = trio.h triop.h triodef.h trionan.h triostr.h
 
 lib_LTLIBRARIES = libtrio.la
-libtrio_la_LIBADD = libtrionan.la
-libtrio_la_LDFLAGS = -no-undefined -version-info 2
+libtrio_la_LIBADD = libtrionan.la $(LIBM)
+libtrio_la_LDFLAGS = -no-undefined -version-info 2:0:0
 libtrio_la_SOURCES = triostr.c
 
 noinst_LTLIBRARIES = libtrionan.la
-libtrionan_la_LIBADD = $(LIBM)
 libtrionan_la_CFLAGS = -fno-finite-math-only -fno-unsafe-math-optimizations
-libtrionan_la_LDFLAGS = -no-undefined
 libtrionan_la_SOURCES = trio.c trionan.c
 
 pkgconfigdir = $(libdir)/pkgconfig
