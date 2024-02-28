@@ -18,7 +18,7 @@ include_HEADERS = trio.h triop.h triodef.h trionan.h triostr.h
 
 lib_LTLIBRARIES = libtrio.la
 libtrio_la_LIBADD = libtrionan.la $(LIBM)
-libtrio_la_LDFLAGS = -no-undefined -version-info 2:0:0
+libtrio_la_LDFLAGS = -no-undefined -export-symbols-regex trio_ -version-info 2:0:0
 libtrio_la_SOURCES = triostr.c
 
 noinst_LTLIBRARIES = libtrionan.la
