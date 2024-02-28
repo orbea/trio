@@ -42,9 +42,6 @@
 #if !defined(TRIO_PUBLIC_STRING)
 # define TRIO_PUBLIC_STRING TRIO_PUBLIC
 #endif
-#if !defined(TRIO_PRIVATE_STRING)
-# define TRIO_PRIVATE_STRING TRIO_PRIVATE
-#endif
 
 #if !defined(NULL)
 # define NULL 0
@@ -174,7 +171,7 @@ struct _trio_string_t
  || defined(TRIO_FUNC_STRING_DUPLICATE) \
  || defined(TRIO_FUNC_XSTRING_DUPLICATE)
 
-TRIO_PRIVATE_STRING char *
+static char *
 internal_duplicate_max
 TRIO_ARGS2((source, size),
 	   TRIO_CONST char *source,
@@ -203,7 +200,7 @@ TRIO_ARGS2((source, size),
  || defined(TRIO_FUNC_STRING_DUPLICATE) \
  || defined(TRIO_FUNC_XSTRING_DUPLICATE)
 
-TRIO_PRIVATE_STRING trio_string_t *
+static trio_string_t *
 internal_string_alloc(TRIO_NOARGS)
 {
   trio_string_t *self;
@@ -231,7 +228,7 @@ internal_string_alloc(TRIO_NOARGS)
  || defined(TRIO_FUNC_XSTRING_APPEND) \
  || defined(TRIO_FUNC_XSTRING_APPEND_CHAR)
 
-TRIO_PRIVATE_STRING BOOLEAN_T
+static BOOLEAN_T
 internal_string_grow
 TRIO_ARGS2((self, delta),
 	   trio_string_t *self,
@@ -268,7 +265,7 @@ TRIO_ARGS2((self, delta),
  || defined(TRIO_FUNC_XSTRING_APPEND) \
  || defined(TRIO_FUNC_XSTRING_APPEND_MAX)
 
-TRIO_PRIVATE_STRING BOOLEAN_T
+static BOOLEAN_T
 internal_string_grow_to
 TRIO_ARGS2((self, length),
 	   trio_string_t *self,
@@ -284,7 +281,7 @@ TRIO_ARGS2((self, length),
 
 #if defined(TRIO_FUNC_INTERNAL_TO_UPPER)
 
-TRIO_PRIVATE_STRING int
+static int
 internal_to_upper
 TRIO_ARGS1((source),
 	   int source)
