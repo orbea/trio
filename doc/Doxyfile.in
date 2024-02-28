@@ -2279,7 +2279,6 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = __STDC__=1 \
                          TRIO_DOCUMENTATION= \
                          TRIO_PUBLIC= \
-                         TRIO_PRIVATE=static \
                          TRIO_CONST=const \
                          TRIO_VOLATILE=volatile \
                          TRIO_SIGNED=signed \

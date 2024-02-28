@@ -236,14 +236,10 @@
 # else
 #  if defined(TRIO_COMPILER_GCC) && __GNUC__ >= 4
 #   define TRIO_PUBLIC __attribute__ ((visibility ("default")))
-#   define TRIO_PRIVATE __attribute__ ((visibility ("hidden")))
 #  else
 #   define TRIO_PUBLIC
 #  endif
 # endif
-#endif
-#if !defined(TRIO_PRIVATE)
-# define TRIO_PRIVATE static
 #endif
 
 #if !(defined(PREDEF_STANDARD_C89) || defined(PREDEF_STANDARD_CXX))

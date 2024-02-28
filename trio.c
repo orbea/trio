@@ -963,7 +963,7 @@ static trio_userdef_t *internalUserDef = NULL;
  * Description:
  *  Initialize a trio_parameter_t struct.
  */
-TRIO_PRIVATE void
+static void
 TrioInitializeParameter
 TRIO_ARGS1((parameter),
 	   trio_parameter_t *parameter)
@@ -991,7 +991,7 @@ TRIO_ARGS1((parameter),
  * Description:
  *  Copies one trio_parameter_t struct to another.
  */
-TRIO_PRIVATE void
+static void
 TrioCopyParameter
 TRIO_ARGS2((target, source),
 	   trio_parameter_t *target,
@@ -1031,7 +1031,7 @@ TRIO_ARGS2((target, source),
  *  Remember to add all new qualifiers to this function.
  *  QUALIFIER_POSITION must not be added.
  */
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioIsQualifier
 TRIO_ARGS1((character),
 	   TRIO_CONST char character)
@@ -1077,7 +1077,7 @@ TRIO_ARGS1((character),
  * TrioSetLocale
  */
 #if defined(USE_LOCALE)
-TRIO_PRIVATE void
+static void
 TrioSetLocale(TRIO_NOARGS)
 {
   internalLocaleValues = (struct lconv *)localeconv();
@@ -1123,7 +1123,7 @@ TrioSetLocale(TRIO_NOARGS)
 #endif /* defined(USE_LOCALE) */
 
 #if TRIO_FEATURE_FLOAT && TRIO_FEATURE_QUOTE
-TRIO_PRIVATE int
+static int
 TrioCalcThousandSeparatorLength
 TRIO_ARGS1((digits),
 	   int digits)
@@ -1161,7 +1161,7 @@ TRIO_ARGS1((digits),
 #endif /* TRIO_FEATURE_FLOAT && TRIO_FEATURE_QUOTE */
 
 #if TRIO_FEATURE_QUOTE
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioFollowedBySeparator
 TRIO_ARGS1((position),
 	   int position)
@@ -1196,7 +1196,7 @@ TRIO_ARGS1((position),
  *
  * Get the %n$ position.
  */
-TRIO_PRIVATE int
+static int
 TrioGetPosition
 TRIO_ARGS2((format, offsetPointer),
 	   TRIO_CONST char *format,
@@ -1229,7 +1229,7 @@ TRIO_ARGS2((format, offsetPointer),
  * The prev argument is used for optimization only.
  */
 #if TRIO_FEATURE_USER_DEFINED
-TRIO_PRIVATE trio_userdef_t *
+static trio_userdef_t *
 TrioFindNamespace
 TRIO_ARGS2((name, prev),
 	   TRIO_CONST char *name,
@@ -1264,7 +1264,7 @@ TRIO_ARGS2((name, prev),
  *  Calculate pow(base, exponent), where number and exponent are integers.
  */
 #if TRIO_FEATURE_FLOAT
-TRIO_PRIVATE trio_long_double_t
+static trio_long_double_t
 TrioPower
 TRIO_ARGS2((number, exponent),
 	   int number,
@@ -1326,7 +1326,7 @@ TRIO_ARGS2((number, exponent),
  * TrioLogarithm
  */
 #if TRIO_FEATURE_FLOAT
-TRIO_PRIVATE trio_long_double_t
+static trio_long_double_t
 TrioLogarithm
 TRIO_ARGS2((number, base),
 	   trio_long_double_t number,
@@ -1358,7 +1358,7 @@ TRIO_ARGS2((number, base),
  * TrioLogarithmBase
  */
 #if TRIO_FEATURE_FLOAT
-TRIO_PRIVATE double
+static double
 TrioLogarithmBase
 TRIO_ARGS1((base),
 	   int base)
@@ -1380,7 +1380,7 @@ TRIO_ARGS1((base),
  * Description:
  *  Parse the qualifiers of a potential conversion specifier
  */
-TRIO_PRIVATE int
+static int
 TrioParseQualifiers
 TRIO_ARGS4((type, format, offset, parameter),
 	   int type,
@@ -1682,7 +1682,7 @@ TRIO_ARGS4((type, format, offset, parameter),
  * Description:
  *  Parse the specifier part of a potential conversion specifier
  */
-TRIO_PRIVATE int
+static int
 TrioParseSpecifier
 TRIO_ARGS4((type, format, offset, parameter),
 	   int type,
@@ -1930,7 +1930,7 @@ TRIO_ARGS4((type, format, offset, parameter),
  * Description:
  *  Parse the format string
  */
-TRIO_PRIVATE int
+static int
 TrioParse
 TRIO_ARGS6((type, format, parameters, arglist, argfunc, argarray),
 	   int type,
@@ -2469,7 +2469,7 @@ TRIO_ARGS6((type, format, parameters, arglist, argfunc, argarray),
  *  The complexity of this function is a result of the complexity
  *  of the dependencies of the flags.
  */
-TRIO_PRIVATE void
+static void
 TrioWriteNumber
 TRIO_ARGS6((self, number, flags, width, precision, base),
 	   trio_class_t *self,
@@ -2674,7 +2674,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
  * Description:
  *  Output a single character of a string
  */
-TRIO_PRIVATE void
+static void
 TrioWriteStringCharacter
 TRIO_ARGS3((self, ch, flags),
 	   trio_class_t *self,
@@ -2730,7 +2730,7 @@ TRIO_ARGS3((self, ch, flags),
  * Description:
  *  Output a string
  */
-TRIO_PRIVATE void
+static void
 TrioWriteString
 TRIO_ARGS5((self, string, flags, width, precision),
 	   trio_class_t *self,
@@ -2809,7 +2809,7 @@ TRIO_ARGS5((self, string, flags, width, precision),
  *  Output a wide string as a multi-byte sequence
  */
 #if TRIO_FEATURE_WIDECHAR
-TRIO_PRIVATE int
+static int
 TrioWriteWideStringCharacter
 TRIO_ARGS4((self, wch, flags, width),
 	   trio_class_t *self,
@@ -2849,7 +2849,7 @@ TRIO_ARGS4((self, wch, flags, width),
  *  Output a wide character string as a multi-byte string
  */
 #if TRIO_FEATURE_WIDECHAR
-TRIO_PRIVATE void
+static void
 TrioWriteWideString
 TRIO_ARGS5((self, wstring, flags, width, precision),
 	   trio_class_t *self,
@@ -2932,7 +2932,7 @@ TRIO_ARGS5((self, wstring, flags, width, precision),
  *   and *l() math functions.
  */
 #if TRIO_FEATURE_FLOAT
-TRIO_PRIVATE void
+static void
 TrioWriteDouble
 TRIO_ARGS6((self, number, flags, width, precision, base),
 	   trio_class_t *self,
@@ -3598,7 +3598,7 @@ TRIO_ARGS6((self, number, flags, width, precision, base),
  * Description:
  *  This is the main engine for formatting output
  */
-TRIO_PRIVATE int
+static int
 TrioFormatProcess
 TRIO_ARGS3((data, format, parameters),
 	   trio_class_t *data,
@@ -3911,7 +3911,7 @@ TRIO_ARGS3((data, format, parameters),
  * TrioFormatRef
  */
 #if TRIO_EXTENSION
-TRIO_PRIVATE int
+static int
 TrioFormatRef
 TRIO_ARGS5((reference, format, arglist, argfunc, argarray),
 	   trio_reference_t *reference,
@@ -3939,7 +3939,7 @@ TRIO_ARGS5((reference, format, arglist, argfunc, argarray),
 /*************************************************************************
  * TrioFormat
  */
-TRIO_PRIVATE int
+static int
 TrioFormat
 TRIO_ARGS7((destination, destinationSize, OutStream, format, arglist, argfunc, argarray),
 	   trio_pointer_t destination,
@@ -3986,7 +3986,7 @@ TRIO_ARGS7((destination, destinationSize, OutStream, format, arglist, argfunc, a
  * TrioOutStreamFile
  */
 #if TRIO_FEATURE_FILE || TRIO_FEATURE_STDIO
-TRIO_PRIVATE void
+static void
 TrioOutStreamFile
 TRIO_ARGS2((self, output),
 	   trio_class_t *self,
@@ -4014,7 +4014,7 @@ TRIO_ARGS2((self, output),
  * TrioOutStreamFileDescriptor
  */
 #if TRIO_FEATURE_FD
-TRIO_PRIVATE void
+static void
 TrioOutStreamFileDescriptor
 TRIO_ARGS2((self, output),
 	   trio_class_t *self,
@@ -4043,7 +4043,7 @@ TRIO_ARGS2((self, output),
  * TrioOutStreamCustom
  */
 #if TRIO_FEATURE_CLOSURE
-TRIO_PRIVATE void
+static void
 TrioOutStreamCustom
 TRIO_ARGS2((self, output),
 	   trio_class_t *self,
@@ -4078,7 +4078,7 @@ TRIO_ARGS2((self, output),
 /*************************************************************************
  * TrioOutStreamString
  */
-TRIO_PRIVATE void
+static void
 TrioOutStreamString
 TRIO_ARGS2((self, output),
 	   trio_class_t *self,
@@ -4099,7 +4099,7 @@ TRIO_ARGS2((self, output),
 /*************************************************************************
  * TrioOutStreamStringMax
  */
-TRIO_PRIVATE void
+static void
 TrioOutStreamStringMax
 TRIO_ARGS2((self, output),
 	   trio_class_t *self,
@@ -4125,7 +4125,7 @@ TRIO_ARGS2((self, output),
  * TrioOutStreamStringDynamic
  */
 #if TRIO_FEATURE_DYNAMICSTRING
-TRIO_PRIVATE void
+static void
 TrioOutStreamStringDynamic
 TRIO_ARGS2((self, output),
 	   trio_class_t *self,
@@ -4148,7 +4148,7 @@ TRIO_ARGS2((self, output),
 /*************************************************************************
  * TrioArrayGetter
  */
-TRIO_PRIVATE
+static
 trio_pointer_t TrioArrayGetter(trio_pointer_t context, int index, int type)
 {
   /* Utility function for the printfv family */
@@ -5863,7 +5863,7 @@ TRIO_ARGS1((grouping),
 /*************************************************************************
  * TrioSkipWhitespaces
  */
-TRIO_PRIVATE int
+static int
 TrioSkipWhitespaces
 TRIO_ARGS1((self),
 	   trio_class_t *self)
@@ -5882,7 +5882,7 @@ TRIO_ARGS1((self),
  * TrioGetCollation
  */
 #if TRIO_EXTENSION
-TRIO_PRIVATE void
+static void
 TrioGetCollation(TRIO_NOARGS)
 {
   int i;
@@ -5915,7 +5915,7 @@ TrioGetCollation(TRIO_NOARGS)
  * FIXME:
  *  multibyte
  */
-TRIO_PRIVATE int
+static int
 TrioGetCharacterClass
 TRIO_ARGS4((format, offsetPointer, flagsPointer, characterclass),
 	   TRIO_CONST char *format,
@@ -6174,7 +6174,7 @@ TRIO_ARGS4((format, offsetPointer, flagsPointer, characterclass),
  * We implement our own number conversion in preference of strtol and
  * strtoul, because we must handle 'long long' and thousand separators.
  */
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioReadNumber
 TRIO_ARGS5((self, target, flags, width, base),
 	   trio_class_t *self,
@@ -6303,7 +6303,7 @@ TRIO_ARGS5((self, target, flags, width, base),
 /*************************************************************************
  * TrioReadChar
  */
-TRIO_PRIVATE int
+static int
 TrioReadChar
 TRIO_ARGS4((self, target, flags, width),
 	   trio_class_t *self,
@@ -6369,7 +6369,7 @@ TRIO_ARGS4((self, target, flags, width),
 /*************************************************************************
  * TrioReadString
  */
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioReadString
 TRIO_ARGS4((self, target, flags, width),
 	   trio_class_t *self,
@@ -6405,7 +6405,7 @@ TRIO_ARGS4((self, target, flags, width),
  * TrioReadWideChar
  */
 #if TRIO_FEATURE_WIDECHAR
-TRIO_PRIVATE int
+static int
 TrioReadWideChar
 TRIO_ARGS4((self, target, flags, width),
 	   trio_class_t *self,
@@ -6466,7 +6466,7 @@ TRIO_ARGS4((self, target, flags, width),
  * TrioReadWideString
  */
 #if TRIO_FEATURE_WIDECHAR
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioReadWideString
 TRIO_ARGS4((self, target, flags, width),
 	   trio_class_t *self,
@@ -6515,7 +6515,7 @@ TRIO_ARGS4((self, target, flags, width),
  *
  * FIXME: characterclass does not work with multibyte characters
  */
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioReadGroup
 TRIO_ARGS5((self, target, characterclass, flags, width),
 	   trio_class_t *self,
@@ -6559,7 +6559,7 @@ TRIO_ARGS5((self, target, characterclass, flags, width),
  *  handle base
  */
 #if TRIO_FEATURE_FLOAT
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioReadDouble
 TRIO_ARGS4((self, target, flags, width),
 	   trio_class_t *self,
@@ -6752,7 +6752,7 @@ TRIO_ARGS4((self, target, flags, width),
 /*************************************************************************
  * TrioReadPointer
  */
-TRIO_PRIVATE BOOLEAN_T
+static BOOLEAN_T
 TrioReadPointer
 TRIO_ARGS3((self, target, flags),
 	   trio_class_t *self,
@@ -6804,7 +6804,7 @@ TRIO_ARGS3((self, target, flags),
 /*************************************************************************
  * TrioScanProcess
  */
-TRIO_PRIVATE int
+static int
 TrioScanProcess
 TRIO_ARGS3((data, format, parameters),
 	   trio_class_t *data,
@@ -7174,7 +7174,7 @@ TRIO_ARGS3((data, format, parameters),
 /*************************************************************************
  * TrioScan
  */
-TRIO_PRIVATE int
+static int
 TrioScan
 TRIO_ARGS8((source, sourceSize, InStream, UndoStream, format, arglist, argfunc, argarray),
 	   trio_pointer_t source,
@@ -7223,7 +7223,7 @@ TRIO_ARGS8((source, sourceSize, InStream, UndoStream, format, arglist, argfunc, 
  * TrioInStreamFile
  */
 #if TRIO_FEATURE_FILE || TRIO_FEATURE_STDIO
-TRIO_PRIVATE void
+static void
 TrioInStreamFile
 TRIO_ARGS2((self, intPointer),
 	   trio_class_t *self,
@@ -7262,7 +7262,7 @@ TRIO_ARGS2((self, intPointer),
  * TrioUndoStreamFile
  */
 #if TRIO_FEATURE_FILE || TRIO_FEATURE_STDIO
-TRIO_PRIVATE void
+static void
 TrioUndoStreamFile
 TRIO_ARGS1((self),
 	   trio_class_t *self)
@@ -7286,7 +7286,7 @@ TRIO_ARGS1((self),
  * TrioInStreamFileDescriptor
  */
 #if TRIO_FEATURE_FD
-TRIO_PRIVATE void
+static void
 TrioInStreamFileDescriptor
 TRIO_ARGS2((self, intPointer),
 	   trio_class_t *self,
@@ -7327,7 +7327,7 @@ TRIO_ARGS2((self, intPointer),
  * TrioInStreamCustom
  */
 #if TRIO_FEATURE_CLOSURE
-TRIO_PRIVATE void
+static void
 TrioInStreamCustom
 TRIO_ARGS2((self, intPointer),
 	   trio_class_t *self,
@@ -7366,7 +7366,7 @@ TRIO_ARGS2((self, intPointer),
 /*************************************************************************
  * TrioInStreamString
  */
-TRIO_PRIVATE void
+static void
 TrioInStreamString
 TRIO_ARGS2((self, intPointer),
 	   trio_class_t *self,
