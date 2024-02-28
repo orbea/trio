@@ -65,9 +65,6 @@
 #if !defined(TRIO_PUBLIC_NAN)
 # define TRIO_PUBLIC_NAN TRIO_PUBLIC
 #endif
-#if !defined(TRIO_PRIVATE_NAN)
-# define TRIO_PRIVATE_NAN TRIO_PRIVATE
-#endif
 #if !defined(TRIO_INLINE_NAN)
 # define TRIO_INLINE_NAN TRIO_INLINE
 #endif
@@ -317,7 +314,7 @@ typedef void (*signal_handler_t) TRIO_PROTO((int));
  * internal_ignore_signal_handler
  */
 
-TRIO_PRIVATE_NAN signal_handler_t
+static signal_handler_t
 internal_ignore_signal_handler
 TRIO_ARGS1((signum),
            int signum)
@@ -337,7 +334,7 @@ TRIO_ARGS1((signum),
 /*
  * internal_restore_signal_handler
  */
-TRIO_PRIVATE_NAN void
+static void
 internal_restore_signal_handler
 TRIO_ARGS2((signum, handler),
            int signum,
@@ -357,7 +354,7 @@ TRIO_ARGS2((signum, handler),
  */
 #if defined(TRIO_FUNC_INTERNAL_MAKE_DOUBLE)
 
-TRIO_PRIVATE_NAN double
+static double
 internal_make_double
 TRIO_ARGS1((values),
 	   TRIO_CONST unsigned char *values)
@@ -378,7 +375,7 @@ TRIO_ARGS1((values),
  */
 #if defined(TRIO_FUNC_INTERNAL_IS_SPECIAL_QUANTITY)
 
-TRIO_PRIVATE_NAN int
+static int
 internal_is_special_quantity
 TRIO_ARGS2((number, has_mantissa),
 	   double number,
@@ -406,7 +403,7 @@ TRIO_ARGS2((number, has_mantissa),
  */
 #if defined(TRIO_FUNC_INTERNAL_IS_NEGATIVE)
 
-TRIO_PRIVATE_NAN int
+static int
 internal_is_negative
 TRIO_ARGS1((number),
 	   double number)
@@ -425,7 +422,7 @@ TRIO_ARGS1((number),
 
 #if defined(TRIO_FUNC_C99_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_PRIVATE_NAN int
+static int
 c99_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	   double number,
@@ -450,7 +447,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_DECC_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_PRIVATE_NAN TRIO_INLINE_NAN int
+static TRIO_INLINE_NAN int
 decc_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -495,7 +492,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_MS_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_PRIVATE_NAN int
+static int
 ms_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -568,7 +565,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_HP_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_PRIVATE_NAN TRIO_INLINE_NAN int
+static TRIO_INLINE_NAN int
 hp_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -617,7 +614,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_XLC_FPCLASSIFY_AND_SIGNBIT)
 
-TRIO_PRIVATE_NAN TRIO_INLINE_NAN int
+static TRIO_INLINE_NAN int
 xlc_fpclassify_and_signbit
 TRIO_ARGS2((number, is_negative),
 	  double number,
@@ -671,7 +668,7 @@ TRIO_ARGS2((number, is_negative),
 
 #if defined(TRIO_FUNC_INTERNAL_ISNAN)
 
-TRIO_PRIVATE_NAN TRIO_INLINE int
+static TRIO_INLINE int
 internal_isnan
 TRIO_ARGS1((number),
 	   double number)
@@ -735,7 +732,7 @@ TRIO_ARGS1((number),
 
 #if defined(TRIO_FUNC_INTERNAL_ISINF)
 
-TRIO_PRIVATE_NAN TRIO_INLINE int
+static TRIO_INLINE int
 internal_isinf
 TRIO_ARGS1((number),
 	   double number)
