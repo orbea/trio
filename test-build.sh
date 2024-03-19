@@ -165,18 +165,13 @@ _CFLAGS='-Werror -Wall -Wextra'
 _CFLAGS_ASAN='-g -fno-omit-frame-pointer'
 
 standard=
-all_std='default c89 c99 c11 c++ c++98 c++11 c++14 c++17'
+all_std='default c90 c99 c11 c17 c2x c++ c++98 c++11 c++14 c++17 c++20 c++23'
 
 for i in $(printf %s "${all_std}"); do
   case "$i" in
-    c89 ) standard="${standard} -std=c89" ;;
-    c99 ) standard="${standard} -std=c99" ;;
-    c11 ) standard="${standard} -std=c11" ;;
-    c++ ) standard="${standard} -xc++" ;;
-    c++98 ) standard="${standard} '-xc++ -std=c++98'" ;;
-    c++11 ) standard="${standard} '-xc++ -std=c++11'" ;;
-    c++14 ) standard="${standard} '-xc++ -std=c++14'" ;;
-    c++17 ) standard="${standard} '-xc++ -std=c++17'" ;;
+    c[0-9]* ) standard="${standard} -std=$i -std=gnu${i#?}" ;;
+    c++ ) standard="${standard} -x$i" ;;
+    c++* ) standard="${standard} '-xc++ -std=$i' '-xc++ -std=gnu${i#?}'" ;;
     default ) standard="${standard} ''" ;;
     * ) printf %s\\n "ERROR: Unknown '$i' standard." >&2; exit 1 ;;
   esac
