@@ -151,9 +151,9 @@ check_cxx () {
 }
 
 if ldd "$(exists ls)" | grep -q musl; then
+  printf %s\\n 'WARNING: Skipping the sanitizer tests on musl systems' >&2
   musl='1'
 else
-  printf %s\\n 'WARNING: Skipping the sanitizer tests on musl systems' >&2
   musl=
 fi
 
