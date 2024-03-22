@@ -108,8 +108,8 @@ build () {
           cpp='-xc++'
           libs='-lstdc++'
         fi
-        # TODO: Add -O3 and -Ofast
-        for optimization in '' -O1 -O2 -O0 -Os -Og; do
+        # TODO: Add -Ofast
+        for optimization in '' -O1 -O2 -O3 -O0 -Os -Og; do
           build_string="$(printf %s "$std" | tr = _ | tr -d '[:space:]')"
           dir="build/${test}/${cc}${optimization}${build_string}"
           rm -rf -- "$dir"
