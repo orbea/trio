@@ -121,7 +121,7 @@ build () {
             all_flags="${build_flags} ${_CFLAGS} ${cflags}"
             printf %s\\n '' "Building ${cc} ${print_flags}: ${test}" ''
             make install V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs" \
-             DESTDIR="$srcdir/$dir"/install
+              DESTDIR="$srcdir/$dir"/install
             make check V=1 CFLAGS="$all_flags" CPPFLAGS="$cpp" LDFLAGS="$libs"
           )
         done
@@ -184,12 +184,12 @@ fi
 
 for i in $(printf %s "${check}"); do
   case "$i" in
-    ansi ) build 'ansi' '-ansi' ;;
-    lto ) build 'lto' '-flto' ;;
-    asan ) build 'asan' "${_CFLAGS_ASAN} -fsanitize=address" ;;
-    lsan ) build 'lsan' "${_CFLAGS_ASAN} -fsanitize=leak" ;;
-    tsan ) build 'tsan' "${_CFLAGS_ASAN} -fsanitize=thread" ;;
-    ubsan ) build 'ubsan' "${_CFLAGS_ASAN} -fsanitize=undefined" ;;
+    ansi ) build "$i" '-ansi' ;;
+    lto ) build "$i" '-flto' ;;
+    asan ) build "$i" "${_CFLAGS_ASAN} -fsanitize=address" ;;
+    lsan ) build "$i" "${_CFLAGS_ASAN} -fsanitize=leak" ;;
+    tsan ) build "$i" "${_CFLAGS_ASAN} -fsanitize=thread" ;;
+    ubsan ) build "$i" "${_CFLAGS_ASAN} -fsanitize=undefined" ;;
     default ) build ;;
     * ) printf %s\\n "ERROR: Unknown '$i' test." >&2; exit 1 ;;
   esac
