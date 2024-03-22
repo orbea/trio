@@ -10,7 +10,8 @@ AC_PROG_MKDIR_P
 LT_INIT
 LT_LIB_M
 
-AC_CHECK_HEADERS([float.h inttypes.h limits.h locale.h stddef.h stdint.h stdlib.h string.h strings.h unistd.h wchar.h wctype.h])
+AC_CHECK_HEADERS([float.h inttypes.h limits.h locale.h stddef.h stdint.h \
+	stdlib.h string.h strings.h unistd.h wchar.h wctype.h])
 
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
@@ -21,7 +22,8 @@ AC_CHECK_TYPES([ptrdiff_t])
 
 AC_FUNC_STRCOLL
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([isascii localeconv mblen memset modf strcasecmp strchr strerror strncasecmp strstr strtol strtoul])
+AC_CHECK_FUNCS([isascii localeconv mblen memcpy memset modf strcasecmp strchr \
+	strcpy strerror strlen strncasecmp strstr strtol strtoul])
 
 AC_ARG_ENABLE([doc],
 	AS_HELP_STRING([--enable-doc], [Enable building doxygen docs]))
