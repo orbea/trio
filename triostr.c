@@ -534,12 +534,16 @@ TRIO_ARGS3((target, max, source),
 	   size_t max,
 	   TRIO_CONST char *source)
 {
+  size_t length = 0;
+
   assert(target);
   assert(source);
   assert(max > 0); /* Includes != 0 */
 
-  (void)strncpy(target, source, max - 1);
-  target[max - 1] = (char)0;
+  for(; (length < max - 1) && source[length]; ++length);
+
+  memcpy(target, source, length);
+  target[length] = '\0';
   return TRUE;
 }
 
